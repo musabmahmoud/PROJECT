@@ -4,13 +4,19 @@ const studentSchema = new mongoose.Schema({
   name: { 
     type: String, 
     required: true,
-    trim: true // Removes accidental extra spaces
+    trim: true 
   },
   payments: { 
     type: Number, 
     default: 0 
   },
   attendance: { 
+    type: Number, 
+    default: 0,
+    alias: "presents" // Just an internal reminder that this is for "Present" days
+  },
+  // 🆕 Added this to track missed days
+  absences: { 
     type: Number, 
     default: 0 
   },

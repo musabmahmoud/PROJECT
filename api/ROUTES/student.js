@@ -23,17 +23,31 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 3. Mark attendance (+1)
+// 3. Mark Attendance (+1 Present)
 router.post("/:id/present", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ error: "Student not found" });
     
-    student.attendance++;
+    student.attendance++; // This increases 'presents'
     await student.save();
     res.json(student);
   } catch (err) {
     res.status(400).json({ error: "Update failed" });
+  }
+});
+
+// 🆕 8. Mark Absence (+1 Absent)
+router.post("/:id/absent", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ error: "Student not found" });
+
+    student.absences = (student.absences || 0) + 1; 
+    await student.save();
+    res.json(student);
+  } catch (err) {
+    res.status(400).json({ error: "Absence update failed" });
   }
 });
 
@@ -51,7 +65,7 @@ router.post("/:id/pay", async (req, res) => {
   }
 });
 
-// 5. Delete student (Matches the ✕ button in your index.html)
+// 5. Delete student
 router.delete("/:id", async (req, res) => {
   try {
     await Student.findByIdAndDelete(req.params.id);
@@ -61,17 +75,25 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// 6. Stats for Dashboard
+// 6. Stats for Dashboard (Updated to include Absences)
 router.get("/stats/all", async (req, res) => {
   try {
     const students = await Student.find();
     const totalMoney = students.reduce((a, s) => a + (s.payments || 0), 0);
     const totalAttendance = students.reduce((a, s) => a + (s.attendance || 0), 0);
-    res.json({ totalMoney, totalAttendance });
+    const totalAbsences = students.reduce((a, s) => a + (s.absences || 0), 0);
+    
+    res.json({ 
+      totalMoney, 
+      totalAttendance, 
+      totalAbsences,
+      studentCount: students.length 
+    });
   } catch (err) {
     res.status(500).json({ error: "Stats calculation failed" });
   }
 });
+
 // 7 DANGER: Delete all students
 router.delete("/all/danger", async (req, res) => {
   try {

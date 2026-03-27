@@ -7,57 +7,65 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // 1. SECURITY GATEKEEPER: Redirect if not logged in
     if (!localStorage.getItem("user")) {
       window.location.href = "login.html";
     }
   </script>
 </head>
-<body class="bg-gray-100 p-4 md:p-8">
+<body class="bg-gray-50 p-4 md:p-8">
 
   <div class="max-w-6xl mx-auto">
-    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-      <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">Student Management</h1>
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div>
+        <h1 class="text-3xl font-black text-gray-900 tracking-tight">Student Management</h1>
+        <p class="text-gray-500 font-medium">Logged in as: <span id="userDisplay" class="text-blue-600 font-bold">Admin</span></p>
+      </div>
+      
       <div class="flex gap-3">
-        <button onclick="deleteAllData()" class="bg-orange-100 text-orange-700 px-4 py-2 rounded-lg font-semibold hover:bg-orange-200 transition">
-          Clear All Students
+        <button onclick="deleteAllData()" class="bg-orange-50 text-orange-600 px-4 py-2 rounded-xl font-bold hover:bg-orange-100 transition border border-orange-100">
+          🗑️ Clear All
         </button>
-        <button onclick="logout()" class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow-md hover:bg-red-700 transition">
+        <button onclick="logout()" class="bg-red-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-red-700 transition transform active:scale-95">
           Logout
         </button>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-      <div class="bg-white p-6 rounded-xl shadow-sm border-l-8 border-blue-500">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-blue-500">
+        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Students</h2>
+        <p id="totalStudentsCount" class="text-4xl font-black text-gray-800 mt-1">0</p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-green-500">
+        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Global Attendance</h2>
+        <p id="totalAttendance" class="text-4xl font-black text-gray-800 mt-1">0</p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-purple-500">
         <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Revenue</h2>
         <p id="totalRevenue" class="text-4xl font-black text-gray-800 mt-1">$0</p>
-      </div>
-      <div class="bg-white p-6 rounded-xl shadow-sm border-l-8 border-green-500">
-        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Attendance</h2>
-        <p id="totalAttendance" class="text-4xl font-black text-gray-800 mt-1">0</p>
       </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <div class="lg:col-span-2">
-        <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="🔍 Search students by name..." 
-               class="w-full p-4 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none text-lg">
+      <div class="lg:col-span-2 relative">
+        <span class="absolute left-4 top-4 text-gray-400">🔍</span>
+        <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Search students by name..." 
+               class="w-full pl-12 p-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none text-lg">
       </div>
-      <div class="bg-white p-4 rounded-xl shadow-sm flex gap-2">
-        <input id="newStudentName" type="text" placeholder="New Name" class="flex-1 p-2 border-b-2 border-gray-100 outline-none focus:border-purple-500" />
-        <button onclick="addNewStudent()" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-700 transition">+</button>
+      <div class="bg-white p-4 rounded-2xl shadow-sm flex gap-2 border border-gray-100">
+        <input id="newStudentName" type="text" placeholder="Enter full name" class="flex-1 p-2 bg-gray-50 rounded-lg outline-none focus:ring-1 focus:ring-purple-500" />
+        <button onclick="addNewStudent()" class="bg-purple-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-purple-700 transition">+</button>
       </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-8 border border-gray-100">
       <table class="min-w-full">
         <thead class="bg-gray-50 border-b">
           <tr class="text-left text-gray-500 text-xs font-bold uppercase tracking-wider">
-            <th class="py-4 px-6">Student Name</th>
-            <th class="py-4 px-6">Payments</th>
-            <th class="py-4 px-6">Attendance</th>
-            <th class="py-4 px-6 text-center">Actions</th>
+            <th class="py-5 px-6">Student Name</th>
+            <th class="py-5 px-6">Payments</th>
+            <th class="py-5 px-6">Attendance</th>
+            <th class="py-5 px-6 text-center">Quick Actions</th>
           </tr>
         </thead>
         <tbody id="studentsTable" class="divide-y divide-gray-100">
@@ -65,21 +73,29 @@
       </table>
     </div>
 
-    <div class="bg-white p-8 rounded-xl shadow-sm">
-      <h2 class="text-xl font-bold mb-6 text-gray-700">Performance Analytics</h2>
-      <canvas id="chart" width="400" height="150"></canvas>
+    <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+      <h2 class="text-xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+        <span>📊</span> Performance Analytics
+      </h2>
+      <canvas id="chart" width="400" height="120"></canvas>
     </div>
   </div>
 
 <script>
 const API = "/api/students";
 
+// Display username on load
+window.onload = () => {
+  const user = localStorage.getItem("user");
+  if(user) document.getElementById("userDisplay").innerText = user;
+  loadStudents();
+};
+
 function logout() {
   localStorage.removeItem("user");
   window.location.href = "login.html";
 }
 
-// 2. SEARCH LOGIC
 function searchStudents() {
   const query = document.getElementById("searchInput").value.toLowerCase();
   const rows = document.querySelectorAll("#studentsTable tr");
@@ -93,20 +109,29 @@ async function loadStudents() {
   try {
     const res = await fetch(API);
     const students = await res.json();
+    document.getElementById("totalStudentsCount").innerText = students.length;
+    
     const tbody = document.getElementById("studentsTable");
     tbody.innerHTML = "";
     
     students.forEach(s => {
       const tr = document.createElement("tr");
-      tr.className = "hover:bg-gray-50 transition";
+      tr.className = "hover:bg-gray-50/50 transition group";
       tr.innerHTML = `
-        <td class="py-4 px-6 font-semibold text-gray-800">${s.name}</td>
-        <td class="py-4 px-6 text-blue-600 font-bold">$${s.payments || 0}</td>
-        <td class="py-4 px-6 text-green-600 font-bold">${s.attendance || 0}</td>
-        <td class="py-4 px-6 text-center space-x-2">
-          <button onclick="markPresent('${s._id}')" class="bg-green-100 text-green-700 px-3 py-1 rounded-md text-sm font-bold hover:bg-green-200">Present</button>
-          <button onclick="addPayment('${s._id}')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-sm font-bold hover:bg-blue-200">Pay</button>
-          <button onclick="deleteStudent('${s._id}')" class="text-gray-300 hover:text-red-500 transition ml-4 text-xl">✕</button>
+        <td class="py-4 px-6">
+          <div class="font-bold text-gray-800">${s.name}</div>
+        </td>
+        <td class="py-4 px-6 text-blue-600 font-black">$${s.payments || 0}</td>
+        <td class="py-4 px-6">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-green-50 text-green-700">
+            ${s.attendance || 0} Days
+          </span>
+        </td>
+        <td class="py-4 px-6 text-center flex justify-center items-center gap-2">
+          <button onclick="markPresent('${s._id}')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 shadow-sm">Present</button>
+          <button onclick="markAbsent('${s._id}')" class="bg-orange-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-orange-600 shadow-sm">Absent</button>
+          <button onclick="addPayment('${s._id}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 shadow-sm">Pay</button>
+          <button onclick="deleteStudent('${s._id}')" class="text-gray-300 hover:text-red-500 transition ml-2 text-xl">✕</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -134,9 +159,8 @@ async function deleteStudent(id) {
   }
 }
 
-// 3. DELETE ALL DATA LOGIC
 async function deleteAllData() {
-  if (confirm("⚠️ WARNING: This will delete EVERY student in the database. Are you sure?")) {
+  if (confirm("⚠️ CRITICAL: Delete EVERY student? This cannot be undone.")) {
     await fetch(`${API}/all/danger`, { method: "DELETE" });
     loadStudents();
   }
@@ -147,9 +171,15 @@ async function markPresent(id) {
   loadStudents();
 }
 
+async function markAbsent(id) {
+  // Assuming your backend has an /absent route to subtract attendance or log it
+  await fetch(`${API}/${id}/absent`, { method: "POST" });
+  loadStudents();
+}
+
 async function addPayment(id) {
-  const amount = parseInt(prompt("Enter amount ($):"));
-  if(!amount) return;
+  const amount = parseInt(prompt("Enter payment amount ($):"));
+  if(!amount || isNaN(amount)) return;
   await fetch(`${API}/${id}/pay`, {
     method: "POST",
     headers: {"Content-Type":"application/json"},
@@ -159,29 +189,32 @@ async function addPayment(id) {
 }
 
 async function loadStats() {
-  const res = await fetch(`${API}/stats/all`);
-  const data = await res.json();
-  document.getElementById("totalRevenue").innerText = `$${data.totalMoney || 0}`;
-  document.getElementById("totalAttendance").innerText = data.totalAttendance || 0;
+  try {
+    const res = await fetch(`${API}/stats/all`);
+    const data = await res.json();
+    document.getElementById("totalRevenue").innerText = `$${data.totalMoney || 0}`;
+    document.getElementById("totalAttendance").innerText = data.totalAttendance || 0;
 
-  const ctx = document.getElementById('chart').getContext('2d');
-  if (window.myChart) window.myChart.destroy();
-  window.myChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Revenue ($)', 'Attendance'],
-      datasets: [{
-        label: 'Global Stats',
-        data: [data.totalMoney, data.totalAttendance],
-        backgroundColor: ['#3b82f6', '#10b981'],
-        borderRadius: 8
-      }]
-    },
-    options: { plugins: { legend: { display: false } } }
-  });
+    const ctx = document.getElementById('chart').getContext('2d');
+    if (window.myChart) window.myChart.destroy();
+    window.myChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Revenue ($)', 'Total Attendance'],
+        datasets: [{
+          data: [data.totalMoney, data.totalAttendance],
+          backgroundColor: ['#3b82f6', '#10b981'],
+          borderRadius: 12,
+          barThickness: 60
+        }]
+      },
+      options: { 
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
+      }
+    });
+  } catch (err) { console.error(err); }
 }
-
-window.onload = loadStudents;
 </script>
 </body>
 </html>
