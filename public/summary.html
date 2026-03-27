@@ -2,103 +2,141 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Student Summary</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Summary | Student Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #9333ea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); }
     </style>
 </head>
-<body class="bg-gray-50 p-8">
+<body class="pb-20">
 
-    <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-4xl font-black text-gray-900">Academic Summary</h1>
-            <button onclick="downloadPDF()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-2xl flex gap-2 items-center transition-all">
-                Download PDF
-            </button>
+    <nav class="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-gray-100 mb-10">
+        <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div>
+                <h1 class="text-2xl font-black text-gray-900">Academic <span class="text-blue-600">Insights</span></h1>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Performance by Level</p>
+            </div>
+
+            <div class="flex items-center gap-3 bg-gray-100 p-1.5 rounded-2xl border border-gray-200">
+                <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm">
+                    <span class="text-blue-500 text-lg">📅</span>
+                    <select id="monthSelect" onchange="loadSummary()" class="font-black text-gray-700 bg-transparent outline-none cursor-pointer">
+                        <option value="09">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                        <option value="01">January</option>
+                        <option value="02">February</option>
+                        <option value="03" selected>March</option>
+                        <option value="04">April</option>
+                        <option value="05">May</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm">
+                    <select id="yearSelect" onchange="loadSummary()" class="font-black text-gray-700 bg-transparent outline-none cursor-pointer">
+                        <option value="2025">2025</option>
+                        <option value="2026" selected>2026</option>
+                    </select>
+                </div>
+                <a href="index.html" class="bg-gray-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-600 transition-all">Back</a>
+            </div>
         </div>
+    </nav>
 
-        <div id="reportContent">
-            <h2 class="text-xl font-bold text-blue-600 mb-4">Preparatory Levels</h2>
-            <div id="prepContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"></div>
-
-            <h2 class="text-xl font-bold text-purple-600 mb-4">Secondary Levels</h2>
-            <div id="secContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-        </div>
+    <div class="max-w-6xl mx-auto px-6">
+        <div id="summaryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
     </div>
 
-    <script>
-        async function initSummary() {
-            const prepBox = document.getElementById("prepContainer");
-            const secBox = document.getElementById("secContainer");
+<script>
+const API = "/api/students";
 
-            try {
-                const res = await fetch("/api/students");
-                const students = await res.json();
+window.onload = loadSummary;
 
-                const render = (levels, container, color) => {
-                    container.innerHTML = "";
-                    levels.forEach(lvl => {
-                        const group = students.filter(s => s.level?.toString().trim().toLowerCase() === lvl.toLowerCase());
-                        const money = group.reduce((a, s) => a + (Number(s.payments) || 0), 0);
-                        const avg = group.length ? (group.reduce((a, s) => a + (Number(s.grade) || 0), 0) / group.length).toFixed(1) : "0.0";
-                        
-                        container.innerHTML += `
-                            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
-                                <h3 class="text-xl font-black">${lvl}</h3>
-                                <p class="text-sm text-gray-400 mb-4">${group.length} Students</p>
-                                <div class="bg-gray-50 p-4 rounded-xl mb-4">
-                                    <p class="text-xs font-bold text-gray-500 uppercase">Average Grade</p>
-                                    <p class="text-2xl font-black text-purple-600">${avg}%</p>
-                                </div>
-                                <div class="flex justify-between font-bold text-sm">
-                                    <span class="text-green-600">EGP ${money}</span>
-                                    <span class="text-gray-400">Total</span>
-                                </div>
-                            </div>`;
-                    });
-                };
+async function loadSummary() {
+    const month = document.getElementById("monthSelect").value;
+    const year = document.getElementById("yearSelect").value;
+    const container = document.getElementById("summaryContainer");
+    
+    // Loading State
+    container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold animate-pulse">Fetching ${month}/${year} Data...</div>`;
 
-                render(["Prep 1", "Prep 2", "Prep 3"], prepBox, "blue");
-                render(["Sec 1", "Sec 2", "Sec 3"], secBox, "purple");
+    try {
+        const res = await fetch(API);
+        const students = await res.json();
+        container.innerHTML = "";
 
-            } catch (e) { console.error(e); }
-        }
+        // Filter and Grouping Logic
+        const groups = {};
+        students.forEach(s => {
+            if (!groups[s.level]) groups[s.level] = [];
+            groups[s.level].push(s);
+        });
 
-        function downloadPDF() {
-            const element = document.getElementById('reportContent');
-            const opt = { margin: 10, filename: 'Report.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
-            html2pdf().set(opt).from(element).save();
-        }
+        Object.keys(groups).sort().forEach(level => {
+            const group = groups[level];
+            
+            const totalMoney = group.reduce((a, s) => a + (Number(s.payments) || 0), 0);
+            const totalPresents = group.reduce((a, s) => a + (Number(s.attendance) || 0), 0);
+            const totalAbsences = group.reduce((a, s) => a + (Number(s.absences) || 0), 0);
+            
+            const graded = group.filter(s => s.grade != null);
+            const avgGrade = graded.length > 0 
+                ? (graded.reduce((a, s) => a + s.grade, 0) / graded.length).toFixed(0)
+                : 0;
 
-        window.addEventListener('DOMContentLoaded', initSummary);
-    </script>
-<div id="modalOverlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 transition-all duration-300">
-    <div class="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl scale-95 transition-transform duration-300" id="modalContent">
-        <div id="modalIcon" class="w-16 h-16 rounded-2xl mb-6 flex items-center justify-center text-2xl"></div>
-        <h2 id="modalTitle" class="text-2xl font-black text-gray-900 mb-2"></h2>
-        <p id="modalDesc" class="text-gray-500 mb-8 font-medium"></p>
-        
-        <div id="gradeInputContainer" class="hidden mb-8">
-            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Enter Score (0-100)</label>
-            <input type="number" id="newGrade" class="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 font-bold text-xl focus:border-purple-500 outline-none transition-all" placeholder="85">
-        </div>
+            const attendRate = (totalPresents + totalAbsences > 0) 
+                ? Math.round((totalPresents / (totalPresents + totalAbsences)) * 100) 
+                : 0;
 
-        <div class="flex gap-3">
-            <button onclick="closeModal()" class="flex-1 py-4 rounded-2xl font-bold text-gray-400 hover:bg-gray-50 transition-all">Cancel</button>
-            <button id="modalConfirmBtn" class="flex-1 py-4 rounded-2xl font-black text-white shadow-lg shadow-purple-200 transition-all"></button>
-        </div>
-    </div>
-</div>
+            container.innerHTML += `
+                <div class="glass-card p-8 rounded-[2.5rem] hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h2 class="text-3xl font-black text-gray-900">${level}</h2>
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">${group.length} Students</p>
+                        </div>
+                        <div class="bg-blue-50 text-blue-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black">
+                            ${avgGrade}%
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Total Collected</p>
+                                <p class="text-2xl font-black text-gray-800">${totalMoney.toLocaleString()} <span class="text-xs text-gray-400">EGP</span></p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-[10px] font-black text-gray-400 uppercase mb-2">
+                                <span>Attendance Rate</span>
+                                <span class="text-blue-600">${attendRate}%</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-blue-500 rounded-full" style="width: ${attendRate}%"></div>
+                            </div>
+                            <div class="flex justify-between mt-3 text-[11px] font-bold">
+                                <span class="text-green-500">✅ ${totalPresents} Present</span>
+                                <span class="text-red-400">❌ ${totalAbsences} Absent</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="w-full mt-8 py-4 bg-gray-900 text-white rounded-2xl font-bold text-sm group-hover:bg-blue-600 transition-all">
+                        Full Report
+                    </button>
+                </div>
+            `;
+        });
+    } catch (err) {
+        container.innerHTML = `<p class="text-red-500 font-bold">Error loading summary.</p>`;
+    }
+}
+</script>
 </body>
 </html>
