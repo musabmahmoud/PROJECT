@@ -2,53 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Global Summary</title>
+  <title>System Intelligence Summary</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 p-8">
-  <div class="max-w-5xl mx-auto">
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="text-3xl font-black text-gray-900">System Summary</h1>
-      <a href="index.html" class="bg-gray-200 px-4 py-2 rounded-xl font-bold text-gray-700">← Dashboard</a>
+<body class="bg-gray-50 p-6 md:p-12">
+  <div class="max-w-6xl mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+      <div>
+        <h1 class="text-4xl font-black text-gray-900 tracking-tight">System Summary</h1>
+        <p class="text-gray-500 font-medium">Full performance breakdown by educational level</p>
+      </div>
+      <a href="index.html" class="bg-white border border-gray-200 px-6 py-3 rounded-2xl font-bold text-gray-700 shadow-sm hover:bg-gray-50 transition">← Back to Dashboard</a>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      
       <div>
-        <h2 class="text-xl font-bold mb-4 text-blue-600">Preparatory Stage</h2>
-        <div id="prepStats" class="space-y-4"></div>
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
+          <h2 class="text-2xl font-black text-gray-800">Preparatory Levels</h2>
+        </div>
+        <div id="prepContainer" class="space-y-6"></div>
       </div>
+
       <div>
-        <h2 class="text-xl font-bold mb-4 text-purple-600">Secondary Stage</h2>
-        <div id="secStats" class="space-y-4"></div>
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-2 h-8 bg-purple-600 rounded-full"></div>
+          <h2 class="text-2xl font-black text-gray-800">Secondary Levels</h2>
+        </div>
+        <div id="secContainer" class="space-y-6"></div>
       </div>
+
     </div>
   </div>
 
   <script>
-    async function loadSummary() {
+    async function initSummary() {
       const res = await fetch("/api/students");
       const students = await res.json();
-      
-      const render = (list, containerId) => {
+
+      const renderSection = (levels, containerId, accentColor) => {
         const container = document.getElementById(containerId);
-        list.forEach(lvl => {
+        levels.forEach(lvl => {
           const group = students.filter(s => s.level === lvl);
-          const money = group.reduce((a, s) => a + (s.payments || 0), 0);
+          const totalMoney = group.reduce((a, s) => a + (s.payments || 0), 0);
+          const totalPresent = group.reduce((a, s) => a + (s.attendance || 0), 0);
+          const totalAbsent = group.reduce((a, s) => a + (s.absences || 0), 0);
+          
           container.innerHTML += `
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-              <div class="flex justify-between items-center">
-                <span class="text-lg font-black">${lvl}</span>
-                <span class="text-blue-600 font-bold">${money} EGP</span>
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <h3 class="text-xl font-black text-gray-800">${lvl}</h3>
+                  <span class="text-sm font-bold text-gray-400">${group.length} Students Enrolled</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-2xl font-black text-${accentColor}-600">${totalMoney}</span>
+                  <span class="text-xs font-bold text-gray-400 block uppercase">Total EGP</span>
+                </div>
               </div>
-              <p class="text-gray-500 text-sm">${group.length} Students</p>
+              
+              <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-50">
+                <div class="bg-green-50 p-3 rounded-2xl">
+                  <p class="text-[10px] font-bold text-green-600 uppercase">Total Presents</p>
+                  <p class="text-xl font-black text-green-700">✅ ${totalPresent}</p>
+                </div>
+                <div class="bg-red-50 p-3 rounded-2xl">
+                  <p class="text-[10px] font-bold text-red-600 uppercase">Total Absences</p>
+                  <p class="text-xl font-black text-red-700">❌ ${totalAbsent}</p>
+                </div>
+              </div>
             </div>`;
         });
       };
 
-      render(["Prep 1", "Prep 2", "Prep 3"], "prepStats");
-      render(["Sec 1", "Sec 2", "Sec 3"], "secStats");
+      renderSection(["Prep 1", "Prep 2", "Prep 3"], "prepContainer", "blue");
+      renderSection(["Sec 1", "Sec 2", "Sec 3"], "secContainer", "purple");
     }
-    loadSummary();
+    initSummary();
   </script>
 </body>
 </html>

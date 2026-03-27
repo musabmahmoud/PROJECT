@@ -34,7 +34,39 @@
         <p id="totalStudentsCount" class="text-3xl font-black text-gray-800 mt-1">0</p>
       </div>
     </div>
+<div id="deleteModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+  <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-8 text-center transform transition-all">
+    <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">⚠️</div>
+    <h3 class="text-xl font-black text-gray-800 mb-2">Are you sure?</h3>
+    <p class="text-gray-500 mb-6">This will permanently remove the student and all their records. This action cannot be undone.</p>
+    <input type="hidden" id="deleteId">
+    <div class="flex gap-3">
+      <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition">Cancel</button>
+      <button onclick="confirmDelete()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">Delete</button>
+    </div>
+  </div>
+</div>
 
+<script>
+// --- Updated Delete Logic ---
+function deleteStudent(id) {
+  document.getElementById("deleteId").value = id;
+  document.getElementById("deleteModal").classList.remove("hidden");
+}
+
+function closeDeleteModal() {
+  document.getElementById("deleteModal").classList.add("hidden");
+}
+
+async function confirmDelete() {
+  const id = document.getElementById("deleteId").value;
+  const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+  if (res.ok) {
+    closeDeleteModal();
+    loadData();
+  }
+}
+</script>
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
       <div class="lg:col-span-2 relative">
         <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Search names..." 
