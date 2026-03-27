@@ -11,8 +11,8 @@ const MonthlyRecordSchema = new mongoose.Schema({
 const studentSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   level: { type: String, required: true },
+  owner: { type: String, required: true }, 
   dateAdded: { type: Date, default: Date.now },
-  // This stores a separate object for every month
   records: [MonthlyRecordSchema]
 });
 
