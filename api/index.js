@@ -23,7 +23,7 @@ const teacherRoutes = require('./ROUTES/teachers');
 
 // --- 4. LINKING ROUTES ---
 // We use '/api/students' (plural) to match your frontend fetch calls
-app.use('/api/ROUTES/student', studentRoutes);
+app.use('/api/student', studentRoutes);
 app.use('/api/teachers', teacherRoutes);
 
 // --- 5. SYSTEM HEALTH CHECK ---
