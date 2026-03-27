@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Student = require("../MODELS/student");
 
-// Helper to get current month string as fallback (e.g., "2026-03")
+// Helper to get current month string (e.g., "2026-03")
 const getMonth = () => new Date().toISOString().slice(0, 7);
 
 // 1. List Students (Filtered by Month)
@@ -11,7 +11,6 @@ router.get("/", async (req, res) => {
     const targetMonth = req.query.month || getMonth();
     const students = await Student.find().sort({ level: 1, name: 1 });
 
-    // Map students to only show data for the selected month
     const formatted = students.map(s => {
       const rec = s.records.find(r => r.month === targetMonth) || { 
         payments: 0, attendance: 0, absences: 0, grade: 0 
@@ -27,7 +26,10 @@ router.get("/", async (req, res) => {
       };
     });
     res.json(formatted);
-  } catch (err) { res.status(500).json(err); }
+  } catch (err) { 
+    console.error("List Error:", err);
+    res.status(500).json({ error: "Failed to fetch students" }); 
+  }
 });
 
 // 2. Add Student
@@ -37,19 +39,23 @@ router.post("/", async (req, res) => {
     const student = new Student({ 
       name, 
       level: level || "Sec 1",
-      records: [{ month: getMonth() }] 
+      records: [{ month: getMonth(), payments: 0, attendance: 0, absences: 0, grade: 0 }] 
     });
     await student.save();
     res.json(student);
-  } catch (err) { res.status(400).json({ error: "Could not add student" }); }
+  } catch (err) { 
+    res.status(400).json({ error: "Could not add student" }); 
+  }
 });
 
-// 3. Update Attendance (Present/Absent) - Updated to accept month from body
-router.post("/:id/:type", async (req, res) => {
+// 3. Update Attendance (Fixed Path to avoid "Invalid Type" error)
+router.post("/:id/attendance/:type", async (req, res) => {
   const { id, type } = req.params;
-  const { month } = req.body; // Receive month from frontend
+  const { month } = req.body;
   
-  if (type !== 'present' && type !== 'absent') return res.status(400).json({error: "Invalid type"});
+  if (type !== 'present' && type !== 'absent') {
+    return res.status(400).json({ error: "Invalid type" });
+  }
   
   const targetMonth = month || getMonth();
   const field = type === "present" ? "attendance" : "absences";
@@ -68,13 +74,15 @@ router.post("/:id/:type", async (req, res) => {
       );
     }
     res.json(student);
-  } catch (err) { res.status(500).json(err); }
+  } catch (err) { 
+    res.status(500).json({ error: "Attendance update failed" }); 
+  }
 });
 
-// 4. Update Value (Grade/Payments) - Updated to accept month from body
+// 4. Update Value (Grade/Payments)
 router.post("/:id/update-value", async (req, res) => {
   const { id } = req.params;
-  const { field, value, month } = req.body; // Receive month from frontend
+  const { field, value, month } = req.body;
   const targetMonth = month || getMonth();
 
   try {
@@ -91,7 +99,9 @@ router.post("/:id/update-value", async (req, res) => {
       );
     }
     res.json(student);
-  } catch (err) { res.status(500).json(err); }
+  } catch (err) { 
+    res.status(500).json({ error: "Value update failed" }); 
+  }
 });
 
 // 5. Delete Student
@@ -99,10 +109,12 @@ router.delete("/:id", async (req, res) => {
   try {
     await Student.findByIdAndDelete(req.params.id);
     res.json({ message: "Deleted" });
-  } catch (err) { res.status(500).json({ error: "Delete failed" }); }
+  } catch (err) { 
+    res.status(500).json({ error: "Delete failed" }); 
+  }
 });
 
-// 6. Stats for Dashboard (Filtered by Month)
+// 6. Stats for Dashboard (Restored)
 router.get("/stats/all", async (req, res) => {
   try {
     const targetMonth = req.query.month || getMonth();
@@ -127,9 +139,12 @@ router.get("/stats/all", async (req, res) => {
       totalMoney, 
       totalAttendance: totalAtt, 
       totalAbsences: totalAbs,
-      avgGrade: gradedCount > 0 ? (totalGrades / gradedCount).toFixed(1) : 0
+      avgGrade: gradedCount > 0 ? (totalGrades / gradedCount).toFixed(1) : 0,
+      studentCount: students.length
     });
-  } catch (err) { res.status(500).json(err); }
+  } catch (err) { 
+    res.status(500).json({ error: "Stats calculation failed" }); 
+  }
 });
 
 module.exports = router;

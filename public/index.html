@@ -6,7 +6,6 @@
   <title>Student Pro Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Smooth transition for modals */
     .modal-active { display: flex !important; }
     .scale-95 { transform: scale(0.95); }
     .scale-100 { transform: scale(1); }
@@ -165,10 +164,10 @@ async function loadData() {
   updateStats();
 }
 
-// Fixed Attendance with Month Logic
+// Fixed path to avoid route collision
 async function markAttendance(id, type) {
   const month = document.getElementById("dashMonth").value;
-  await fetch(`${API}/${id}/${type}`, { 
+  await fetch(`${API}/${id}/attendance/${type}`, { 
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ month: month }) 
@@ -176,7 +175,6 @@ async function markAttendance(id, type) {
   loadData();
 }
 
-// Fixed Pay with Month Logic
 async function submitPay() {
   const id = document.getElementById("payId").value;
   const val = document.getElementById("payAmt").value;
@@ -191,7 +189,6 @@ async function submitPay() {
   loadData();
 }
 
-// Fixed Grade with Month Logic
 async function submitGrade() {
   const id = document.getElementById("gradeId").value;
   const val = document.getElementById("gradeInput").value;
@@ -238,7 +235,6 @@ function searchStudents() {
   });
 }
 
-// Modal Handlers
 function openPayModal(id, current) { 
   document.getElementById("payId").value = id; 
   document.getElementById("payAmt").value = current;
