@@ -17,16 +17,13 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log("✅ TITAN DATABASE: CONNECTED & ONLINE"))
     .catch(err => console.error("❌ DATABASE ERROR:", err));
 
-// --- 3. ROUTE IMPORTS ---
-// Check your folder name: If it's lowercase 'routes', change 'ROUTES' to 'routes'
-const studentRoutes = require('./ROUTES/students');
-const teacherRoutes = require('./ROUTES/teachers');
-const authRoutes = require('./ROUTES/auth'); 
-
-// --- 4. LINKING ROUTES ---
-app.use('/api/students', studentRoutes); // Matches index.html fetch
+const studentRoutes = require('./ROUTES/student'); // Removed the 's'
+const teacherRoutes = require('./ROUTES/teachers'); // Check if this is singular too!
+const authRoutes = require('./ROUTES/auth');
+// Use the routes
+app.use('/api/students', studentRoutes); // Keep this plural for the Frontend URL
 app.use('/api/teachers', teacherRoutes);
-app.use('/api/auth', authRoutes);         // Fixes "Cannot POST /api/auth/login"
+app.use('/api/auth', authRoutes);
 
 // --- 5. SYSTEM HEALTH CHECK ---
 app.get('/', (req, res) => {
