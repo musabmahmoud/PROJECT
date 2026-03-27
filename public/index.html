@@ -127,125 +127,135 @@
   </div>
 
 <script>
-// Use the same API path as your working index.html
 const API = "/api/students";
-let allStudentsData = []; 
+let studentToDelete = null;
 
-window.onload = loadSummary;
+window.onload = () => {
+  document.getElementById("userDisplay").innerText = localStorage.getItem("user") || "Admin";
+  loadData();
+};
 
-async function loadSummary() {
-    const month = document.getElementById("monthSelect").value;
-    const year = document.getElementById("yearSelect").value;
-    
-    // MATCHING DASHBOARD LOGIC: Format is YYYY-MM (e.g., 2026-03)
-    const targetMonth = `${year}-${month}`;
-    const container = document.getElementById("summaryContainer");
-    
-    container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold animate-pulse">Syncing ${targetMonth} Insights...</div>`;
-
-    try {
-        // We fetch data for the specific month just like index.html does
-        const res = await fetch(`${API}?month=${targetMonth}`);
-        if (!res.ok) throw new Error("Server Error");
-        
-        allStudentsData = await res.json();
-        container.innerHTML = "";
-
-        // Group students by their Level (Prep 1, Sec 2, etc.)
-        const groups = {};
-        allStudentsData.forEach(s => {
-            if (!groups[s.level]) groups[s.level] = [];
-            groups[s.level].push(s);
-        });
-
-        const levels = Object.keys(groups).sort();
-        
-        if (levels.length === 0) {
-            container.innerHTML = `<p class="col-span-full text-center py-10 text-gray-500 font-bold">No data found for ${targetMonth}</p>`;
-            return;
-        }
-
-        levels.forEach(level => {
-            const group = groups[level];
-            
-            // Calculate Stats for the group
-            let totalRev = 0, totalP = 0, totalA = 0, totalG = 0, countG = 0;
-            
-            group.forEach(s => {
-                totalRev += (Number(s.payments) || 0);
-                totalP += (Number(s.attendance) || 0);
-                totalA += (Number(s.absences) || 0);
-                if (s.grade > 0) {
-                    totalG += Number(s.grade);
-                    countG++;
-                }
-            });
-
-            const avgGrade = countG > 0 ? (totalG / countG).toFixed(0) : 0;
-
-            container.innerHTML += `
-                <div class="glass-card p-8 rounded-[2.5rem] bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all">
-                    <div class="flex justify-between items-start mb-6">
-                        <h2 class="text-3xl font-black text-gray-900">${level}</h2>
-                        <div class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-sm">${avgGrade}%</div>
-                    </div>
-                    <div class="space-y-4 mb-8">
-                        <div class="flex justify-between border-b border-gray-50 pb-2">
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Revenue</span>
-                            <span class="text-sm font-black text-gray-800">${totalRev.toLocaleString()} EGP</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Attendance</span>
-                            <span class="text-sm font-black text-green-600">${totalP}P <span class="text-gray-300">/</span> <span class="text-red-500">${totalA}A</span></span>
-                        </div>
-                    </div>
-                    <button onclick="downloadGradeReport('${level}')" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
-                        Download ${level} Report
-                    </button>
-                </div>`;
-        });
-    } catch (err) {
-        container.innerHTML = `<p class="text-red-500 font-bold text-center col-span-full">Failed to load summary. Check server connection.</p>`;
-    }
+async function loadData() {
+  const selectedMonth = document.getElementById("dashMonth").value;
+  const res = await fetch(`${API}?month=${selectedMonth}`);
+  const students = await res.json();
+  const tbody = document.getElementById("studentsTable");
+  tbody.innerHTML = "";
+  
+  students.forEach(s => {
+    tbody.innerHTML += `
+      <tr class="hover:bg-gray-50 transition-all">
+        <td class="py-4 px-6 font-bold text-gray-800">${s.name}</td>
+        <td class="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">${s.level}</td>
+        <td class="py-4 px-6 text-blue-600 font-black">${s.payments || 0} EGP</td>
+        <td class="py-4 px-6 text-sm font-medium">✅ ${s.attendance || 0} <span class="text-gray-200 mx-1">|</span> ❌ ${s.absences || 0}</td>
+        <td class="py-4 px-6 font-black text-purple-600">${s.grade || 0}%</td>
+        <td class="py-4 px-6">
+          <div class="flex justify-center gap-2">
+            <button onclick="markAttendance('${s._id}', 'present')" class="w-9 h-9 flex items-center justify-center bg-green-50 text-green-600 rounded-xl font-bold hover:bg-green-600 hover:text-white transition-all">P</button>
+            <button onclick="markAttendance('${s._id}', 'absent')" class="w-9 h-9 flex items-center justify-center bg-orange-50 text-orange-600 rounded-xl font-bold hover:bg-orange-600 hover:text-white transition-all">A</button>
+            <button onclick="openGradeModal('${s._id}', '${s.name}', ${s.grade || 0})" class="w-9 h-9 flex items-center justify-center bg-purple-50 text-purple-600 rounded-xl font-bold hover:bg-purple-600 hover:text-white transition-all">📝</button>
+            <button onclick="openPayModal('${s._id}', ${s.payments || 0})" class="px-3 h-9 bg-blue-50 text-blue-600 rounded-xl font-bold text-xs hover:bg-blue-600 hover:text-white transition-all">Pay</button>
+            <button onclick="openDeleteModal('${s._id}')" class="w-9 h-9 flex items-center justify-center text-red-300 hover:text-red-600 transition-all">✕</button>
+          </div>
+        </td>
+      </tr>`;
+  });
+  updateStats();
 }
 
-// Updated PDF function to use the data we just fetched
-function downloadGradeReport(level) {
-    const monthName = document.getElementById("monthSelect").options[document.getElementById("monthSelect").selectedIndex].text;
-    const year = document.getElementById("yearSelect").value;
-    
-    const students = allStudentsData.filter(s => s.level === level);
-    let rows = "";
-
-    students.forEach(s => {
-        rows += `
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 12px; font-family: sans-serif;">${s.name}</td>
-                <td style="padding: 12px; font-family: sans-serif;">${s.payments || 0} EGP</td>
-                <td style="padding: 12px; font-family: sans-serif;">${s.attendance || 0}P / ${s.absences || 0}A</td>
-                <td style="padding: 12px; font-family: sans-serif; font-weight: bold; color: #2563eb;">${s.grade || 0}%</td>
-            </tr>`;
-    });
-
-    const html = `
-        <div style="padding: 40px; font-family: sans-serif;">
-            <h1 style="text-align: center;">${level} - ${monthName} ${year}</h1>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                <tr style="background: #f8fafc; text-align: left;">
-                    <th style="padding: 12px;">Student Name</th><th style="padding: 12px;">Paid</th>
-                    <th style="padding: 12px;">Attendance</th><th style="padding: 12px;">Grade</th>
-                </tr>
-                ${rows}
-            </table>
-        </div>`;
-
-    html2pdf().from(html).set({ filename: `${level}_${monthName}_${year}.pdf`, margin: 0.5 }).save();
+// Fixed path to avoid route collision
+async function markAttendance(id, type) {
+  const month = document.getElementById("dashMonth").value;
+  await fetch(`${API}/${id}/attendance/${type}`, { 
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ month: month }) 
+  });
+  loadData();
 }
 
-// Simple logic for the full report
-function downloadYearlyReport() {
-    alert("Yearly report requires a separate 'all-year' API call. Monthly reports are ready!");
+async function submitPay() {
+  const id = document.getElementById("payId").value;
+  const val = document.getElementById("payAmt").value;
+  const month = document.getElementById("dashMonth").value;
+  
+  await fetch(`${API}/${id}/update-value`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ field: "payments", value: val, month: month })
+  });
+  closeModal('paymentModal');
+  loadData();
 }
+
+async function submitGrade() {
+  const id = document.getElementById("gradeId").value;
+  const val = document.getElementById("gradeInput").value;
+  const month = document.getElementById("dashMonth").value;
+
+  await fetch(`${API}/${id}/update-value`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ field: "grade", value: val, month: month })
+  });
+  closeGradeModal();
+  loadData();
+}
+
+async function addNewStudent() {
+  const name = document.getElementById("newStudentName").value;
+  const level = document.getElementById("newStudentLevel").value;
+  if(!name) return;
+  await fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, level })
+  });
+  document.getElementById("newStudentName").value = "";
+  loadData();
+}
+
+function updateStats() {
+  let rev = 0, att = 0, abs = 0;
+  document.querySelectorAll("#studentsTable tr").forEach(row => {
+    rev += parseInt(row.cells[2].innerText) || 0;
+    const parts = row.cells[3].innerText.match(/\d+/g);
+    if(parts) { att += parseInt(parts[0]); abs += parseInt(parts[1]); }
+  });
+  document.getElementById("totalRevenue").innerText = `${rev} EGP`;
+  document.getElementById("totalAttendanceDisplay").innerText = `${att} / ${abs}`;
+  document.getElementById("totalStudentsCount").innerText = document.querySelectorAll("#studentsTable tr").length;
+}
+
+function searchStudents() {
+  let q = document.getElementById("searchInput").value.toLowerCase();
+  document.querySelectorAll("#studentsTable tr").forEach(row => {
+    row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+  });
+}
+
+function openPayModal(id, current) { 
+  document.getElementById("payId").value = id; 
+  document.getElementById("payAmt").value = current;
+  document.getElementById("paymentModal").classList.remove("hidden"); 
+}
+function openGradeModal(id, name, current) {
+  document.getElementById("gradeId").value = id;
+  document.getElementById("gradeStudentName").innerText = name;
+  document.getElementById("gradeInput").value = current;
+  document.getElementById("gradeModal").classList.remove("hidden");
+}
+function openDeleteModal(id) { studentToDelete = id; document.getElementById("deleteModal").classList.remove("hidden"); }
+function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
+function closeGradeModal() { closeModal("gradeModal"); }
+function closeDeleteModal() { closeModal("deleteModal"); }
+async function executeDelete() {
+  await fetch(`${API}/${studentToDelete}`, { method: "DELETE" });
+  closeDeleteModal();
+  loadData();
+}
+function logout() { localStorage.clear(); window.location.href="login.html"; }
 </script>
 </body>
 </html>

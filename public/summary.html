@@ -57,75 +57,77 @@
         <div id="summaryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
     </div>
 
-
 <script>
-let allStudentsData = [];
+// Use the same API path as your working index.html
+const API = "/api/students";
+let allStudentsData = []; 
 
 window.onload = loadSummary;
 
 async function loadSummary() {
-    const monthVal = document.getElementById("monthSelect").value; // "03"
-    const yearVal = document.getElementById("yearSelect").value;   // "2026"
-    const monthText = document.getElementById("monthSelect").options[document.getElementById("monthSelect").selectedIndex].text; // "March"
+    const month = document.getElementById("monthSelect").value;
+    const year = document.getElementById("yearSelect").value;
     
+    // MATCHING DASHBOARD LOGIC: Format is YYYY-MM (e.g., 2026-03)
+    const targetMonth = `${year}-${month}`;
     const container = document.getElementById("summaryContainer");
-    container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold animate-pulse">Searching for ${monthText} ${yearVal}...</div>`;
+    
+    container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold animate-pulse">Syncing ${targetMonth} Insights...</div>`;
 
     try {
-        let res = await fetch("/api/students");
-        if (!res.ok) res = await fetch("/students");
+        // We fetch data for the specific month just like index.html does
+        const res = await fetch(`${API}?month=${targetMonth}`);
+        if (!res.ok) throw new Error("Server Error");
+        
         allStudentsData = await res.json();
-        
-        console.log("Total Students Loaded:", allStudentsData.length);
-        
         container.innerHTML = "";
+
+        // Group students by their Level (Prep 1, Sec 2, etc.)
         const groups = {};
         allStudentsData.forEach(s => {
             if (!groups[s.level]) groups[s.level] = [];
             groups[s.level].push(s);
         });
 
-        Object.keys(groups).sort().forEach(level => {
+        const levels = Object.keys(groups).sort();
+        
+        if (levels.length === 0) {
+            container.innerHTML = `<p class="col-span-full text-center py-10 text-gray-500 font-bold">No data found for ${targetMonth}</p>`;
+            return;
+        }
+
+        levels.forEach(level => {
             const group = groups[level];
-            let mRev = 0, mP = 0, mA = 0, mT = 0, mC = 0;
-
-            group.forEach(student => {
-                // DEEP SEARCH LOGIC: Look for ANY match in the records
-                const rec = (student.records || []).find(r => {
-                    if (!r.month) return false;
-                    const rStr = String(r.month).toLowerCase();
-                    // Matches "2026-03", "2026-3", "March 2026", "03/2026", etc.
-                    return (rStr.includes(yearVal)) && 
-                           (rStr.includes(monthVal) || rStr.includes(parseInt(monthVal).toString()) || rStr.includes(monthText.toLowerCase()));
-                });
-
-                if (rec) {
-                    mRev += (Number(rec.payments) || 0);
-                    mP += (Number(rec.attendance) || 0);
-                    mA += (Number(rec.absences) || 0);
-                    if (Number(rec.grade) > 0) { 
-                        mT += Number(rec.grade); 
-                        mC++; 
-                    }
+            
+            // Calculate Stats for the group
+            let totalRev = 0, totalP = 0, totalA = 0, totalG = 0, countG = 0;
+            
+            group.forEach(s => {
+                totalRev += (Number(s.payments) || 0);
+                totalP += (Number(s.attendance) || 0);
+                totalA += (Number(s.absences) || 0);
+                if (s.grade > 0) {
+                    totalG += Number(s.grade);
+                    countG++;
                 }
             });
 
-            const avg = mC > 0 ? (mT / mC).toFixed(0) : 0;
+            const avgGrade = countG > 0 ? (totalG / countG).toFixed(0) : 0;
 
             container.innerHTML += `
                 <div class="glass-card p-8 rounded-[2.5rem] bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all">
                     <div class="flex justify-between items-start mb-6">
                         <h2 class="text-3xl font-black text-gray-900">${level}</h2>
-                        <div class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-sm">${avg}%</div>
+                        <div class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-sm">${avgGrade}%</div>
                     </div>
                     <div class="space-y-4 mb-8">
                         <div class="flex justify-between border-b border-gray-50 pb-2">
-                            <span class="text-xs font-bold text-gray-400 uppercase">Revenue</span>
-                            <span class="text-sm font-black text-gray-800">${mRev.toLocaleString()} EGP</span>
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Revenue</span>
+                            <span class="text-sm font-black text-gray-800">${totalRev.toLocaleString()} EGP</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-xs font-bold text-gray-400 uppercase">Attendance</span>
-                            <span class="text-sm font-black text-green-600">${mP}P <span class="text-gray-300">/</span> <span class="text-red-500">${mA}A</span></span>
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Attendance</span>
+                            <span class="text-sm font-black text-green-600">${totalP}P <span class="text-gray-300">/</span> <span class="text-red-500">${totalA}A</span></span>
                         </div>
                     </div>
                     <button onclick="downloadGradeReport('${level}')" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
@@ -134,38 +136,31 @@ async function loadSummary() {
                 </div>`;
         });
     } catch (err) {
-        container.innerHTML = `<div class="col-span-full text-center py-20 text-red-500 font-bold">Error: API unreachable</div>`;
+        container.innerHTML = `<p class="text-red-500 font-bold text-center col-span-full">Failed to load summary. Check server connection.</p>`;
     }
 }
 
+// Updated PDF function to use the data we just fetched
 function downloadGradeReport(level) {
-    const monthVal = document.getElementById("monthSelect").value;
-    const yearVal = document.getElementById("yearSelect").value;
-    const monthText = document.getElementById("monthSelect").options[document.getElementById("monthSelect").selectedIndex].text;
+    const monthName = document.getElementById("monthSelect").options[document.getElementById("monthSelect").selectedIndex].text;
+    const year = document.getElementById("yearSelect").value;
     
     const students = allStudentsData.filter(s => s.level === level);
     let rows = "";
 
     students.forEach(s => {
-        const rec = (s.records || []).find(r => {
-            if (!r.month) return false;
-            const rStr = String(r.month).toLowerCase();
-            return (rStr.includes(yearVal)) && 
-                   (rStr.includes(monthVal) || rStr.includes(parseInt(monthVal).toString()) || rStr.includes(monthText.toLowerCase()));
-        }) || { payments: 0, attendance: 0, absences: 0, grade: 0 };
-
         rows += `
             <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 12px;">${s.name}</td>
-                <td style="padding: 12px; font-weight: bold;">${rec.payments} EGP</td>
-                <td style="padding: 12px;">${rec.attendance}P / ${rec.absences}A</td>
-                <td style="padding: 12px; font-weight: bold; color: #2563eb;">${rec.grade}%</td>
+                <td style="padding: 12px; font-family: sans-serif;">${s.name}</td>
+                <td style="padding: 12px; font-family: sans-serif;">${s.payments || 0} EGP</td>
+                <td style="padding: 12px; font-family: sans-serif;">${s.attendance || 0}P / ${s.absences || 0}A</td>
+                <td style="padding: 12px; font-family: sans-serif; font-weight: bold; color: #2563eb;">${s.grade || 0}%</td>
             </tr>`;
     });
 
     const html = `
         <div style="padding: 40px; font-family: sans-serif;">
-            <h1 style="text-align: center;">${level} - ${monthText} ${yearVal}</h1>
+            <h1 style="text-align: center;">${level} - ${monthName} ${year}</h1>
             <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                 <tr style="background: #f8fafc; text-align: left;">
                     <th style="padding: 12px;">Student Name</th><th style="padding: 12px;">Paid</th>
@@ -175,25 +170,12 @@ function downloadGradeReport(level) {
             </table>
         </div>`;
 
-    html2pdf().from(html).set({ filename: `${level}_${monthText}_${yearVal}.pdf`, margin: 0.5 }).save();
+    html2pdf().from(html).set({ filename: `${level}_${monthName}_${year}.pdf`, margin: 0.5 }).save();
 }
 
+// Simple logic for the full report
 function downloadYearlyReport() {
-    const yearVal = document.getElementById("yearSelect").value;
-    let rows = "";
-    allStudentsData.forEach(s => {
-        let yP = 0, yAtt = 0, yAbs = 0, tG = 0, gC = 0;
-        (s.records || []).forEach(r => {
-            if (String(r.month).includes(yearVal)) {
-                yP += (Number(r.payments) || 0);
-                yAtt += (Number(r.attendance) || 0);
-                yAbs += (Number(r.absences) || 0);
-                if (Number(r.grade) > 0) { tG += Number(r.grade); gC++; }
-            }
-        });
-        rows += `<tr><td>${s.name}</td><td>${s.level}</td><td>${yP}</td><td>${yAtt}P/${yAbs}A</td><td>${gC > 0 ? (tG/gC).toFixed(0) : 0}%</td></tr>`;
-    });
-    html2pdf().from(`<table border="1">${rows}</table>`).save();
+    alert("Yearly report requires a separate 'all-year' API call. Monthly reports are ready!");
 }
 </script>
 </body>
