@@ -83,5 +83,22 @@
 
         window.addEventListener('DOMContentLoaded', initSummary);
     </script>
+<div id="modalOverlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 transition-all duration-300">
+    <div class="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl scale-95 transition-transform duration-300" id="modalContent">
+        <div id="modalIcon" class="w-16 h-16 rounded-2xl mb-6 flex items-center justify-center text-2xl"></div>
+        <h2 id="modalTitle" class="text-2xl font-black text-gray-900 mb-2"></h2>
+        <p id="modalDesc" class="text-gray-500 mb-8 font-medium"></p>
+        
+        <div id="gradeInputContainer" class="hidden mb-8">
+            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Enter Score (0-100)</label>
+            <input type="number" id="newGrade" class="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 font-bold text-xl focus:border-purple-500 outline-none transition-all" placeholder="85">
+        </div>
+
+        <div class="flex gap-3">
+            <button onclick="closeModal()" class="flex-1 py-4 rounded-2xl font-bold text-gray-400 hover:bg-gray-50 transition-all">Cancel</button>
+            <button id="modalConfirmBtn" class="flex-1 py-4 rounded-2xl font-black text-white shadow-lg shadow-purple-200 transition-all"></button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
