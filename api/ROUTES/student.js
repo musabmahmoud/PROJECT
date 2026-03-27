@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Student = require("../MODELS/student");
 
-// Helper to get current month string (e.g., "2026-03")
+// Helper to get current month string as fallback (e.g., "2026-03")
 const getMonth = () => new Date().toISOString().slice(0, 7);
 
 // 1. List Students (Filtered by Month)
@@ -44,24 +44,26 @@ router.post("/", async (req, res) => {
   } catch (err) { res.status(400).json({ error: "Could not add student" }); }
 });
 
-// 3. Update Attendance (Present/Absent)
+// 3. Update Attendance (Present/Absent) - Updated to accept month from body
 router.post("/:id/:type", async (req, res) => {
   const { id, type } = req.params;
+  const { month } = req.body; // Receive month from frontend
+  
   if (type !== 'present' && type !== 'absent') return res.status(400).json({error: "Invalid type"});
   
-  const month = getMonth();
+  const targetMonth = month || getMonth();
   const field = type === "present" ? "attendance" : "absences";
 
   try {
     let student = await Student.findOneAndUpdate(
-      { _id: id, "records.month": month },
+      { _id: id, "records.month": targetMonth },
       { $inc: { [`records.$.${field}`]: 1 } },
       { new: true }
     );
 
     if (!student) {
       student = await Student.findByIdAndUpdate(id, 
-        { $push: { records: { month, [field]: 1, payments: 0, attendance: 0, absences: 0, grade: 0 } } }, 
+        { $push: { records: { month: targetMonth, [field]: 1, payments: 0, attendance: 0, absences: 0, grade: 0 } } }, 
         { new: true }
       );
     }
@@ -69,22 +71,22 @@ router.post("/:id/:type", async (req, res) => {
   } catch (err) { res.status(500).json(err); }
 });
 
-// 4. Update Value (Grade/Payments)
+// 4. Update Value (Grade/Payments) - Updated to accept month from body
 router.post("/:id/update-value", async (req, res) => {
   const { id } = req.params;
-  const { field, value } = req.body; // field is "grade" or "payments"
-  const month = getMonth();
+  const { field, value, month } = req.body; // Receive month from frontend
+  const targetMonth = month || getMonth();
 
   try {
     let student = await Student.findOneAndUpdate(
-      { _id: id, "records.month": month },
+      { _id: id, "records.month": targetMonth },
       { $set: { [`records.$.${field}`]: Number(value) } },
       { new: true }
     );
 
     if (!student) {
       student = await Student.findByIdAndUpdate(id, 
-        { $push: { records: { month, [field]: Number(value), payments: 0, attendance: 0, absences: 0, grade: 0 } } }, 
+        { $push: { records: { month: targetMonth, [field]: Number(value), payments: 0, attendance: 0, absences: 0, grade: 0 } } }, 
         { new: true }
       );
     }
@@ -100,16 +102,16 @@ router.delete("/:id", async (req, res) => {
   } catch (err) { res.status(500).json({ error: "Delete failed" }); }
 });
 
-// 6. Stats for Dashboard
+// 6. Stats for Dashboard (Filtered by Month)
 router.get("/stats/all", async (req, res) => {
   try {
-    const month = getMonth();
+    const targetMonth = req.query.month || getMonth();
     const students = await Student.find();
     
     let totalMoney = 0, totalAtt = 0, totalAbs = 0, totalGrades = 0, gradedCount = 0;
 
     students.forEach(s => {
-      const rec = s.records.find(r => r.month === month);
+      const rec = s.records.find(r => r.month === targetMonth);
       if (rec) {
         totalMoney += (rec.payments || 0);
         totalAtt += (rec.attendance || 0);

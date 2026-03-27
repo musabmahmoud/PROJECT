@@ -138,7 +138,6 @@ window.onload = () => {
 
 async function loadData() {
   const selectedMonth = document.getElementById("dashMonth").value;
-  // FETCH SPECIFIC MONTH
   const res = await fetch(`${API}?month=${selectedMonth}`);
   const students = await res.json();
   const tbody = document.getElementById("studentsTable");
@@ -166,30 +165,42 @@ async function loadData() {
   updateStats();
 }
 
+// Fixed Attendance with Month Logic
 async function markAttendance(id, type) {
-  await fetch(`${API}/${id}/${type}`, { method: "POST" });
+  const month = document.getElementById("dashMonth").value;
+  await fetch(`${API}/${id}/${type}`, { 
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ month: month }) 
+  });
   loadData();
 }
 
+// Fixed Pay with Month Logic
 async function submitPay() {
   const id = document.getElementById("payId").value;
   const val = document.getElementById("payAmt").value;
+  const month = document.getElementById("dashMonth").value;
+  
   await fetch(`${API}/${id}/update-value`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ field: "payments", value: val })
+    body: JSON.stringify({ field: "payments", value: val, month: month })
   });
   closeModal('paymentModal');
   loadData();
 }
 
+// Fixed Grade with Month Logic
 async function submitGrade() {
   const id = document.getElementById("gradeId").value;
   const val = document.getElementById("gradeInput").value;
+  const month = document.getElementById("dashMonth").value;
+
   await fetch(`${API}/${id}/update-value`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ field: "grade", value: val })
+    body: JSON.stringify({ field: "grade", value: val, month: month })
   });
   closeGradeModal();
   loadData();
