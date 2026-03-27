@@ -2,64 +2,122 @@ const express = require("express");
 const router = express.Router();
 const Student = require("../MODELS/student");
 
+// Utility to get current month (e.g., "2026-03")
 const getMonth = () => new Date().toISOString().slice(0, 7);
 
-// 1. List Students (SECURED: Added owner filter)
+// 1. GLOBAL LIST & FILTER (Supports index.html and tables.html)
 router.get("/", async (req, res) => {
   try {
-    const targetMonth = req.query.month || getMonth();
-    const admin = req.query.admin; // Get admin name from frontend
+    const { admin, level, language, month } = req.query;
+    const targetMonth = month || getMonth();
 
-    // CRITICAL: Only find students belonging to this admin
-    const students = await Student.find({ owner: admin }).sort({ level: 1, name: 1 });
+    if (!admin) return res.status(400).json({ error: "Admin identifier required" });
 
+    // Build flexible query
+    let query = { owner: admin };
+    if (level) query.level = level;
+    if (language) query.language = language;
+
+    const students = await Student.find(query).sort({ name: 1 });
+
+    // Format data to flatten the monthly record for the frontend
     const formatted = students.map(s => {
-      const rec = s.records.find(r => r.month === targetMonth) || { 
-        payments: 0, attendance: 0, absences: 0, grade: 0 
+      const rec = s.records?.find(r => r.month === targetMonth) || { 
+        payments: 0, attendance: 0, absences: 0, grades: {} 
       };
+      
       return {
         _id: s._id,
         name: s.name,
         level: s.level,
+        language: s.language || "English",
+        className: s.className || "A",
         payments: rec.payments,
         attendance: rec.attendance,
         absences: rec.absences,
-        grade: rec.grade
+        grades: rec.grades || {} // Contains subject scores like { math: 90, physics: 85 }
       };
     });
+
     res.json(formatted);
   } catch (err) { 
-    res.status(500).json({ error: "Failed to fetch students" }); 
+    res.status(500).json({ error: "Failed to fetch student stream" }); 
   }
 });
 
-// 2. Add Student (SECURED: Saving the owner)
+// 2. ADD NEW STUDENT (Initializes first monthly record)
 router.post("/", async (req, res) => {
   try {
-    const { name, level, owner } = req.body; // owner comes from localStorage in frontend
+    const { name, level, language, className, owner } = req.body;
+
     const student = new Student({ 
       name, 
-      level: level || "Sec 1",
-      owner, // Now every student is "tagged" to an admin
-      records: [{ month: getMonth(), payments: 0, attendance: 0, absences: 0, grade: 0 }] 
+      level: level || "Sec 2",
+      language: language || "English",
+      className: className || "A",
+      owner,
+      records: [{ 
+        month: getMonth(), 
+        payments: 0, 
+        attendance: 0, 
+        absences: 0, 
+        grades: {} 
+      }] 
     });
+
     await student.save();
-    res.json(student);
+    res.status(201).json(student);
   } catch (err) { 
-    res.status(400).json({ error: "Could not add student" }); 
+    res.status(400).json({ error: "Entry creation failed" }); 
   }
 });
 
-// 3. Update Attendance (SECURED: Added owner check)
+// 3. ADVANCED VALUE UPDATE (Handles Grades, Payments, etc.)
+router.post("/:id/update-value", async (req, res) => {
+  const { id } = req.params;
+  const { field, value, month, admin } = req.body; // field could be "payments" or "grades.math"
+  const targetMonth = month || getMonth();
+
+  try {
+    // 1. Try to update existing month record
+    let student = await Student.findOneAndUpdate(
+      { _id: id, owner: admin, "records.month": targetMonth },
+      { $set: { [`records.$.${field}`]: value } },
+      { new: true }
+    );
+
+    // 2. If month record doesn't exist, create it (Upsert logic)
+    if (!student) {
+      const checkOwner = await Student.findOne({ _id: id, owner: admin });
+      if (!checkOwner) return res.status(403).json({ error: "Unauthorized access" });
+
+      student = await Student.findByIdAndUpdate(id, 
+        { 
+          $push: { 
+            records: { 
+              month: targetMonth, 
+              [field.includes('.') ? 'grades' : field]: field.includes('.') ? { [field.split('.')[1]]: value } : value,
+              payments: 0, attendance: 0, absences: 0
+            } 
+          } 
+        }, 
+        { new: true }
+      );
+    }
+    res.json(student);
+  } catch (err) { 
+    res.status(500).json({ error: "Update operation failed" }); 
+  }
+});
+
+// 4. ATTENDANCE ENGINE (Secured)
 router.post("/:id/attendance/:type", async (req, res) => {
   const { id, type } = req.params;
-  const { month, admin } = req.body; // Ensure admin is passed
-  
+  const { month, admin } = req.body;
   const targetMonth = month || getMonth();
   const field = type === "present" ? "attendance" : "absences";
 
   try {
-    // We search by ID AND Owner to prevent unauthorized edits
     let student = await Student.findOneAndUpdate(
       { _id: id, owner: admin, "records.month": targetMonth },
       { $inc: { [`records.$.${field}`]: 1 } },
@@ -67,109 +125,61 @@ router.post("/:id/attendance/:type", async (req, res) => {
     );
 
     if (!student) {
-      // Check if student exists for this admin before pushing new month record
       const checkOwner = await Student.findOne({ _id: id, owner: admin });
       if (!checkOwner) return res.status(403).json({ error: "Unauthorized" });
 
       student = await Student.findByIdAndUpdate(id, 
-        { $push: { records: { month: targetMonth, [field]: 1, payments: 0, attendance: 0, absences: 0, grade: 0 } } }, 
+        { $push: { records: { month: targetMonth, [field]: 1, payments: 0, attendance: 0, absences: 0, grades: {} } } }, 
         { new: true }
       );
     }
     res.json(student);
   } catch (err) { 
-    res.status(500).json({ error: "Attendance update failed" }); 
+    res.status(500).json({ error: "Attendance sync failed" }); 
   }
 });
 
-// 4. Update Value (SECURED: Added owner check)
-router.post("/:id/update-value", async (req, res) => {
-  const { id } = req.params;
-  const { field, value, month, admin } = req.body;
-  const targetMonth = month || getMonth();
-
-  try {
-    let student = await Student.findOneAndUpdate(
-      { _id: id, owner: admin, "records.month": targetMonth },
-      { $set: { [`records.$.${field}`]: Number(value) } },
-      { new: true }
-    );
-
-    if (!student) {
-      const checkOwner = await Student.findOne({ _id: id, owner: admin });
-      if (!checkOwner) return res.status(403).json({ error: "Unauthorized" });
-
-      student = await Student.findByIdAndUpdate(id, 
-        { $push: { records: { month: targetMonth, [field]: Number(value), payments: 0, attendance: 0, absences: 0, grade: 0 } } }, 
-        { new: true }
-      );
-    }
-    res.json(student);
-  } catch (err) { res.status(500).json({ error: "Value update failed" }); }
-});
-
-// 5. Delete Student (SECURED: Double check owner)
-router.delete("/:id", async (req, res) => {
-  try {
-    // You should ideally pass ?admin= in the delete request too
-    const admin = req.query.admin; 
-    const deleted = await Student.findOneAndDelete({ _id: req.params.id, owner: admin });
-    if (!deleted) return res.status(403).json({ error: "Not found or unauthorized" });
-    res.json({ message: "Deleted" });
-  } catch (err) { res.status(500).json({ error: "Delete failed" }); }
-});
-
-// 6. Stats (SECURED: Filtered by owner)
+// 5. STATS ENGINE (For Dashboard Charts)
 router.get("/stats/all", async (req, res) => {
   try {
-    const targetMonth = req.query.month || getMonth();
-    const admin = req.query.admin;
+    const { admin, month } = req.query;
+    const targetMonth = month || getMonth();
+    
     const students = await Student.find({ owner: admin });
     
-    let totalMoney = 0, totalAtt = 0, totalAbs = 0, totalGrades = 0, gradedCount = 0;
+    let stats = {
+      totalRevenue: 0,
+      totalAttendance: 0,
+      totalAbsences: 0,
+      studentCount: students.length
+    };
 
     students.forEach(s => {
       const rec = s.records.find(r => r.month === targetMonth);
       if (rec) {
-        totalMoney += (rec.payments || 0);
-        totalAtt += (rec.attendance || 0);
-        totalAbs += (rec.absences || 0);
-        if (rec.grade > 0) { totalGrades += rec.grade; gradedCount++; }
+        stats.totalRevenue += (rec.payments || 0);
+        stats.totalAttendance += (rec.attendance || 0);
+        stats.totalAbsences += (rec.absences || 0);
       }
     });
 
-    res.json({ 
-      totalMoney, 
-      totalAttendance: totalAtt, 
-      totalAbsences: totalAbs,
-      avgGrade: gradedCount > 0 ? (totalGrades / gradedCount).toFixed(1) : 0,
-      studentCount: students.length
-    });
-  } catch (err) { res.status(500).json({ error: "Stats failed" }); }
+    res.json(stats);
+  } catch (err) { 
+    res.status(500).json({ error: "System analytics failed" }); 
+  }
 });
-// 7. Delete Student (SECURED: Must match Owner)
+
+// 6. DELETE STUDENT (Final Guard)
 router.delete("/:id", async (req, res) => {
   try {
-    const admin = req.query.admin; // Passed from frontend ?admin=...
-
-    if (!admin) {
-      return res.status(400).json({ error: "Admin identifier required" });
-    }
-
-    // This ensures Admin A cannot delete Admin B's students
-    const deleted = await Student.findOneAndDelete({ 
-      _id: req.params.id, 
-      owner: admin 
-    });
-
-    if (!deleted) {
-      return res.status(403).json({ error: "Unauthorized or Student not found" });
-    }
-
-    res.json({ message: "Student deleted successfully" });
+    const { admin } = req.query;
+    const deleted = await Student.findOneAndDelete({ _id: req.params.id, owner: admin });
+    
+    if (!deleted) return res.status(403).json({ error: "Delete unauthorized or record missing" });
+    res.json({ success: true, message: "Records purged" });
   } catch (err) { 
-    console.error("Delete Error:", err);
     res.status(500).json({ error: "Delete operation failed" }); 
   }
 });
+
 module.exports = router;

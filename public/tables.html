@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classroom Matrix | Student Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (!localStorage.getItem("user")) window.location.href = "login.html";
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { darkbg: '#020617', darkcard: '#0f172a', darkborder: '#1e2937' } } }
+    }
+    if (localStorage.getItem("theme") === "dark") document.documentElement.classList.add("dark");
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  </style>
+</head>
+
+<body class="bg-[#F8FAFC] dark:bg-darkbg min-h-screen p-4 md:p-10">
+  <div class="max-w-[1600px] mx-auto">
+    
+    <nav class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+      <div class="flex items-center gap-6">
+        <a href="index.html" class="p-5 bg-white dark:bg-darkcard rounded-3xl border dark:border-darkborder shadow-sm hover:scale-110 transition-all text-2xl">⬅️</a>
+        <div>
+          <h1 id="gradeDisplay" class="text-6xl font-[900] tracking-tighter italic text-slate-900 dark:text-white">Grade Loader...</h1>
+          <div class="flex items-center gap-2 mt-2">
+            <span id="langBadge" class="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-black uppercase rounded-xl tracking-widest">Department</span>
+            <p id="classDisplay" class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Class Management</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="subjectPills" class="flex flex-wrap gap-3 bg-white dark:bg-darkcard p-3 rounded-[3rem] shadow-xl border dark:border-darkborder">
+        </div>
+    </nav>
+
+    <div class="bg-white dark:bg-darkcard rounded-[4rem] shadow-2xl border dark:border-darkborder overflow-hidden mb-20">
+      <div class="p-10 border-b dark:border-darkborder flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
+        <div class="flex gap-4">
+            <button onclick="toggleLang('English')" id="btnEng" class="px-10 py-4 rounded-2xl font-black text-[10px] uppercase transition-all bg-blue-600 text-white shadow-lg">English Dept</button>
+            <button onclick="toggleLang('Arabic')" id="btnAra" class="px-10 py-4 rounded-2xl font-black text-[10px] uppercase transition-all bg-slate-100 dark:bg-slate-800 text-slate-400">Arabic Dept</button>
+        </div>
+        <button onclick="saveAllGrades()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all active:scale-95">Sync Database 🚀</button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.4em]">
+              <th class="p-12">Student Profile</th>
+              <th class="p-12">Finance Status</th>
+              <th id="activeSubjectHead" class="p-12 text-center italic">Active Subject</th>
+              <th class="p-12 text-right">Attendance Matrix</th>
+            </tr>
+          </thead>
+          <tbody id="matrixBody" class="divide-y dark:divide-darkborder">
+            </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script>
+const API = "/api/students";
+const currentUser = localStorage.getItem("user");
+const urlParams = new URLSearchParams(window.location.search);
+
+let currentGrade = urlParams.get('grade') || 'Sec 2';
+let currentLang = 'English';
+let activeSubject = 'math';
+let studentsData = [];
+
+const subjectMap = {
+    primary: [
+        { id: 'math', name: 'Math', icon: '📐' },
+        { id: 'english', name: 'English', icon: '🇬🇧' },
+        { id: 'arabic', name: 'Arabic', icon: '📜' },
+        { id: 'discovery', name: 'Discovery', icon: '🎨' }
+    ],
+    prep: [
+        { id: 'math', name: 'Math', icon: '📐' },
+        { id: 'english', name: 'English', icon: '🇬🇧' },
+        { id: 'science', name: 'Science', icon: '🧪' },
+        { id: 'socialStudies', name: 'Social', icon: '🏛️' }
+    ],
+    secondary: [
+        { id: 'physics', name: 'Physics', icon: '⚛️' },
+        { id: 'chemistry', name: 'Chemistry', icon: '⚗️' },
+        { id: 'math', name: 'Math', icon: '📐' },
+        { id: 'english', name: 'English', icon: '🇬🇧' }
+    ]
+};
+
+window.onload = () => {
+    document.getElementById('gradeDisplay').innerText = currentGrade;
+    let subjects = currentGrade.includes('Primary') ? subjectMap.primary : 
+                   currentGrade.includes('Prep') ? subjectMap.prep : subjectMap.secondary;
+    
+    activeSubject = subjects[0].id;
+    renderSubjectPills(subjects);
+    loadTable();
+};
+
+function renderSubjectPills(subjects) {
+    const container = document.getElementById('subjectPills');
+    container.innerHTML = subjects.map(s => `
+        <button onclick="setSubject('${s.id}', '${s.name}', '${s.icon}')" id="pill-${s.id}" 
+                class="subject-pill px-8 py-4 rounded-2xl font-black text-[10px] uppercase flex items-center gap-3 transition-all ${s.id === activeSubject ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">
+            <span class="text-lg">${s.icon}</span> ${s.name}
+        </button>
+    `).join('');
+}
+
+function setSubject(id, name, icon) {
+    activeSubject = id;
+    document.getElementById('activeSubjectHead').innerText = `${icon} ${name} Score`;
+    document.querySelectorAll('.subject-pill').forEach(p => p.classList.remove('bg-blue-600', 'text-white'));
+    document.getElementById(`pill-${id}`).classList.add('bg-blue-600', 'text-white');
+    renderRows();
+}
+
+function toggleLang(lang) {
+    currentLang = lang;
+    document.getElementById('langBadge').innerText = `${lang} Dept`;
+    document.getElementById('btnEng').className = lang === 'English' ? "px-10 py-4 rounded-2xl font-black text-[10px] uppercase bg-blue-600 text-white" : "px-10 py-4 rounded-2xl font-black text-[10px] uppercase bg-slate-100 dark:bg-slate-800 text-slate-400";
+    document.getElementById('btnAra').className = lang === 'Arabic' ? "px-10 py-4 rounded-2xl font-black text-[10px] uppercase bg-blue-600 text-white" : "px-10 py-4 rounded-2xl font-black text-[10px] uppercase bg-slate-100 dark:bg-slate-800 text-slate-400";
+    loadTable();
+}
+
+async function loadTable() {
+    const res = await fetch(`${API}?admin=${currentUser}&level=${currentGrade}&language=${currentLang}`);
+    studentsData = await res.json();
+    renderRows();
+}
+
+function renderRows() {
+    const tbody = document.getElementById('matrixBody');
+    tbody.innerHTML = studentsData.map(s => `
+        <tr class="group hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
+            <td class="p-12">
+                <p class="text-3xl font-[900] tracking-tighter text-slate-900 dark:text-white">${s.name}</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Class ${s.className || 'A'}</p>
+            </td>
+            <td class="p-12">
+                <div class="flex items-center gap-4">
+                    <span class="w-4 h-4 rounded-full ${s.payments > 0 ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-red-500 animate-pulse'}"></span>
+                    <p class="text-3xl font-[900] text-blue-600">${s.payments || 0} <span class="text-xs opacity-40">EGP</span></p>
+                </div>
+            </td>
+            <td class="p-12">
+                <div class="flex justify-center">
+                    <input type="number" value="${s.grades?.[activeSubject] || 0}" 
+                           class="w-28 bg-slate-100 dark:bg-slate-800 p-6 rounded-[2rem] text-center text-4xl font-[900] outline-none focus:ring-8 focus:ring-blue-500/10 transition-all"
+                           onchange="updateLocalGrade('${s._id}', this.value)">
+                </div>
+            </td>
+            <td class="p-12 text-right">
+                <div class="flex justify-end gap-4">
+                    <button onclick="markAtt('${s._id}', 'present')" class="w-16 h-16 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-3xl font-black text-2xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm">P</button>
+                    <button onclick="markAtt('${s._id}', 'absent')" class="w-16 h-16 bg-orange-50 dark:bg-orange-900/20 text-orange-600 rounded-3xl font-black text-2xl hover:bg-orange-600 hover:text-white transition-all shadow-sm">A</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function updateLocalGrade(id, val) {
+    const student = studentsData.find(s => s._id === id);
+    if(student) {
+        if(!student.grades) student.grades = {};
+        student.grades[activeSubject] = parseInt(val);
+    }
+}
+
+async function saveAllGrades() {
+    const updates = studentsData.map(s => {
+        return fetch(`${API}/${s._id}/update-value`, {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ field: `grades.${activeSubject}`, value: s.grades[activeSubject], admin: currentUser })
+        });
+    });
+    await Promise.all(updates);
+    alert("Database Synced Successfully! 🚀");
+    loadTable();
+}
+
+async function markAtt(id, type) {
+    await fetch(`${API}/${id}/attendance/${type}`, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ admin: currentUser }) });
+    loadTable();
+}
+</script>
+</body>
+</html>
