@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    // SECURITY: Redirect if not logged in
     if (!localStorage.getItem("user")) {
       window.location.href = "login.html";
     }
@@ -18,7 +19,7 @@
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
       <div>
         <h1 class="text-3xl font-black text-gray-900 tracking-tight">Student Management</h1>
-        <p class="text-gray-500 font-medium">Logged in as: <span id="userDisplay" class="text-blue-600 font-bold">Admin</span></p>
+        <p class="text-gray-500 font-medium italic">Welcome back, <span id="userDisplay" class="text-blue-600 font-bold">Admin</span></p>
       </div>
       
       <div class="flex gap-3">
@@ -37,8 +38,8 @@
         <p id="totalStudentsCount" class="text-4xl font-black text-gray-800 mt-1">0</p>
       </div>
       <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-green-500">
-        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Global Attendance</h2>
-        <p id="totalAttendance" class="text-4xl font-black text-gray-800 mt-1">0</p>
+        <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Presents / Absences</h2>
+        <p id="totalAttendanceDisplay" class="text-4xl font-black text-gray-800 mt-1">0 / 0</p>
       </div>
       <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-purple-500">
         <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Revenue</h2>
@@ -65,18 +66,16 @@
             <th class="py-5 px-6">Student Name</th>
             <th class="py-5 px-6">Payments</th>
             <th class="py-5 px-6">Attendance</th>
+            <th class="py-5 px-6">Absences</th>
             <th class="py-5 px-6 text-center">Quick Actions</th>
           </tr>
         </thead>
-        <tbody id="studentsTable" class="divide-y divide-gray-100">
-          </tbody>
+        <tbody id="studentsTable" class="divide-y divide-gray-100"></tbody>
       </table>
     </div>
 
     <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-      <h2 class="text-xl font-bold mb-6 text-gray-800 flex items-center gap-2">
-        <span>📊</span> Performance Analytics
-      </h2>
+      <h2 class="text-xl font-bold mb-6 text-gray-800">📊 Global Stats</h2>
       <canvas id="chart" width="400" height="120"></canvas>
     </div>
   </div>
@@ -84,7 +83,7 @@
 <script>
 const API = "/api/students";
 
-// Display username on load
+// LOAD DATA ON START
 window.onload = () => {
   const user = localStorage.getItem("user");
   if(user) document.getElementById("userDisplay").innerText = user;
@@ -118,13 +117,16 @@ async function loadStudents() {
       const tr = document.createElement("tr");
       tr.className = "hover:bg-gray-50/50 transition group";
       tr.innerHTML = `
-        <td class="py-4 px-6">
-          <div class="font-bold text-gray-800">${s.name}</div>
-        </td>
+        <td class="py-4 px-6 font-bold text-gray-800">${s.name}</td>
         <td class="py-4 px-6 text-blue-600 font-black">$${s.payments || 0}</td>
         <td class="py-4 px-6">
           <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-green-50 text-green-700">
-            ${s.attendance || 0} Days
+            ✅ ${s.attendance || 0} Days
+          </span>
+        </td>
+        <td class="py-4 px-6">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-red-50 text-red-700">
+            ❌ ${s.absences || 0} Missed
           </span>
         </td>
         <td class="py-4 px-6 text-center flex justify-center items-center gap-2">
@@ -160,7 +162,7 @@ async function deleteStudent(id) {
 }
 
 async function deleteAllData() {
-  if (confirm("⚠️ CRITICAL: Delete EVERY student? This cannot be undone.")) {
+  if (confirm("⚠️ CRITICAL: Delete EVERYTHING?")) {
     await fetch(`${API}/all/danger`, { method: "DELETE" });
     loadStudents();
   }
@@ -172,7 +174,6 @@ async function markPresent(id) {
 }
 
 async function markAbsent(id) {
-  // Assuming your backend has an /absent route to subtract attendance or log it
   await fetch(`${API}/${id}/absent`, { method: "POST" });
   loadStudents();
 }
@@ -193,25 +194,25 @@ async function loadStats() {
     const res = await fetch(`${API}/stats/all`);
     const data = await res.json();
     document.getElementById("totalRevenue").innerText = `$${data.totalMoney || 0}`;
-    document.getElementById("totalAttendance").innerText = data.totalAttendance || 0;
+    document.getElementById("totalAttendanceDisplay").innerHTML = `
+      <span class="text-green-600">${data.totalAttendance || 0}</span> 
+      <span class="text-gray-300 text-2xl mx-1">/</span>
+      <span class="text-red-500">${data.totalAbsences || 0}</span>
+    `;
 
     const ctx = document.getElementById('chart').getContext('2d');
     if (window.myChart) window.myChart.destroy();
     window.myChart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Revenue ($)', 'Total Attendance'],
+        labels: ['Revenue ($)', 'Present', 'Absent'],
         datasets: [{
-          data: [data.totalMoney, data.totalAttendance],
-          backgroundColor: ['#3b82f6', '#10b981'],
-          borderRadius: 12,
-          barThickness: 60
+          data: [data.totalMoney, data.totalAttendance, data.totalAbsences],
+          backgroundColor: ['#3b82f6', '#10b981', '#ef4444'],
+          borderRadius: 10
         }]
       },
-      options: { 
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
-      }
+      options: { plugins: { legend: { display: false } } }
     });
   } catch (err) { console.error(err); }
 }
