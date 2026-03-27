@@ -5,7 +5,7 @@ const Student = require("../MODELS/student");
 // Utility to get current month (e.g., "2026-03")
 const getMonth = () => new Date().toISOString().slice(0, 7);
 
-// 1. GLOBAL LIST & FILTER (Supports index.html and tables.html)
+// --- 1. GLOBAL LIST & FILTER ---
 router.get("/", async (req, res) => {
   try {
     const { admin, level, language, month } = req.query;
@@ -13,14 +13,12 @@ router.get("/", async (req, res) => {
 
     if (!admin) return res.status(400).json({ error: "Admin identifier required" });
 
-    // Build flexible query
     let query = { owner: admin };
     if (level) query.level = level;
     if (language) query.language = language;
 
     const students = await Student.find(query).sort({ name: 1 });
 
-    // Format data to flatten the monthly record for the frontend
     const formatted = students.map(s => {
       const rec = s.records?.find(r => r.month === targetMonth) || { 
         payments: 0, attendance: 0, absences: 0, grades: {} 
@@ -35,7 +33,7 @@ router.get("/", async (req, res) => {
         payments: rec.payments,
         attendance: rec.attendance,
         absences: rec.absences,
-        grades: rec.grades || {} // Contains subject scores like { math: 90, physics: 85 }
+        grades: rec.grades || {} 
       };
     });
 
@@ -45,7 +43,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 2. ADD NEW STUDENT (Initializes first monthly record)
+// --- 2. ADD NEW STUDENT ---
 router.post("/", async (req, res) => {
   try {
     const { name, level, language, className, owner } = req.body;
@@ -72,35 +70,35 @@ router.post("/", async (req, res) => {
   }
 });
 
-// 3. ADVANCED VALUE UPDATE (Handles Grades, Payments, etc.)
+// --- 3. ADVANCED VALUE UPDATE (Grades, Payments) ---
 router.post("/:id/update-value", async (req, res) => {
   const { id } = req.params;
-  const { field, value, month, admin } = req.body; // field could be "payments" or "grades.math"
+  const { field, value, month, admin } = req.body; 
   const targetMonth = month || getMonth();
 
   try {
-    // 1. Try to update existing month record
+    // Dynamic pathing for nested grades vs top-level payments
+    // If field is "math", updatePath becomes "records.$.grades.math"
+    const isGrade = !['payments', 'attendance', 'absences'].includes(field);
+    const updatePath = isGrade ? `records.$.grades.${field}` : `records.$.${field}`;
+
     let student = await Student.findOneAndUpdate(
       { _id: id, owner: admin, "records.month": targetMonth },
-      { $set: { [`records.$.${field}`]: value } },
+      { $set: { [updatePath]: value } },
       { new: true }
     );
 
-    // 2. If month record doesn't exist, create it (Upsert logic)
+    // If month record doesn't exist, create it
     if (!student) {
-      const checkOwner = await Student.findOne({ _id: id, owner: admin });
-      if (!checkOwner) return res.status(403).json({ error: "Unauthorized access" });
+      const initialRecord = {
+        month: targetMonth,
+        payments: 0, attendance: 0, absences: 0,
+        grades: isGrade ? { [field]: value } : {}
+      };
+      if (!isGrade) initialRecord[field] = value;
 
       student = await Student.findByIdAndUpdate(id, 
-        { 
-          $push: { 
-            records: { 
-              month: targetMonth, 
-              [field.includes('.') ? 'grades' : field]: field.includes('.') ? { [field.split('.')[1]]: value } : value,
-              payments: 0, attendance: 0, absences: 0
-            } 
-          } 
-        }, 
+        { $push: { records: initialRecord } }, 
         { new: true }
       );
     }
@@ -110,7 +108,7 @@ router.post("/:id/update-value", async (req, res) => {
   }
 });
 
-// 4. ATTENDANCE ENGINE (Secured)
+// --- 4. ATTENDANCE ENGINE ---
 router.post("/:id/attendance/:type", async (req, res) => {
   const { id, type } = req.params;
   const { month, admin } = req.body;
@@ -125,9 +123,6 @@ router.post("/:id/attendance/:type", async (req, res) => {
     );
 
     if (!student) {
-      const checkOwner = await Student.findOne({ _id: id, owner: admin });
-      if (!checkOwner) return res.status(403).json({ error: "Unauthorized" });
-
       student = await Student.findByIdAndUpdate(id, 
         { $push: { records: { month: targetMonth, [field]: 1, payments: 0, attendance: 0, absences: 0, grades: {} } } }, 
         { new: true }
@@ -139,7 +134,7 @@ router.post("/:id/attendance/:type", async (req, res) => {
   }
 });
 
-// 5. STATS ENGINE (For Dashboard Charts)
+// --- 5. STATS ENGINE ---
 router.get("/stats/all", async (req, res) => {
   try {
     const { admin, month } = req.query;
@@ -169,16 +164,15 @@ router.get("/stats/all", async (req, res) => {
   }
 });
 
-// 6. DELETE STUDENT (Final Guard)
+// --- 6. DELETE STUDENT ---
 router.delete("/:id", async (req, res) => {
   try {
     const { admin } = req.query;
     const deleted = await Student.findOneAndDelete({ _id: req.params.id, owner: admin });
-    
-    if (!deleted) return res.status(403).json({ error: "Delete unauthorized or record missing" });
-    res.json({ success: true, message: "Records purged" });
+    if (!deleted) return res.status(403).json({ error: "Unauthorized" });
+    res.json({ success: true });
   } catch (err) { 
-    res.status(500).json({ error: "Delete operation failed" }); 
+    res.status(500).json({ error: "Delete failed" }); 
   }
 });
 

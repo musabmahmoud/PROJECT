@@ -1,60 +1,45 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../MODELS/user");
+const User = require("../MODELS/user"); // Ensure you have a User model
 const bcrypt = require("bcryptjs");
 
-// Signup Route
+// SIGNUP: Create new Admin accounts
 router.post("/signup", async (req, res) => { 
   try {
     const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: "Missing fields" });
 
-    // 1. Basic Check
-    if (!username || !password) {
-      return res.status(400).json({ error: "Username and password are required" });
-    }
-
-    // 2. 🛡️ Password Strength Validation
-    // Requirements: Min 8 characters, at least 1 letter and 1 number
+    // Password strength: 8 chars, 1 letter, 1 number
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; 
     if (!passwordRegex.test(password)) {
-      return res.status(400).json({ 
-        error: "Password too weak! Must be at least 8 characters and contain both letters and numbers." 
-      });
+      return res.status(400).json({ error: "Password must be 8+ chars with letters & numbers." });
     }
 
-    // 3. Check if user already exists (prevents duplicate error)
     const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.status(400).json({ error: "Username already taken." });
-    }
+    if (existingUser) return res.status(400).json({ error: "Username taken." });
 
     const user = new User({ username, password });
     await user.save();
-    
-    return res.status(201).json({ message: "User created" });
+    res.status(201).json({ message: "Admin Registered Successfully" });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Login Route
+// LOGIN: Authenticate and grant access
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
-    
     const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(400).json({ error: "User not found" });
-    }
+    
+    if (!user) return res.status(401).json({ error: "User record not found" });
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) {
-      return res.status(400).json({ error: "Wrong password" });
-    }
+    if (!valid) return res.status(401).json({ error: "Invalid Credentials" });
 
-    return res.json({ message: "Login successful", username: user.username });
+    res.json({ success: true, message: "Access Granted", username: user.username });
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Authentication Server Error" });
   }
 });
 
