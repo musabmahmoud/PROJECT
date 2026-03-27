@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 p-8">
+
+  <h1 class="text-3xl font-bold mb-6">Student Dashboard</h1>
+
+  <div class="grid grid-cols-2 gap-6 mb-6">
+    <div class="bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-bold mb-2">Total Revenue</h2>
+      <p id="totalRevenue">$0</p>
+    </div>
+    <div class="bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-bold mb-2">Total Attendance</h2>
+      <p id="totalAttendance">0</p>
+    </div>
+  </div>
+
+  <table class="min-w-full bg-white rounded shadow mb-6">
+    <thead>
+      <tr>
+        <th class="py-2 px-4 border-b">Name</th>
+        <th class="py-2 px-4 border-b">Payments</th>
+        <th class="py-2 px-4 border-b">Attendance</th>
+        <th class="py-2 px-4 border-b">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="studentsTable"></tbody>
+  </table>
+
+  <canvas id="chart" width="400" height="200"></canvas>
+
+<script>
+const API = "http://localhost:3000/students";
+
+async function loadStudents() {
+  const res = await fetch(API);
+  const students = await res.json();
+  const tbody = document.getElementById("studentsTable");
+  tbody.innerHTML = "";
+  students.forEach(s => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="py-2 px-4 border-b">${s.name}</td>
+      <td class="py-2 px-4 border-b">${s.payments}</td>
+      <td class="py-2 px-4 border-b">${s.attendance}</td>
+      <td class="py-2 px-4 border-b">
+        <button onclick="markPresent('${s._id}')" class="bg-green-500 text-white px-2 py-1 rounded">Present</button>
+        <button onclick="addPayment('${s._id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Pay</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  loadStats();
+}
+
+async function markPresent(id) {
+  await fetch(`${API}/${id}/present`, { method: "POST" });
+  loadStudents();
+}
+
+async function addPayment(id) {
+  const amount = parseInt(prompt("Enter payment amount:"));
+  if(isNaN(amount)) return;
+  await fetch(`${API}/${id}/pay`, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ amount })
+  });
+  loadStudents();
+}
+
+async function loadStats() {
+  const res = await fetch(`${API}/stats/all`);
+  const data = await res.json();
+  document.getElementById("totalRevenue").innerText = `$${data.totalMoney}`;
+  document.getElementById("totalAttendance").innerText = data.totalAttendance;
+
+  const ctx = document.getElementById('chart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Revenue', 'Attendance'],
+      datasets: [{
+        label: 'Stats',
+        data: [data.totalMoney, data.totalAttendance],
+        backgroundColor: ['#3b82f6','#10b981']
+      }]
+    }
+  });
+}
+
+window.onload = loadStudents;
+</script>
+</body>
+</html>
