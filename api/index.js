@@ -9,9 +9,8 @@ const app = express();
 app.use(cors());
 app.use(express.json()); // Only need this once
 
-// --- 2. DATABASE CONNECTION ---
-// Make sure to replace this with your ACTUAL Atlas string!
-const MONGO_URI = 'your_mongodb_connection_string_here';
+// --- 2. DATABASE CONNECTION ---// 
+const MONGO_URI = 'mongodb+srv://Musab:Musab2008!@cluster0.47y03jt.mongodb.net/?appName=Cluster0';
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log("✅ TITAN DATABASE: CONNECTED"))
@@ -19,12 +18,12 @@ mongoose.connect(MONGO_URI)
 
 // --- 3. ROUTE IMPORTS ---
 // We let the /ROUTES/ files handle the heavy lifting
-const studentRoutes = require('./ROUTES/students');
+const studentRoutes = require('./ROUTES/student');
 const teacherRoutes = require('./ROUTES/teachers');
 
 // --- 4. LINKING ROUTES ---
 // We use '/api/students' (plural) to match your frontend fetch calls
-app.use('/api/students', studentRoutes);
+app.use('/api/ROUTES/student', studentRoutes);
 app.use('/api/teachers', teacherRoutes);
 
 // --- 5. SYSTEM HEALTH CHECK ---
