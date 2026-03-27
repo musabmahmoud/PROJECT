@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academic Summary | Student Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; }
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); }
+        /* Style for the hidden report container */
+        #report-template { display: none; }
     </style>
 </head>
 <body class="pb-20">
@@ -47,6 +50,12 @@
     </nav>
 
     <div class="max-w-6xl mx-auto px-6">
+        <div class="mb-8 flex justify-end">
+            <button onclick="generateFullYearlyReport()" class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2">
+                <span>📄</span> Download Full Yearly Report (All Students)
+            </button>
+        </div>
+
         <div id="summaryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             </div>
     </div>
@@ -59,17 +68,17 @@ window.onload = loadSummary;
 async function loadSummary() {
     const month = document.getElementById("monthSelect").value;
     const year = document.getElementById("yearSelect").value;
+    const targetMonth = `${year}-${month}`;
     const container = document.getElementById("summaryContainer");
     
-    // Loading State
     container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold animate-pulse">Fetching ${month}/${year} Data...</div>`;
 
     try {
-        const res = await fetch(API);
+        // We fetch the students filtered by month from the API
+        const res = await fetch(`${API}?month=${targetMonth}`);
         const students = await res.json();
         container.innerHTML = "";
 
-        // Filter and Grouping Logic
         const groups = {};
         students.forEach(s => {
             if (!groups[s.level]) groups[s.level] = [];
@@ -83,7 +92,7 @@ async function loadSummary() {
             const totalPresents = group.reduce((a, s) => a + (Number(s.attendance) || 0), 0);
             const totalAbsences = group.reduce((a, s) => a + (Number(s.absences) || 0), 0);
             
-            const graded = group.filter(s => s.grade != null);
+            const graded = group.filter(s => s.grade > 0);
             const avgGrade = graded.length > 0 
                 ? (graded.reduce((a, s) => a + s.grade, 0) / graded.length).toFixed(0)
                 : 0;
@@ -105,11 +114,9 @@ async function loadSummary() {
                     </div>
 
                     <div class="space-y-6">
-                        <div class="flex justify-between items-end">
-                            <div>
-                                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Total Collected</p>
-                                <p class="text-2xl font-black text-gray-800">${totalMoney.toLocaleString()} <span class="text-xs text-gray-400">EGP</span></p>
-                            </div>
+                        <div>
+                            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Monthly Revenue</p>
+                            <p class="text-2xl font-black text-gray-800">${totalMoney.toLocaleString()} <span class="text-xs text-gray-400">EGP</span></p>
                         </div>
 
                         <div>
@@ -121,14 +128,14 @@ async function loadSummary() {
                                 <div class="h-full bg-blue-500 rounded-full" style="width: ${attendRate}%"></div>
                             </div>
                             <div class="flex justify-between mt-3 text-[11px] font-bold">
-                                <span class="text-green-500">✅ ${totalPresents} Present</span>
-                                <span class="text-red-400">❌ ${totalAbsences} Absent</span>
+                                <span class="text-green-500">✅ ${totalPresents} P</span>
+                                <span class="text-red-400">❌ ${totalAbsences} A</span>
                             </div>
                         </div>
                     </div>
 
-                    <button class="w-full mt-8 py-4 bg-gray-900 text-white rounded-2xl font-bold text-sm group-hover:bg-blue-600 transition-all">
-                        Full Report
+                    <button onclick="generateFullYearlyReport()" class="w-full mt-8 py-4 bg-gray-900 text-white rounded-2xl font-bold text-sm group-hover:bg-blue-600 transition-all">
+                        Full Report (PDF)
                     </button>
                 </div>
             `;
@@ -136,6 +143,75 @@ async function loadSummary() {
     } catch (err) {
         container.innerHTML = `<p class="text-red-500 font-bold">Error loading summary.</p>`;
     }
+}
+
+// FUNCTION TO GENERATE THE YEARLY REPORT
+async function generateFullYearlyReport() {
+    const year = document.getElementById("yearSelect").value;
+    // We fetch ALL students (the whole model) to calculate yearly totals
+    const res = await fetch(API); 
+    const students = await res.json();
+
+    let reportHTML = `
+        <div style="padding: 40px; font-family: 'Plus Jakarta Sans', sans-serif; color: #1a202c;">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 5px;">STUDENT PRO ANNUAL REPORT</h1>
+                <p style="text-transform: uppercase; color: #718096; font-weight: 600; font-size: 12px; letter-spacing: 2px;">Academic Year: ${year}</p>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f7fafc; border-bottom: 2px solid #edf2f7;">
+                        <th style="padding: 15px; text-align: left; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #a0aec0;">Student Name</th>
+                        <th style="padding: 15px; text-align: left; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #a0aec0;">Level</th>
+                        <th style="padding: 15px; text-align: left; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #a0aec0;">Total Paid (YTD)</th>
+                        <th style="padding: 15px; text-align: left; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #a0aec0;">Attendance</th>
+                        <th style="padding: 15px; text-align: left; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #a0aec0;">Avg Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    students.forEach(s => {
+        let yearlyPay = 0, yearlyAtt = 0, yearlyAbs = 0, totalG = 0, gCount = 0;
+
+        // Iterate through all months in the student's records array
+        s.records.forEach(r => {
+            if (r.month.startsWith(year)) {
+                yearlyPay += (r.payments || 0);
+                yearlyAtt += (r.attendance || 0);
+                yearlyAbs += (r.absences || 0);
+                if (r.grade > 0) {
+                    totalG += r.grade;
+                    gCount++;
+                }
+            }
+        });
+
+        const finalGrade = gCount > 0 ? (totalG / gCount).toFixed(0) : 0;
+
+        reportHTML += `
+            <tr style="border-bottom: 1px solid #edf2f7;">
+                <td style="padding: 15px; font-weight: 600; font-size: 14px;">${s.name}</td>
+                <td style="padding: 15px; font-size: 12px; color: #718096;">${s.level}</td>
+                <td style="padding: 15px; font-weight: 800; color: #3182ce;">${yearlyPay.toLocaleString()} EGP</td>
+                <td style="padding: 15px; font-size: 12px;">✅ ${yearlyAtt} | ❌ ${yearlyAbs}</td>
+                <td style="padding: 15px; font-weight: 800; color: #805ad5;">${finalGrade}%</td>
+            </tr>
+        `;
+    });
+
+    reportHTML += `</tbody></table></div>`;
+
+    const opt = {
+        margin: 0.5,
+        filename: `Yearly_Report_${year}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().from(reportHTML).set(opt).save();
 }
 </script>
 </body>
