@@ -3,64 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Pro Dashboard</title>
+  <title>Student Pro | Management Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // SECURITY: Immediate redirect if not logged in
+    // SECURITY & THEME BOOT
     if (!localStorage.getItem("user")) { window.location.href = "login.html"; }
+    if (localStorage.getItem("theme") === "dark") { document.documentElement.classList.add("dark"); }
   </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+    body { font-family: 'Inter', sans-serif; transition: background-color 0.3s ease; }
+    .dark { color-scheme: dark; }
+    /* Custom Scrollbar for Pro look */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .dark ::-webkit-scrollbar-thumb { background: #334155; }
+  </style>
 </head>
-<body class="bg-gray-50 p-4 md:p-8">
+<body class="bg-[#F8FAFC] dark:bg-[#020617] p-4 md:p-8 min-h-screen">
   <div class="max-w-6xl mx-auto">
     
-    <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-10 bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 gap-6 transition-all">
       <div>
-        <h1 class="text-2xl font-black text-gray-900 tracking-tight">Student <span class="text-blue-600">Pro</span></h1>
-        <div class="flex gap-4 mt-1 items-center">
-           <span id="userDisplay" class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">Admin</span>
-           <a href="summary.html" class="text-purple-600 font-bold text-xs hover:underline flex items-center gap-1">
-             📊 View Full Summary
+        <h1 class="text-4xl font-[900] text-gray-900 dark:text-white tracking-tighter italic">Student <span class="text-blue-600">Pro</span></h1>
+        <div class="flex gap-4 mt-2 items-center">
+           <span id="userDisplay" class="bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-[0.2em]">ADMIN ACCESS</span>
+           <a href="summary.html" class="bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-3 py-1 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-600 hover:text-white transition-all">
+             📊 Analytics Summary
            </a>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-100">
-        <span class="text-[10px] font-black text-gray-400 px-2 uppercase tracking-widest">Selected Month</span>
-        <select id="dashMonth" onchange="loadData()" class="bg-white border-none font-bold text-gray-700 rounded-lg p-1.5 outline-none shadow-sm cursor-pointer">
-          <option value="2026-01">Jan 2026</option>
-          <option value="2026-02">Feb 2026</option>
-          <option value="2026-03" selected>Mar 2026</option>
-          <option value="2026-04">Apr 2026</option>
-        </select>
-      </div>
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 p-2 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-inner">
+          <span class="text-[10px] font-black text-gray-400 dark:text-gray-500 px-2 uppercase tracking-widest">Period</span>
+          <select id="dashMonth" onchange="loadData()" class="bg-white dark:bg-gray-700 border-none font-bold text-gray-700 dark:text-gray-100 rounded-xl p-2 outline-none shadow-sm cursor-pointer hover:scale-105 transition-transform">
+            <option value="2026-01">Jan 2026</option>
+            <option value="2026-02">Feb 2026</option>
+            <option value="2026-03" selected>Mar 2026</option>
+            <option value="2026-04">Apr 2026</option>
+          </select>
+        </div>
 
-      <button onclick="logout()" class="bg-red-500 text-white px-6 py-2.5 rounded-xl font-bold shadow-md hover:bg-red-600 transition-all active:scale-95">Logout</button>
-    </div>
+        <button onclick="toggleDarkMode()" class="p-3.5 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-yellow-400 transition-all active:scale-90 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <span id="darkIcon" class="text-xl">🌙</span>
+        </button>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-blue-500 group hover:shadow-md transition-shadow">
-        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Revenue</h2>
-        <p id="totalRevenue" class="text-3xl font-black text-gray-800 mt-1">0 EGP</p>
-      </div>
-      <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-green-500 group hover:shadow-md transition-shadow">
-        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Present / Absent</h2>
-        <p id="totalAttendanceDisplay" class="text-3xl font-black text-gray-800 mt-1">0 / 0</p>
-      </div>
-      <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-purple-500 group hover:shadow-md transition-shadow">
-        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Students</h2>
-        <p id="totalStudentsCount" class="text-3xl font-black text-gray-800 mt-1">0</p>
+        <button onclick="logout()" class="bg-red-500 text-white px-8 py-3.5 rounded-2xl font-black shadow-lg shadow-red-200 dark:shadow-none hover:bg-red-600 transition-all active:scale-95 uppercase text-xs tracking-widest">Logout</button>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+      <div class="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-sm border-b-[6px] border-blue-500 hover:shadow-xl transition-all group">
+        <h2 class="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2">Monthly Revenue</h2>
+        <p id="totalRevenue" class="text-4xl font-[900] text-gray-900 dark:text-white tracking-tighter">0 <span class="text-sm text-gray-300">EGP</span></p>
+      </div>
+      <div class="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-sm border-b-[6px] border-green-500 hover:shadow-xl transition-all group">
+        <h2 class="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2">Attendance P/A</h2>
+        <p id="totalAttendanceDisplay" class="text-4xl font-[900] text-gray-900 dark:text-white tracking-tighter">0 <span class="text-gray-200 dark:text-gray-700">/</span> 0</p>
+      </div>
+      <div class="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-sm border-b-[6px] border-purple-500 hover:shadow-xl transition-all group">
+        <h2 class="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2">Class Population</h2>
+        <p id="totalStudentsCount" class="text-4xl font-[900] text-gray-900 dark:text-white tracking-tighter">0 <span class="text-sm text-gray-300">STUDENTS</span></p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
       <div class="lg:col-span-2 relative group">
-        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-blue-500 transition-colors">🔍</span>
-        <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Search by student name..." 
-               class="w-full pl-12 pr-4 py-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+        <span class="absolute left-6 top-1/2 -translate-y-1/2 text-2xl text-gray-300 group-focus-within:text-blue-500 transition-colors">🔍</span>
+        <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Filter student database..." 
+               class="w-full pl-16 pr-6 py-6 rounded-3xl border-none shadow-sm dark:bg-gray-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-lg font-medium">
       </div>
-      <div class="bg-white p-2 rounded-2xl shadow-sm flex gap-2 border border-gray-100 lg:col-span-2">
-        <input id="newStudentName" type="text" placeholder="Enter New Name" class="flex-1 p-2 px-4 bg-gray-50 rounded-xl outline-none focus:bg-white transition-all" />
-        <select id="newStudentLevel" class="bg-gray-100 p-2 rounded-xl font-bold text-gray-700 outline-none">
+      
+      <div class="bg-white dark:bg-gray-900 p-3 rounded-3xl shadow-sm flex gap-3 border border-gray-100 dark:border-gray-800 lg:col-span-2">
+        <input id="newStudentName" type="text" placeholder="Full Name" class="flex-1 p-3 px-6 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl outline-none focus:bg-white dark:focus:bg-gray-700 transition-all font-bold" />
+        <select id="newStudentLevel" class="bg-gray-100 dark:bg-gray-700 p-3 rounded-2xl font-black text-gray-700 dark:text-white outline-none cursor-pointer">
             <option value="Prep 1">Prep 1</option>
             <option value="Prep 2">Prep 2</option>
             <option value="Prep 3">Prep 3</option>
@@ -68,84 +86,91 @@
             <option value="Sec 2" selected>Sec 2</option>
             <option value="Sec 3">Sec 3</option>
         </select>
-        <button onclick="addNewStudent()" class="bg-purple-600 text-white px-6 py-2 rounded-xl font-black shadow-lg hover:bg-purple-700 transition-all active:scale-90">+</button>
+        <button onclick="addNewStudent()" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-[900] shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 transition-all active:scale-90 text-2xl">+</button>
       </div>
     </div>
 
-    <div class="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100 mb-20">
+    <div class="bg-white dark:bg-gray-900 rounded-[3rem] shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 mb-20">
       <div class="overflow-x-auto">
         <table class="min-w-full">
-          <thead class="bg-gray-50/50 border-b text-left text-gray-400 text-[10px] font-black uppercase tracking-widest">
-            <tr>
-              <th class="py-5 px-8">Student Name</th>
-              <th class="py-5 px-6">Academic Level</th>
-              <th class="py-5 px-6 text-blue-600">Payments</th>
-              <th class="py-5 px-6">Attendance</th>
-              <th class="py-5 px-6 text-purple-600">Grade %</th> 
-              <th class="py-5 px-8 text-center">Quick Actions</th>
+          <thead>
+            <tr class="bg-gray-50/50 dark:bg-gray-800/50 border-b dark:border-gray-800 text-left text-gray-400 dark:text-gray-500 text-[10px] font-[900] uppercase tracking-[0.2em]">
+              <th class="py-7 px-10">Student Profile</th>
+              <th class="py-7 px-6">Level</th>
+              <th class="py-7 px-6 text-blue-600">Finance</th>
+              <th class="py-7 px-6">Attendance</th>
+              <th class="py-7 px-6 text-purple-600">Exam Grade</th> 
+              <th class="py-7 px-10 text-center">Management</th>
             </tr>
           </thead>
-          <tbody id="studentsTable" class="divide-y divide-gray-50">
+          <tbody id="studentsTable" class="divide-y divide-gray-50 dark:divide-gray-800">
             </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <div id="paymentModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl">
-      <h3 class="text-2xl font-black mb-1">Add Payment</h3>
-      <p class="text-gray-400 text-xs font-bold uppercase mb-6">Enter amount in EGP</p>
+  <div id="paymentModal" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all">
+    <div class="bg-white dark:bg-gray-900 w-full max-w-md rounded-[3rem] p-12 shadow-2xl transform transition-all border dark:border-gray-800">
+      <div class="text-center mb-8">
+        <h3 class="text-3xl font-[900] text-gray-900 dark:text-white tracking-tighter">Finance Entry</h3>
+        <p class="text-blue-600 font-bold text-xs uppercase tracking-widest mt-2">Update Student Balance</p>
+      </div>
       <input type="hidden" id="payId">
-      <input type="number" id="payAmt" class="w-full p-5 bg-gray-50 border-2 border-gray-100 rounded-2xl mb-8 text-4xl font-black text-blue-600 outline-none focus:border-blue-500 transition-all" placeholder="0">
+      <div class="relative mb-10">
+        <span class="absolute left-6 top-1/2 -translate-y-1/2 font-black text-gray-300 dark:text-gray-600 text-2xl">EGP</span>
+        <input type="number" id="payAmt" class="w-full p-8 pl-20 bg-gray-50 dark:bg-gray-800 border-none rounded-[2rem] text-5xl font-[900] text-blue-600 outline-none focus:ring-4 focus:ring-blue-500/10 transition-all" placeholder="0">
+      </div>
       <div class="flex gap-4">
-        <button onclick="closeModal('paymentModal')" class="flex-1 py-4 font-bold text-gray-400 hover:text-gray-600 transition-colors">Cancel</button>
-        <button onclick="submitPay()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl hover:bg-blue-700 transition-all">Confirm</button>
+        <button onclick="closeModal('paymentModal')" class="flex-1 py-5 font-black text-gray-400 hover:text-gray-600 transition-colors uppercase text-xs tracking-widest">Dismiss</button>
+        <button onclick="submitPay()" class="flex-1 py-5 bg-blue-600 text-white rounded-[1.5rem] font-black shadow-xl shadow-blue-200 dark:shadow-none hover:bg-blue-700 transition-all active:scale-95 uppercase text-xs tracking-widest">Confirm Payment</button>
       </div>
     </div>
   </div>
 
-  <div id="gradeModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl">
-      <h3 class="text-2xl font-black mb-1">Update Grade</h3>
-      <p id="gradeStudentName" class="text-blue-600 font-bold text-xs mb-8 uppercase tracking-widest"></p>
+  <div id="gradeModal" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all">
+    <div class="bg-white dark:bg-gray-900 w-full max-w-md rounded-[3rem] p-12 shadow-2xl border dark:border-gray-800">
+      <div class="text-center mb-8">
+        <h3 class="text-3xl font-[900] text-gray-900 dark:text-white tracking-tighter">Exam Score</h3>
+        <p id="gradeStudentName" class="text-purple-600 font-black text-xs uppercase tracking-[0.2em] mt-2"></p>
+      </div>
       <input type="hidden" id="gradeId">
-      <input type="number" id="gradeInput" class="w-full p-5 bg-gray-50 border-2 border-gray-100 rounded-2xl text-4xl font-black text-purple-600 outline-none focus:border-purple-500 mb-8" placeholder="0">
-      <div class="flex gap-4">
-        <button onclick="closeGradeModal()" class="flex-1 py-4 font-bold text-gray-400 hover:text-gray-600 transition-colors">Cancel</button>
-        <button onclick="submitGrade()" class="flex-1 py-4 bg-purple-600 text-white rounded-2xl font-black shadow-xl hover:bg-purple-700 transition-all">Save Grade</button>
+      <div class="relative mb-10">
+        <span class="absolute right-8 top-1/2 -translate-y-1/2 font-black text-gray-300 dark:text-gray-600 text-3xl">%</span>
+        <input type="number" id="gradeInput" class="w-full p-8 pr-16 bg-gray-50 dark:bg-gray-800 border-none rounded-[2rem] text-5xl font-[900] text-purple-600 outline-none focus:ring-4 focus:ring-purple-500/10 transition-all" placeholder="0">
       </div>
-    </div>
-  </div>
-
-  <div id="deleteModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-[2.5rem] w-full max-w-xs p-10 shadow-2xl text-center">
-        <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-6">⚠️</div>
-        <h2 class="text-2xl font-black text-gray-900 mb-2">Are you sure?</h2>
-        <p class="text-gray-400 text-sm font-medium mb-8">This action cannot be undone. All data will be lost.</p>
-        <div class="flex flex-col gap-3">
-            <button onclick="executeDelete()" class="w-full py-4 rounded-2xl font-black text-white bg-red-500 shadow-lg shadow-red-200 hover:bg-red-600 transition-all">Yes, Delete</button>
-            <button onclick="closeDeleteModal()" class="w-full py-4 rounded-2xl font-bold text-gray-400 hover:bg-gray-50 transition-all">Cancel</button>
-        </div>
+      <div class="flex gap-4">
+        <button onclick="closeGradeModal()" class="flex-1 py-5 font-black text-gray-400 hover:text-gray-600 transition-colors uppercase text-xs tracking-widest">Dismiss</button>
+        <button onclick="submitGrade()" class="flex-1 py-5 bg-purple-600 text-white rounded-[1.5rem] font-black shadow-xl shadow-purple-200 dark:shadow-none hover:bg-purple-700 transition-all active:scale-95 uppercase text-xs tracking-widest">Save Grade</button>
+      </div>
     </div>
   </div>
 
 <script>
 const API = "/api/students";
 const currentUser = localStorage.getItem("user");
-let studentToDelete = null;
 
 window.onload = () => {
-  document.getElementById("userDisplay").innerText = currentUser || "Admin";
+  document.getElementById("userDisplay").innerText = currentUser || "Admin Access";
+  updateDarkIcon(document.documentElement.classList.contains('dark'));
   loadData();
 };
+
+function toggleDarkMode() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+  updateDarkIcon(isDark);
+}
+
+function updateDarkIcon(isDark) {
+  const icon = document.getElementById("darkIcon");
+  if (icon) icon.innerText = isDark ? "☀️" : "🌙";
+}
 
 async function loadData() {
   const selectedMonth = document.getElementById("dashMonth").value;
   const tbody = document.getElementById("studentsTable");
-  
-  // Show Loading State
-  tbody.innerHTML = `<tr><td colspan="6" class="py-20 text-center text-gray-300 font-bold animate-pulse uppercase tracking-widest text-xs">Fetching Records...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="6" class="py-32 text-center text-gray-300 dark:text-gray-700 font-black animate-pulse uppercase tracking-[0.3em] text-xs">Synchronizing Records...</td></tr>`;
 
   try {
     const res = await fetch(`${API}?month=${selectedMonth}&admin=${currentUser}`);
@@ -153,44 +178,58 @@ async function loadData() {
     tbody.innerHTML = "";
     
     if (students.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="py-20 text-center text-gray-400 font-medium">No students found for this month.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="py-20 text-center text-gray-400 font-bold uppercase text-xs tracking-widest">Zero entries found for this period.</td></tr>`;
+      updateStats();
+      return;
     }
 
     students.forEach(s => {
       tbody.innerHTML += `
-        <tr class="hover:bg-gray-50/80 transition-all group">
-          <td class="py-5 px-8 font-bold text-gray-800">${s.name}</td>
-          <td class="py-5 px-6"><span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter">${s.level}</span></td>
-          <td class="py-5 px-6 text-blue-600 font-black">${s.payments || 0} <span class="text-[10px] text-blue-300">EGP</span></td>
-          <td class="py-5 px-6 text-sm font-bold">
-            <span class="text-green-500">✅ ${s.attendance || 0}</span> 
-            <span class="text-gray-200 mx-2">|</span> 
-            <span class="text-orange-400">❌ ${s.absences || 0}</span>
+        <tr class="hover:bg-gray-50/80 dark:hover:bg-gray-800/30 transition-all border-b dark:border-gray-800 group">
+          <td class="py-7 px-10">
+            <div class="font-[900] text-gray-800 dark:text-gray-100 text-lg tracking-tight">${s.name}</div>
+            <div class="text-[9px] text-gray-400 uppercase font-black tracking-widest mt-1">Ref: ${s._id.slice(-6)}</div>
           </td>
-          <td class="py-5 px-6 font-black text-purple-600">${s.grade || 0}<span class="text-[10px] opacity-50 ml-0.5">%</span></td>
-          <td class="py-5 px-8">
+          <td class="py-7 px-6">
+            <span class="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-tighter border dark:border-gray-700">
+              ${s.level}
+            </span>
+          </td>
+          <td class="py-7 px-6">
+            <div class="text-blue-600 dark:text-blue-400 font-[900] text-xl tracking-tighter">${s.payments || 0} <span class="text-[10px] opacity-50">EGP</span></div>
+          </td>
+          <td class="py-7 px-6">
+            <div class="flex items-center gap-3">
+               <div class="text-center"><p class="text-[8px] font-black text-gray-400 uppercase">Pres</p><p class="text-green-500 font-black">✅ ${s.attendance || 0}</p></div>
+               <div class="w-[1px] h-6 bg-gray-100 dark:bg-gray-800"></div>
+               <div class="text-center"><p class="text-[8px] font-black text-gray-400 uppercase">Abs</p><p class="text-orange-400 font-black">❌ ${s.absences || 0}</p></div>
+            </div>
+          </td>
+          <td class="py-7 px-6">
+            <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/20 flex flex-col items-center justify-center border border-purple-100 dark:border-purple-800/50">
+                <span class="text-purple-600 dark:text-purple-400 font-[900] text-lg leading-none">${s.grade || 0}</span>
+                <span class="text-[7px] font-black text-purple-300 uppercase leading-none mt-1">%</span>
+            </div>
+          </td>
+          <td class="py-7 px-10">
             <div class="flex justify-center gap-2">
-              <button onclick="markAttendance('${s._id}', 'present')" title="Present" class="w-10 h-10 flex items-center justify-center bg-green-50 text-green-600 rounded-xl font-black hover:bg-green-600 hover:text-white transition-all active:scale-90">P</button>
-              <button onclick="markAttendance('${s._id}', 'absent')" title="Absent" class="w-10 h-10 flex items-center justify-center bg-orange-50 text-orange-600 rounded-xl font-black hover:bg-orange-600 hover:text-white transition-all active:scale-90">A</button>
-              <button onclick="openGradeModal('${s._id}', '${s.name}', ${s.grade || 0})" title="Grade" class="w-10 h-10 flex items-center justify-center bg-purple-50 text-purple-600 rounded-xl font-bold hover:bg-purple-600 hover:text-white transition-all active:scale-90 text-lg">📝</button>
-              <button onclick="openPayModal('${s._id}', ${s.payments || 0})" class="px-4 h-10 bg-blue-50 text-blue-600 rounded-xl font-black text-xs hover:bg-blue-600 hover:text-white transition-all active:scale-95 shadow-sm shadow-blue-100 uppercase tracking-widest">Pay</button>
-              <button onclick="openDeleteModal('${s._id}')" class="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all hover:rotate-90">✕</button>
+              <button onclick="markAttendance('${s._id}', 'present')" title="Present" class="w-12 h-12 bg-green-50 dark:bg-green-900/30 text-green-600 rounded-2xl font-black hover:bg-green-600 hover:text-white transition-all active:scale-90">P</button>
+              <button onclick="markAttendance('${s._id}', 'absent')" title="Absent" class="w-12 h-12 bg-orange-50 dark:bg-orange-900/30 text-orange-600 rounded-2xl font-black hover:bg-orange-600 hover:text-white transition-all active:scale-90">A</button>
+              <button onclick="openGradeModal('${s._id}', '${s.name}', ${s.grade || 0})" class="w-12 h-12 bg-purple-50 dark:bg-purple-900/30 text-purple-600 rounded-2xl font-black hover:bg-purple-600 hover:text-white transition-all active:scale-90">📝</button>
+              <button onclick="openPayModal('${s._id}', ${s.payments || 0})" class="px-6 h-12 bg-blue-600 text-white rounded-2xl font-[900] text-[10px] uppercase tracking-widest hover:bg-blue-700 shadow-md active:scale-95">Pay</button>
             </div>
           </td>
         </tr>`;
     });
     updateStats();
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-red-500 font-bold">Failed to load data. Please refresh.</td></tr>`;
-  }
+  } catch (err) { console.error("Load Error:", err); }
 }
 
 async function markAttendance(id, type) {
   const month = document.getElementById("dashMonth").value;
   await fetch(`${API}/${id}/attendance/${type}`, { 
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ month: month, admin: currentUser }) 
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ month, admin: currentUser }) 
   });
   loadData();
 }
@@ -200,9 +239,8 @@ async function submitPay() {
   const val = document.getElementById("payAmt").value;
   const month = document.getElementById("dashMonth").value;
   await fetch(`${API}/${id}/update-value`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ field: "payments", value: val, month: month, admin: currentUser })
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ field: "payments", value: val, month, admin: currentUser })
   });
   closeModal('paymentModal');
   loadData();
@@ -213,9 +251,8 @@ async function submitGrade() {
   const val = document.getElementById("gradeInput").value;
   const month = document.getElementById("dashMonth").value;
   await fetch(`${API}/${id}/update-value`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ field: "grade", value: val, month: month, admin: currentUser })
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ field: "grade", value: val, month, admin: currentUser })
   });
   closeGradeModal();
   loadData();
@@ -225,10 +262,8 @@ async function addNewStudent() {
   const nameInput = document.getElementById("newStudentName");
   const level = document.getElementById("newStudentLevel").value;
   if(!nameInput.value.trim()) return;
-  
   await fetch(API, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name: nameInput.value.trim(), level, owner: currentUser })
   });
   nameInput.value = "";
@@ -240,60 +275,37 @@ function updateStats() {
   document.querySelectorAll("#studentsTable tr").forEach(row => {
     if (row.style.display !== "none" && row.cells.length > 1) {
       rev += parseInt(row.cells[2].innerText.replace(/[^0-9]/g, "")) || 0;
-      const parts = row.cells[3].innerText.match(/\d+/g);
+      const attText = row.cells[3].innerText;
+      const parts = attText.match(/\d+/g);
       if(parts) { att += parseInt(parts[0]); abs += parseInt(parts[1]); }
       count++;
     }
   });
   document.getElementById("totalRevenue").innerText = `${rev.toLocaleString()} EGP`;
-  document.getElementById("totalAttendanceDisplay").innerText = `${att} / ${abs}`;
+  document.getElementById("totalAttendanceDisplay").innerHTML = `${att} <span class="text-gray-200 dark:text-gray-700 mx-1">/</span> ${abs}`;
   document.getElementById("totalStudentsCount").innerText = count;
 }
 
 function searchStudents() {
   let q = document.getElementById("searchInput").value.toLowerCase();
   document.querySelectorAll("#studentsTable tr").forEach(row => {
-    if(row.cells.length > 1) {
-       row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
-    }
+    if(row.cells.length > 1) row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
   });
   updateStats();
 }
 
 function openPayModal(id, current) { 
-  document.getElementById("payId").value = id; 
-  document.getElementById("payAmt").value = current;
-  document.getElementById("paymentModal").classList.remove("hidden"); 
-  document.getElementById("payAmt").focus();
+  document.getElementById("payId").value = id; document.getElementById("payAmt").value = current;
+  document.getElementById("paymentModal").classList.remove("hidden");
+  setTimeout(() => document.getElementById("payAmt").focus(), 100);
 }
-
 function openGradeModal(id, name, current) {
-  document.getElementById("gradeId").value = id;
-  document.getElementById("gradeStudentName").innerText = name;
-  document.getElementById("gradeInput").value = current;
-  document.getElementById("gradeModal").classList.remove("hidden");
-  document.getElementById("gradeInput").focus();
+  document.getElementById("gradeId").value = id; document.getElementById("gradeStudentName").innerText = name;
+  document.getElementById("gradeInput").value = current; document.getElementById("gradeModal").classList.remove("hidden");
+  setTimeout(() => document.getElementById("gradeInput").focus(), 100);
 }
-
-function openDeleteModal(id) { 
-  studentToDelete = id; 
-  document.getElementById("deleteModal").classList.remove("hidden"); 
-}
-
 function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
 function closeGradeModal() { closeModal("gradeModal"); }
-function closeDeleteModal() { closeModal("deleteModal"); }
-
-async function executeDelete() {
-  const res = await fetch(`${API}/${studentToDelete}?admin=${currentUser}`, { method: "DELETE" });
-  if(res.ok) {
-    closeDeleteModal();
-    loadData();
-  } else {
-    alert("Delete failed. You may not have permission.");
-  }
-}
-
 function logout() { localStorage.clear(); window.location.href="login.html"; }
 </script>
 </body>
