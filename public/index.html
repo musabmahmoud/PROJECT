@@ -5,10 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Pro Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Smooth transition for modals */
+    .modal-active { display: flex !important; }
+    .scale-95 { transform: scale(0.95); }
+    .scale-100 { transform: scale(1); }
+  </style>
 </head>
 <body class="bg-gray-50 p-4 md:p-8">
   <div class="max-w-6xl mx-auto">
+    
     <div class="flex justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
       <div>
         <h1 class="text-2xl font-black text-gray-900">Student Pro</h1>
@@ -34,39 +40,7 @@
         <p id="totalStudentsCount" class="text-3xl font-black text-gray-800 mt-1">0</p>
       </div>
     </div>
-<div id="deleteModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-  <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-8 text-center transform transition-all">
-    <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">⚠️</div>
-    <h3 class="text-xl font-black text-gray-800 mb-2">Are you sure?</h3>
-    <p class="text-gray-500 mb-6">This will permanently remove the student and all their records. This action cannot be undone.</p>
-    <input type="hidden" id="deleteId">
-    <div class="flex gap-3">
-      <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition">Cancel</button>
-      <button onclick="confirmDelete()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">Delete</button>
-    </div>
-  </div>
-</div>
 
-<script>
-// --- Updated Delete Logic ---
-function deleteStudent(id) {
-  document.getElementById("deleteId").value = id;
-  document.getElementById("deleteModal").classList.remove("hidden");
-}
-
-function closeDeleteModal() {
-  document.getElementById("deleteModal").classList.add("hidden");
-}
-
-async function confirmDelete() {
-  const id = document.getElementById("deleteId").value;
-  const res = await fetch(`${API}/${id}`, { method: "DELETE" });
-  if (res.ok) {
-    closeDeleteModal();
-    loadData();
-  }
-}
-</script>
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
       <div class="lg:col-span-2 relative">
         <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Search names..." 
@@ -89,48 +63,7 @@ async function confirmDelete() {
         <button onclick="addNewStudent()" class="bg-purple-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg">+</button>
       </div>
     </div>
-<div id="deleteModal" class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-[100] transition-opacity">
-  <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-8 border border-gray-100 transform scale-100 transition-transform">
-    <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-      </svg>
-    </div>
-    <h3 class="text-2xl font-black text-gray-900 mb-2">Delete Student?</h3>
-    <p class="text-gray-500 text-sm leading-relaxed mb-8">This will erase all records for this student. This action is <span class="text-red-600 font-bold">permanent</span>.</p>
-    <input type="hidden" id="deleteId">
-    <div class="flex gap-4">
-      <button onclick="closeDeleteModal()" class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-bold rounded-2xl hover:bg-gray-200 transition">No, Cancel</button>
-      <button onclick="confirmDelete()" class="flex-1 px-4 py-3 bg-red-600 text-white font-bold rounded-2xl shadow-lg shadow-red-200 hover:bg-red-700 transition">Yes, Delete</button>
-    </div>
-  </div>
-</div>
 
-<script>
-// Logic to handle Grade updates
-async function updateGrade(id) {
-  const newGrade = prompt("Enter new grade (0-100):");
-  if (newGrade === null || isNaN(newGrade)) return;
-  
-  await fetch(`${API}/${id}/grade`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ grade: parseInt(newGrade) })
-  });
-  loadData();
-}
-
-// Updated loadData table row to include Grade
-// Inside your students.forEach loop:
-`<tr>
-  ...
-  <td class="py-4 px-6 font-black text-purple-600">${s.grade || 0}%</td>
-  <td class="py-4 px-6 flex items-center gap-2">
-    <button onclick="updateGrade('${s._id}')" class="bg-purple-100 text-purple-700 p-2 rounded-lg text-xs font-bold">Grade</button>
-    ...
-  </td>
-</tr>`
-</script>
     <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 mb-8">
       <table class="min-w-full">
         <thead class="bg-gray-50 border-b text-left text-gray-500 text-xs font-bold uppercase">
@@ -139,6 +72,7 @@ async function updateGrade(id) {
             <th class="py-4 px-6">Level</th>
             <th class="py-4 px-6">Payments</th>
             <th class="py-4 px-6">Attendance</th>
+            <th class="py-4 px-6 text-purple-600">Grade</th> 
             <th class="py-4 px-6 text-center">Actions</th>
           </tr>
         </thead>
@@ -147,20 +81,51 @@ async function updateGrade(id) {
     </div>
   </div>
 
-  <div id="paymentModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white w-80 rounded-2xl p-6 shadow-2xl">
-      <h3 class="text-lg font-bold mb-4">Add Payment (EGP)</h3>
-      <input type="hidden" id="currentId">
-      <input type="number" id="payAmt" class="w-full p-3 bg-gray-100 rounded-xl mb-4 text-xl font-bold outline-none" placeholder="0.00">
-      <div class="flex gap-2">
-        <button onclick="closeModal()" class="flex-1 py-2 bg-gray-100 rounded-lg">Cancel</button>
-        <button onclick="submitPay()" class="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold">Confirm</button>
+  <div id="paymentModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl">
+      <h3 class="text-2xl font-black mb-2">Add Payment</h3>
+      <p class="text-gray-400 text-sm mb-6 uppercase font-bold tracking-widest">Amount in EGP</p>
+      <input type="hidden" id="payId">
+      <input type="number" id="payAmt" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl mb-6 text-2xl font-black text-blue-600 outline-none" placeholder="0">
+      <div class="flex gap-3">
+        <button onclick="closeModal('paymentModal')" class="flex-1 py-4 font-bold text-gray-400 hover:bg-gray-50 rounded-2xl">Cancel</button>
+        <button onclick="submitPay()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-100">Confirm</button>
       </div>
+    </div>
+  </div>
+
+  <div id="gradeModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div id="gradeBox" class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl scale-95 transition-all duration-300">
+      <div class="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-2xl mb-6">📝</div>
+      <h3 class="text-2xl font-black mb-1">Update Grade</h3>
+      <p id="gradeStudentName" class="text-gray-400 font-bold text-xs mb-6 uppercase tracking-widest"></p>
+      <input type="hidden" id="gradeId">
+      <div class="relative mb-8">
+        <input type="number" id="gradeInput" class="w-full p-5 bg-gray-50 border-2 border-gray-100 rounded-2xl text-3xl font-black text-purple-600 outline-none focus:border-purple-500" placeholder="0">
+        <span class="absolute right-5 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-300">%</span>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="closeGradeModal()" class="flex-1 py-4 font-bold text-gray-400 hover:bg-gray-50 rounded-2xl">Cancel</button>
+        <button onclick="submitGrade()" class="flex-1 py-4 bg-purple-600 text-white rounded-2xl font-black shadow-lg shadow-purple-100">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="deleteModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div id="deleteBox" class="bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl scale-95 transition-all duration-300">
+        <div class="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center text-3xl mb-6 mx-auto">⚠️</div>
+        <h2 class="text-2xl font-black text-gray-900 text-center mb-2">Delete Student?</h2>
+        <p class="text-gray-500 text-center mb-8 font-medium">This action cannot be undone. Student history will be lost.</p>
+        <div class="flex gap-3">
+            <button onclick="closeDeleteModal()" class="flex-1 py-4 rounded-2xl font-bold text-gray-400 hover:bg-gray-50">Cancel</button>
+            <button onclick="executeDelete()" class="flex-1 py-4 rounded-2xl font-black text-white bg-red-500 shadow-lg shadow-red-200">Delete</button>
+        </div>
     </div>
   </div>
 
 <script>
 const API = "/api/students";
+let studentToDelete = null;
 
 window.onload = () => {
   document.getElementById("userDisplay").innerText = localStorage.getItem("user") || "Admin";
@@ -175,20 +140,40 @@ async function loadData() {
   
   students.forEach(s => {
     tbody.innerHTML += `
-      <tr class="hover:bg-gray-50">
+      <tr class="hover:bg-gray-50 transition-all">
         <td class="py-4 px-6 font-bold text-gray-800">${s.name}</td>
-        <td class="py-4 px-6"><span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold">${s.level}</span></td>
+        <td class="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">${s.level}</td>
         <td class="py-4 px-6 text-blue-600 font-black">${s.payments || 0} EGP</td>
-        <td class="py-4 px-6 text-sm">✅ ${s.attendance || 0} / ❌ ${s.absences || 0}</td>
-        <td class="py-4 px-6 flex justify-center gap-2">
-          <button onclick="action('${s._id}', 'present')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-xs">P</button>
-          <button onclick="action('${s._id}', 'absent')" class="bg-orange-500 text-white px-3 py-1 rounded-lg text-xs">A</button>
-          <button onclick="openModal('${s._id}')" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs">Pay</button>
-          <button onclick="deleteStudent('${s._id}')" class="text-gray-300 hover:text-red-500">✕</button>
+        <td class="py-4 px-6 text-sm font-medium">✅ ${s.attendance || 0} <span class="text-gray-200 mx-1">|</span> ❌ ${s.absences || 0}</td>
+        <td class="py-4 px-6 font-black text-purple-600">${s.grade || 0}%</td>
+        <td class="py-4 px-6">
+          <div class="flex justify-center gap-2">
+            <button onclick="action('${s._id}', 'present')" class="w-9 h-9 flex items-center justify-center bg-green-50 text-green-600 rounded-xl font-bold hover:bg-green-600 hover:text-white transition-all">P</button>
+            <button onclick="action('${s._id}', 'absent')" class="w-9 h-9 flex items-center justify-center bg-orange-50 text-orange-600 rounded-xl font-bold hover:bg-orange-600 hover:text-white transition-all">A</button>
+            <button onclick="openGradeModal('${s._id}', '${s.name}')" class="w-9 h-9 flex items-center justify-center bg-purple-50 text-purple-600 rounded-xl font-bold hover:bg-purple-600 hover:text-white transition-all">📝</button>
+            <button onclick="openPayModal('${s._id}')" class="px-3 h-9 bg-blue-50 text-blue-600 rounded-xl font-bold text-xs hover:bg-blue-600 hover:text-white transition-all">Pay</button>
+            <button onclick="openDeleteModal('${s._id}')" class="w-9 h-9 flex items-center justify-center text-red-300 hover:text-red-600 transition-all">✕</button>
+          </div>
         </td>
       </tr>`;
   });
   updateStats();
+}
+
+// Logic Functions
+async function updateStats() {
+  const res = await fetch(`${API}/stats/all`);
+  const data = await res.json();
+  document.getElementById("totalRevenue").innerText = `${data.totalMoney} EGP`;
+  document.getElementById("totalAttendanceDisplay").innerText = `${data.totalAttendance} / ${data.totalAbsences}`;
+  document.getElementById("totalStudentsCount").innerText = document.querySelectorAll("#studentsTable tr").length;
+}
+
+function searchStudents() {
+  let q = document.getElementById("searchInput").value.toLowerCase();
+  document.querySelectorAll("#studentsTable tr").forEach(row => {
+    row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+  });
 }
 
 async function addNewStudent() {
@@ -209,42 +194,70 @@ async function action(id, type) {
   loadData();
 }
 
-function openModal(id) {
-  document.getElementById("currentId").value = id;
+// Modal Controllers
+function openPayModal(id) {
+  document.getElementById("payId").value = id;
   document.getElementById("paymentModal").classList.remove("hidden");
 }
 
-function closeModal() { document.getElementById("paymentModal").classList.add("hidden"); }
+function openGradeModal(id, name) {
+  document.getElementById("gradeId").value = id;
+  document.getElementById("gradeStudentName").innerText = name;
+  const modal = document.getElementById("gradeModal");
+  modal.classList.remove("hidden");
+  setTimeout(() => document.getElementById("gradeBox").classList.remove("scale-95"), 10);
+}
 
+function openDeleteModal(id) {
+  studentToDelete = id;
+  const modal = document.getElementById("deleteModal");
+  modal.classList.remove("hidden");
+  setTimeout(() => document.getElementById("deleteBox").classList.remove("scale-95"), 10);
+}
+
+// Modal Closers
+function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
+function closeGradeModal() { 
+  document.getElementById("gradeBox").classList.add("scale-95");
+  setTimeout(() => closeModal("gradeModal"), 200);
+}
+function closeDeleteModal() {
+  document.getElementById("deleteBox").classList.add("scale-95");
+  setTimeout(() => closeModal("deleteModal"), 200);
+}
+
+// Submissions
 async function submitPay() {
-  const id = document.getElementById("currentId").value;
+  const id = document.getElementById("payId").value;
   const amount = parseInt(document.getElementById("payAmt").value);
   await fetch(`${API}/${id}/pay`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ amount })
   });
-  closeModal();
+  document.getElementById("payAmt").value = "";
+  closeModal("paymentModal");
   loadData();
 }
 
-async function updateStats() {
-  const res = await fetch(`${API}/stats/all`);
-  const data = await res.json();
-  document.getElementById("totalRevenue").innerText = `${data.totalMoney} EGP`;
-  document.getElementById("totalAttendanceDisplay").innerText = `${data.totalAttendance} / ${data.totalAbsences}`;
-  document.getElementById("totalStudentsCount").innerText = document.querySelectorAll("#studentsTable tr").length;
-}
-
-function searchStudents() {
-  let q = document.getElementById("searchInput").value.toLowerCase();
-  document.querySelectorAll("#studentsTable tr").forEach(row => {
-    row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+async function submitGrade() {
+  const id = document.getElementById("gradeId").value;
+  const grade = document.getElementById("gradeInput").value;
+  await fetch(`${API}/${id}/grade`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ grade: parseInt(grade) })
   });
+  document.getElementById("gradeInput").value = "";
+  closeGradeModal();
+  loadData();
 }
 
-async function deleteStudent(id) {
-  if(confirm("Delete?")) { await fetch(`${API}/${id}`, { method: "DELETE" }); loadData(); }
+async function executeDelete() {
+  if(!studentToDelete) return;
+  await fetch(`${API}/${studentToDelete}`, { method: "DELETE" });
+  closeDeleteModal();
+  loadData();
 }
 
 function logout() { localStorage.clear(); window.location.href="login.html"; }
