@@ -1,64 +1,56 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Titan ERP | Primary & Prep</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // SECURITY & THEME
-    if (!localStorage.getItem("user")) { window.location.href = "login.html"; }
-    
-    function toggleTheme() {
-        document.documentElement.classList.toggle('dark');
-        localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-    }
-
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: { titanDark: '#020617', titanCard: '#0f172a', titanBorder: '#1e2937' }
-        }
-      }
-    }
-  </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-    body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background 0.3s ease; }
-    .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
-    .dark body { background-color: #020617; color: #f8fafc; }
-    body:not(.dark) { background-color: #f1f5f9; color: #0f172a; }
-    select optgroup { background: #0f172a; color: #94a3b8; font-style: normal; }
+    body { 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      background-color: #f8fafc; 
+      color: #0f172a; 
+    }
+    .card-shadow { 
+      background: white; 
+      border: 1px solid #e2e8f0; 
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); 
+    }
+    .btn-primary { 
+      background-color: #2563eb; 
+      color: white; 
+      transition: all 0.2s; 
+    }
+    .btn-primary:hover { background-color: #1d4ed8; transform: translateY(-1px); }
   </style>
 </head>
 <body class="min-h-screen">
 
-  <aside class="fixed left-0 top-0 h-full w-20 hidden lg:flex flex-col items-center py-10 bg-white dark:bg-titanCard border-r dark:border-titanBorder z-50">
+  <aside class="fixed left-0 top-0 h-full w-20 hidden lg:flex flex-col items-center py-10 bg-white border-r border-slate-200 z-50">
     <div class="text-2xl font-black text-blue-600 mb-12 italic">T.</div>
     <div class="space-y-10 flex-1">
       <a href="index.html" class="p-4 bg-blue-600 text-white rounded-2xl block shadow-lg">📊</a>
       <a href="classes.html" class="p-4 text-slate-400 hover:text-blue-600 transition-all block text-xl text-center">🏫</a>
       <a href="teachers.html" class="p-4 text-slate-400 hover:text-blue-600 transition-all block text-xl text-center">👨‍🏫</a>
     </div>
-    <button onclick="toggleTheme()" class="p-4 text-slate-400 text-2xl">🌗</button>
   </aside>
 
-  <main class="lg:ml-20 p-6 md:p-12">
+  <main class="lg:ml-20 p-6 md:p-12 max-w-7xl mx-auto">
     
-    <header class="flex justify-between items-end mb-12">
+    <header class="flex justify-between items-end mb-10">
       <div>
-        <h1 class="text-5xl font-black tracking-tighter italic">Titan <span class="text-blue-600">ERP</span></h1>
-        <p class="text-slate-500 font-bold mt-2 uppercase text-[10px] tracking-widest">Operator: <span id="userName" class="text-blue-600">Admin</span></p>
+        <h1 class="text-4xl font-black tracking-tighter italic text-slate-900">Titan <span class="text-blue-600">ERP</span></h1>
+        <p class="text-slate-500 font-bold mt-1 uppercase text-[10px] tracking-widest">School Management | <span id="userName" class="text-blue-600">Admin</span></p>
       </div>
-      <button onclick="logout()" class="px-6 py-4 bg-red-500/10 text-red-500 rounded-2xl font-black text-xs uppercase hover:bg-red-500 transition-all">Logout</button>
+      <button onclick="logout()" class="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-black text-xs uppercase hover:bg-red-50 hover:text-white transition-all">Logout</button>
     </header>
 
-    <section class="glass p-3 rounded-[2.5rem] mb-12 border-l-4 border-blue-600">
-        <div class="grid grid-cols-1 lg:grid-cols-6 gap-2">
-            <input id="newStudentName" type="text" placeholder="Full Name..." class="lg:col-span-2 bg-white/5 p-5 rounded-3xl outline-none font-bold">
+    <section class="bg-white p-4 rounded-3xl mb-8 border border-slate-200 shadow-sm">
+        <div class="grid grid-cols-1 lg:grid-cols-6 gap-3">
+            <input id="newStudentName" type="text" placeholder="Student Full Name..." class="lg:col-span-2 bg-slate-50 p-4 rounded-2xl outline-none font-semibold border border-transparent focus:border-blue-500 transition-all">
             
-            <select id="newStudentLevel" class="bg-white/5 p-5 rounded-3xl font-black text-[10px] uppercase outline-none">
+            <select id="newStudentLevel" class="bg-slate-50 p-4 rounded-2xl font-black text-[10px] uppercase outline-none border border-transparent">
                 <optgroup label="Primary Stage">
                     <option value="Primary 1">Primary 1</option>
                     <option value="Primary 2">Primary 2</option>
@@ -74,36 +66,39 @@
                 </optgroup>
             </select>
 
-            <select id="newStudentClass" class="bg-white/5 p-5 rounded-3xl font-black text-[10px] uppercase outline-none">
+            <select id="newStudentClass" class="bg-slate-50 p-4 rounded-2xl font-black text-[10px] uppercase outline-none border border-transparent">
                 <option value="Group A">Group A</option>
                 <option value="Group B">Group B</option>
             </select>
 
-            <select id="newStudentLang" class="bg-white/5 p-5 rounded-3xl font-black text-[10px] uppercase outline-none text-blue-500">
+            <select id="newStudentLang" class="bg-slate-50 p-4 rounded-2xl font-black text-[10px] uppercase outline-none text-blue-600 border border-transparent">
                 <option value="English">English</option>
                 <option value="Arabic">Arabic</option>
             </select>
 
-            <button onclick="addNewStudent()" class="bg-blue-600 hover:bg-blue-700 text-white rounded-3xl font-black text-[10px] uppercase tracking-widest transition-all">Enroll +</button>
+            <button onclick="addNewStudent()" class="btn-primary rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-md active:scale-95">
+                Register Student +
+            </button>
         </div>
     </section>
 
-    <div class="glass rounded-[3rem] overflow-hidden shadow-2xl">
-        <div class="p-8 border-b border-white/5 flex justify-between items-center">
-            <h3 class="font-black uppercase tracking-widest text-sm">Student Records</h3>
-            <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Search..." class="bg-white/5 px-6 py-3 rounded-2xl outline-none text-xs border border-white/10 w-48">
+    <div class="bg-white rounded-[2rem] overflow-hidden border border-slate-200 shadow-sm">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <h3 class="font-black uppercase tracking-widest text-xs text-slate-500">Active Students</h3>
+            <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Search..." class="bg-white px-4 py-2 rounded-xl outline-none text-xs border border-slate-200 w-48 focus:ring-2 focus:ring-blue-500/20">
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead>
-                    <tr class="text-[9px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5">
-                        <th class="p-8">Student</th>
-                        <th class="p-8">Grade / Group</th>
-                        <th class="p-8">Status</th>
-                        <th class="p-8 text-right">Management</th>
+                    <tr class="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 bg-white">
+                        <th class="p-6">Student Information</th>
+                        <th class="p-6">Grade / Group</th>
+                        <th class="p-6">Payment Status</th>
+                        <th class="p-6 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="studentsTable" class="divide-y divide-white/5"></tbody>
+                <tbody id="studentsTable" class="divide-y divide-slate-50">
+                    </tbody>
             </table>
         </div>
     </div>
@@ -114,13 +109,14 @@
     const user = localStorage.getItem("user");
 
     window.onload = () => {
+        if (!user) window.location.href = "login.html";
         document.getElementById("userName").innerText = user;
         loadData();
     };
 
     async function loadData() {
         const tbody = document.getElementById("studentsTable");
-        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center font-black animate-pulse opacity-20">SYNCING...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center font-bold text-slate-300 animate-pulse">LOADING DATA...</td></tr>`;
 
         try {
             const res = await fetch(`${API}?admin=${user}`);
@@ -132,26 +128,26 @@
                 const record = s.records?.find(r => r.month === currentMonth) || { payments: 0 };
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-white/[0.02] transition-all">
-                        <td class="p-8">
-                            <p class="text-lg font-black tracking-tight">${s.name}</p>
-                            <p class="text-[8px] font-bold text-slate-500 uppercase">${s.language || 'English'}</p>
+                    <tr class="hover:bg-slate-50/50 transition-all">
+                        <td class="p-6">
+                            <p class="text-lg font-bold text-slate-800 tracking-tight">${s.name}</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">${s.language || 'English'}</p>
                         </td>
-                        <td class="p-8">
-                            <span class="px-3 py-1 bg-blue-600/10 text-blue-500 text-[9px] font-black rounded-lg uppercase">${s.level}</span>
-                            <p class="text-[9px] font-bold text-slate-500 mt-1 uppercase">${s.className || 'Group A'}</p>
+                        <td class="p-6">
+                            <span class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black rounded-lg uppercase">${s.level}</span>
+                            <span class="ml-2 text-[9px] font-bold text-slate-400 uppercase">${s.className || 'A'}</span>
                         </td>
-                        <td class="p-8">
-                            <p class="text-lg font-black ${record.payments > 0 ? 'text-emerald-500' : 'text-slate-600'}">${record.payments} EGP</p>
+                        <td class="p-6 text-lg font-black ${record.payments > 0 ? 'text-emerald-600' : 'text-slate-300'}">
+                            ${record.payments} <span class="text-[10px]">EGP</span>
                         </td>
-                        <td class="p-8 text-right space-x-2">
-                            <button onclick="window.location.href='tables.html?id=${s._id}'" class="px-4 py-2 bg-white text-titanDark rounded-xl font-black text-[9px] uppercase hover:bg-blue-600 hover:text-white transition-all">Details</button>
-                            <button onclick="deleteStudent('${s._id}')" class="px-4 py-2 bg-red-500/10 text-red-500 rounded-xl font-black text-[9px] uppercase hover:bg-red-500 hover:text-white transition-all">Delete</button>
+                        <td class="p-6 text-right space-x-2">
+                            <button onclick="window.location.href='tables.html?id=${s._id}'" class="px-4 py-2 bg-slate-900 text-white rounded-xl font-black text-[9px] uppercase hover:bg-blue-600 transition-all shadow-sm">Details</button>
+                            <button onclick="deleteStudent('${s._id}')" class="px-4 py-2 bg-red-50 text-red-600 bg-opacity-10 rounded-xl font-black text-[9px] uppercase hover:bg-red-600 hover:text-white transition-all">Delete</button>
                         </td>
                     </tr>`;
             });
         } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500 font-black uppercase">Server Offline</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500 font-black">DATABASE CONNECTION FAILED</td></tr>`;
         }
     }
 
@@ -160,7 +156,7 @@
         const level = document.getElementById("newStudentLevel").value;
         const className = document.getElementById("newStudentClass").value;
         const language = document.getElementById("newStudentLang").value;
-        if(!name) return alert("Name Required");
+        if(!name) return;
 
         await fetch(API, {
             method: "POST",
@@ -172,7 +168,7 @@
     }
 
     async function deleteStudent(id) {
-        if(!confirm("Permanently delete this record?")) return;
+        if(!confirm("Delete student?")) return;
         await fetch(`${API}/${id}?admin=${user}`, { method: "DELETE" });
         loadData();
     }
