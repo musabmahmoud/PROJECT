@@ -1,8 +1,18 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "BACKEND/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "FRONTEND/**",
+      "use": "@vercel/static"
+    }
+  ],
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/BACKEND/server.js" },
-    { "source": "/", "destination": "/FRONTEND/index.html" },
-    { "source": "/(.*)", "destination": "/FRONTEND/$1" }
+    { "source": "/api/(.*)", "destination": "BACKEND/server.js" },
+    { "source": "/", "destination": "FRONTEND/index.html" },
+    { "source": "/(.*)", "destination": "FRONTEND/$1" }
   ]
 }
