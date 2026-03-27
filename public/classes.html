@@ -1,93 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Classroom Hub | Student Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { 
-            darkMode: 'class', 
-            theme: { extend: { colors: { darkbg: '#020617', darkcard: '#0f172a', darkborder: '#1e2937' } } } 
-        }
-        if (localStorage.getItem("theme") === "dark") document.documentElement.classList.add("dark");
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; transition: 0.4s ease; }
-        .dark body { background-color: #020617 !important; color: #f8fafc; }
-        .grade-card:hover { transform: translateY(-10px) scale(1.02); }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Titan ERP | Class Command</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+    .titan-input { background: #f1f5f9; border: 1px solid transparent; transition: all 0.2s; }
+    .titan-input:focus { background: white; border-color: #2563eb; outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+  </style>
 </head>
-<body class="bg-[#F8FAFC] p-6 md:p-14">
-    <div class="max-w-7xl mx-auto">
-        <header class="flex justify-between items-end mb-20">
-            <div>
-                <h1 class="text-7xl font-[900] tracking-tighter italic">Campus <span class="text-blue-600">Map</span></h1>
-                <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.5em] mt-4">Primary 1 through Prep 3</p>
-            </div>
-            <div class="flex gap-4">
-                <a href="index.html" class="bg-white dark:bg-darkcard px-8 py-4 rounded-2xl font-black text-xs uppercase border dark:border-darkborder">Dashboard</a>
-            </div>
-        </header>
+<body class="min-h-screen">
 
-        <div class="mb-20">
-            <h2 class="text-2xl font-black uppercase tracking-[0.2em] text-blue-600 mb-10 flex items-center gap-4">
-                <span class="h-[2px] w-12 bg-blue-600"></span> Primary Department
-            </h2>
-            <div id="primaryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                </div>
-        </div>
-
-        <div class="mb-32">
-            <h2 class="text-2xl font-black uppercase tracking-[0.2em] text-purple-600 mb-10 flex items-center gap-4">
-                <span class="h-[2px] w-12 bg-purple-600"></span> Preparatory Department
-            </h2>
-            <div id="prepGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                </div>
-        </div>
+  <aside class="fixed left-0 top-0 h-full w-20 hidden lg:flex flex-col items-center py-10 bg-white border-r border-slate-200 z-50">
+    <div class="text-2xl font-black text-blue-600 mb-12 italic">T.</div>
+    <div class="space-y-8 flex-1">
+      <a href="index.html" class="p-4 text-slate-400 hover:text-blue-600 block text-xl">📊</a>
+      <a href="classes.html" class="p-4 bg-blue-600 text-white rounded-2xl block shadow-lg">🏫</a>
+      <a href="teachers.html" class="p-4 text-slate-400 hover:text-blue-600 block text-xl">👨‍🏫</a>
     </div>
+  </aside>
 
-<script>
-const grades = {
-    primary: ["Primary 1", "Primary 2", "Primary 3", "Primary 4", "Primary 5", "Primary 6"],
-    prep: ["Prep 1", "Prep 2", "Prep 3"]
-};
-
-function renderGrades() {
-    const pGrid = document.getElementById('primaryGrid');
-    const prGrid = document.getElementById('prepGrid');
-
-    pGrid.innerHTML = grades.primary.map(g => createGradeCard(g, 'blue')).join('');
-    prGrid.innerHTML = grades.prep.map(g => createGradeCard(g, 'purple')).join('');
-}
-
-function createGradeCard(name, color) {
-    return `
-        <div class="grade-card bg-white dark:bg-darkcard p-10 rounded-[4rem] border dark:border-darkborder shadow-sm transition-all cursor-pointer group" onclick="goToTables('${name}')">
-            <div class="flex justify-between items-start mb-8">
-                <div class="text-5xl group-hover:scale-110 transition-transform">🏫</div>
-                <span class="bg-${color}-50 text-${color}-600 dark:bg-${color}-900/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Active</span>
-            </div>
-            <h3 class="text-4xl font-[900] tracking-tighter mb-4">${name}</h3>
-            <div class="flex gap-4">
-                <div class="flex-1 bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl text-center">
-                    <p class="text-[9px] font-black text-slate-400 uppercase">English</p>
-                    <p class="font-bold text-lg">Class A/B</p>
-                </div>
-                <div class="flex-1 bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl text-center">
-                    <p class="text-[9px] font-black text-slate-400 uppercase">Arabic</p>
-                    <p class="font-bold text-lg">Class A/B</p>
-                </div>
-            </div>
+  <main class="lg:ml-20 p-6 md:p-12 max-w-7xl mx-auto">
+    
+    <header class="mb-10">
+      <div class="flex justify-between items-end mb-6">
+        <div>
+            <h1 class="text-3xl font-black tracking-tight uppercase italic">Class <span class="text-blue-600">Command</span></h1>
+            <p class="text-slate-400 font-bold text-[10px] tracking-[0.2em] uppercase">Multi-Entry Interface</p>
         </div>
-    `;
-}
+        <div class="flex gap-2">
+            <select id="selLevel" onchange="loadRoster()" class="bg-white border border-slate-200 p-3 rounded-xl text-[10px] font-black uppercase outline-none focus:border-blue-500">
+                <option value="Primary 1">Primary 1</option><option value="Primary 4">Primary 4</option>
+                <option value="Prep 1" selected>Prep 1</option><option value="Prep 3">Prep 3</option>
+            </select>
+            <select id="selGroup" onchange="loadRoster()" class="bg-white border border-slate-200 p-3 rounded-xl text-[10px] font-black uppercase outline-none focus:border-blue-500">
+                <option value="Group A">Group A</option><option value="Group B">Group B</option>
+            </select>
+        </div>
+      </div>
 
-function goToTables(grade) {
-    window.location.href = `tables.html?grade=${encodeURIComponent(grade)}`;
-}
+      <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div class="flex gap-2 lg:col-span-2">
+              <input id="fastName" type="text" placeholder="New Student Name..." class="titan-input p-3 rounded-xl w-full font-bold text-sm">
+              <button onclick="fastEnroll()" class="bg-blue-600 text-white px-6 rounded-xl font-black text-[10px] uppercase hover:bg-blue-700 transition-all whitespace-nowrap">Add Student</button>
+          </div>
+          <div class="flex gap-2 lg:col-span-2 border-l border-slate-100 pl-4">
+              <input id="globalSub" type="text" placeholder="New Subject (e.g. Math)" class="titan-input p-3 rounded-xl w-full font-bold text-sm">
+              <button onclick="alert('Subject Added to Class Buffer')" class="bg-slate-900 text-white px-6 rounded-xl font-black text-[10px] uppercase hover:bg-blue-600 transition-all whitespace-nowrap">Apply Subject</button>
+          </div>
+      </div>
+    </header>
 
-window.onload = renderGrades;
-</script>
+    <div class="bg-white rounded-[2.5rem] overflow-hidden border border-slate-200 shadow-sm">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 bg-slate-50/50">
+                    <th class="p-6">Student</th>
+                    <th class="p-6 text-center">Attendance</th>
+                    <th class="p-6">Payment (EGP)</th>
+                    <th class="p-6">Grade Entry</th>
+                    <th class="p-6 text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody id="rosterBody" class="divide-y divide-slate-50">
+                </tbody>
+        </table>
+    </div>
+  </main>
+
+  <script>
+    const API = "/api/students";
+    const user = localStorage.getItem("user");
+
+    window.onload = loadRoster;
+
+    async function loadRoster() {
+        const level = document.getElementById('selLevel').value;
+        const group = document.getElementById('selGroup').value;
+        const tbody = document.getElementById("rosterBody");
+        tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center font-bold text-slate-300 animate-pulse">SYNCING ROSTER...</td></tr>`;
+
+        try {
+            const res = await fetch(`${API}?admin=${user}&level=${level}&className=${group}`);
+            const data = await res.json();
+            tbody.innerHTML = "";
+
+            data.forEach(s => {
+                tbody.innerHTML += `
+                <tr class="hover:bg-blue-50/20 transition-all group">
+                    <td class="p-6">
+                        <p class="font-black text-slate-800">${s.name}</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">${s.language}</p>
+                    </td>
+                    <td class="p-6">
+                        <div class="flex justify-center gap-2">
+                            <button id="p-${s._id}" onclick="mark(this, 'emerald')" class="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 font-black text-[10px] hover:border-emerald-500 transition-all">P</button>
+                            <button id="a-${s._id}" onclick="mark(this, 'red')" class="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 font-black text-[10px] hover:border-red-500 transition-all">A</button>
+                        </div>
+                    </td>
+                    <td class="p-6">
+                        <input type="number" id="pay-${s._id}" placeholder="0.00" class="titan-input p-2 rounded-lg w-24 text-xs font-black text-emerald-600">
+                    </td>
+                    <td class="p-6">
+                        <div class="flex gap-1">
+                            <input type="text" id="sub-${s._id}" placeholder="Subject" class="titan-input p-2 rounded-lg w-24 text-[10px] font-bold">
+                            <input type="number" id="grd-${s._id}" placeholder="00" class="titan-input p-2 rounded-lg w-12 text-[10px] font-bold text-center">
+                        </div>
+                    </td>
+                    <td class="p-6 text-right">
+                        <button onclick="saveRow('${s._id}')" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl font-black text-[10px] uppercase hover:bg-blue-600 hover:text-white transition-all">Sync</button>
+                    </td>
+                </tr>`;
+            });
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-500 font-black">DATABASE ERROR</td></tr>`;
+        }
+    }
+
+    // Toggle Attendance Visually
+    function mark(btn, color) {
+        const parent = btn.parentElement;
+        parent.querySelectorAll('button').forEach(b => {
+            b.classList.remove('bg-emerald-500', 'bg-red-500', 'text-white', 'border-transparent');
+            b.classList.add('text-slate-400', 'border-slate-200');
+        });
+        btn.classList.add(`bg-${color}-500`, 'text-white', 'border-transparent');
+        btn.classList.remove('text-slate-400', 'border-slate-200');
+    }
+
+    async function fastEnroll() {
+        const name = document.getElementById('fastName').value;
+        const level = document.getElementById('selLevel').value;
+        const className = document.getElementById('selGroup').value;
+        if(!name) return;
+
+        await fetch(API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, level, className, owner: user, language: 'English' })
+        });
+        document.getElementById('fastName').value = "";
+        loadRoster();
+    }
+
+    async function saveRow(id) {
+        const pay = document.getElementById(`pay-${id}`).value;
+        const sub = document.getElementById(`sub-${id}`).value;
+        const grd = document.getElementById(`grd-${id}`).value;
+        const month = new Date().toISOString().slice(0, 7);
+
+        if(pay) {
+            await fetch(`${API}/update-value`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ studentId: id, month, field: 'payments', value: Number(pay) })
+            });
+        }
+        if(sub && grd) {
+            await fetch(`${API}/update-value`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ studentId: id, month, field: sub.toLowerCase(), value: Number(grd) })
+            });
+        }
+        alert("Student Data Synced.");
+    }
+
+    function logout() { localStorage.clear(); window.location.href="login.html"; }
+  </script>
 </body>
 </html>
