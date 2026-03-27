@@ -2,6 +2,7 @@
   "version": 2,
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/BACKEND/server.js" },
+    { "source": "/", "destination": "/FRONTEND/index.html" },
     { "source": "/(.*)", "destination": "/FRONTEND/$1" }
   ]
 }
