@@ -3,91 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Insights | Student Pro</title>
+    <title>Academic Summary | Student Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-        // SECURITY BOOT: Immediate check
+        // SECURITY: Immediate redirect if not logged in
         if (!localStorage.getItem("user")) { window.location.href = "login.html"; }
-        // THEME BOOT: Prevent white flash
-        if (localStorage.getItem("theme") === "dark") { document.documentElement.classList.add("dark"); }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
         .glass-card { 
             background: white; 
-            border: 1px solid #f1f5f9; 
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        .dark .glass-card {
-            background: #111827;
-            border-color: #1f2937;
+            border: 1px solid #edf2f7; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .glass-card:hover {
-            transform: translateY(-12px) scale(1.02);
-            box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.1);
-            border-color: #3b82f6;
-        }
-        .dark .glass-card:hover {
-            box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.5);
-            border-color: #2563eb;
-        }
-        .stat-label {
-            font-size: 10px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.25em;
-            color: #94a3b8;
-        }
-        .pdf-btn-glow:hover {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
         }
     </style>
 </head>
-<body class="bg-[#F8FAFC] dark:bg-[#020617] pb-32 min-h-screen transition-colors duration-500">
+<body class="pb-20">
     
-    <nav class="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl border-b border-gray-100 dark:border-gray-800 mb-20 shadow-sm">
-        <div class="max-w-7xl mx-auto px-8 py-8 flex flex-col lg:flex-row justify-between items-center gap-8">
-            <div class="group cursor-default">
-                <h1 class="text-4xl font-[900] text-gray-900 dark:text-white tracking-tighter italic">Academic <span class="text-blue-600 transition-all group-hover:tracking-normal">Insights</span></h1>
-                <div class="flex items-center gap-3 mt-2">
-                    <span class="relative flex h-3 w-3">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                    </span>
-                    <p class="stat-label text-gray-400 dark:text-gray-500">Live Classroom Analytics Hub</p>
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 mb-10">
+        <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div>
+                <h1 class="text-2xl font-black text-gray-900 tracking-tight">Academic <span class="text-blue-600">Insights</span></h1>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Classroom Analytics</p>
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center justify-center gap-4 bg-gray-50 dark:bg-gray-800/50 p-2.5 rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-inner">
-                <div class="flex items-center px-4">
-                    <span class="stat-label mr-4">Period</span>
-                    <select id="monthSelect" onchange="loadSummary()" class="px-6 py-3 bg-white dark:bg-gray-700 dark:text-white rounded-2xl font-black outline-none shadow-md hover:scale-105 transition-all cursor-pointer border-none">
-                        <option value="01">January</option><option value="02">February</option><option value="03" selected>March</option>
-                        <option value="04">April</option><option value="05">May</option><option value="06">June</option>
-                        <option value="07">July</option><option value="08">August</option><option value="09">September</option>
-                        <option value="10">October</option><option value="11">November</option><option value="12">December</option>
-                    </select>
-                </div>
-                
-                <select id="yearSelect" onchange="loadSummary()" class="px-6 py-3 bg-white dark:bg-gray-700 dark:text-white rounded-2xl font-black outline-none shadow-md hover:scale-105 transition-all cursor-pointer border-none">
-                    <option value="2025">2025</option><option value="2026" selected>2026</option>
+            <div class="flex items-center gap-3 bg-gray-100 p-1.5 rounded-2xl border border-gray-200">
+                <select id="monthSelect" onchange="loadSummary()" class="px-4 py-2 bg-white rounded-xl font-bold text-gray-700 outline-none shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                    <option value="01">January</option>
+                    <option value="02">February</option>
+                    <option value="03" selected>March</option>
+                    <option value="04">April</option>
+                    <option value="05">May</option>
+                    <option value="06">June</option>
+                    <option value="07">July</option>
+                    <option value="08">August</option>
+                    <option value="09">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
                 </select>
-
-                <div class="h-10 w-[1px] bg-gray-200 dark:bg-gray-700 mx-2"></div>
-
-                <a href="index.html" class="bg-gray-900 dark:bg-blue-600 text-white px-10 py-3.5 rounded-2xl font-[900] text-xs uppercase tracking-[0.2em] hover:bg-black dark:hover:bg-blue-700 transition-all active:scale-95 shadow-xl shadow-gray-200 dark:shadow-none">
-                    ← Return to Desk
+                <select id="yearSelect" onchange="loadSummary()" class="px-4 py-2 bg-white rounded-xl font-bold text-gray-700 outline-none shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                    <option value="2025">2025</option>
+                    <option value="2026" selected>2026</option>
+                </select>
+                <a href="index.html" class="bg-gray-900 text-white px-6 py-2 rounded-xl font-bold text-sm hover:bg-black transition-all active:scale-95 shadow-lg shadow-gray-200">
+                    ← Back to Dashboard
                 </a>
             </div>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto px-8">
-        <div id="summaryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+    <div class="max-w-6xl mx-auto px-6">
+        <div id="summaryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             </div>
     </div>
 
@@ -96,6 +71,7 @@ const API = "/api/students";
 const currentUser = localStorage.getItem("user");
 let allStudentsData = [];
 
+// Initialize data on load
 window.onload = loadSummary;
 
 async function loadSummary() {
@@ -104,46 +80,42 @@ async function loadSummary() {
     const targetMonth = `${year}-${month}`;
     const container = document.getElementById("summaryContainer");
     
-    // HEAVY LOADING STATE
+    // Loading State
     container.innerHTML = `
-        <div class="col-span-full py-52 text-center">
-            <div class="relative inline-block w-20 h-20 mb-8">
-                <div class="absolute inset-0 border-8 border-blue-100 dark:border-blue-900/30 rounded-full"></div>
-                <div class="absolute inset-0 border-8 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-            <p class="stat-label text-gray-400 animate-pulse text-sm">Parsing ${currentUser}'s Database Clusters...</p>
+        <div class="col-span-full py-32 text-center">
+            <div class="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-gray-400 font-black uppercase tracking-[0.2em] text-xs">Syncing ${currentUser}'s Data...</p>
         </div>`;
 
     try {
+        // Fetch data with security admin filter
         const res = await fetch(`${API}?month=${targetMonth}&admin=${currentUser}`);
         allStudentsData = await res.json();
         container.innerHTML = "";
 
         if (allStudentsData.length === 0) {
             container.innerHTML = `
-                <div class="col-span-full py-32 bg-white dark:bg-gray-900 rounded-[5rem] border-4 border-dashed border-gray-100 dark:border-gray-800 text-center">
-                    <div class="text-6xl mb-6">📁</div>
-                    <p class="text-gray-400 font-black uppercase tracking-[0.3em] text-sm">No Academic Data for ${targetMonth}</p>
-                    <p class="text-gray-300 dark:text-gray-600 text-xs mt-2">Add students in the dashboard to begin analysis.</p>
+                <div class="col-span-full py-20 bg-white rounded-[3rem] border border-dashed border-gray-200 text-center">
+                    <p class="text-gray-400 font-bold">No student records found for ${targetMonth}.</p>
                 </div>`;
             return;
         }
 
-        // COMPLEX GROUPING LOGIC
+        // Group students by Academic Level (e.g., Sec 1, Sec 2)
         const groups = {};
         allStudentsData.forEach(s => {
             if (!groups[s.level]) groups[s.level] = [];
             groups[s.level].push(s);
         });
 
-        // GENERATE HEAVY-DUTY CARDS
+        // Generate a card for each level
         Object.keys(groups).sort().forEach(level => {
             const group = groups[level];
             let totalRevenue = 0;
             let totalPresents = 0;
             let totalAbsences = 0;
             let totalGrades = 0;
-            let gradedCount = 0;
+            let gradedStudentsCount = 0;
 
             group.forEach(s => {
                 totalRevenue += (Number(s.payments) || 0);
@@ -151,92 +123,94 @@ async function loadSummary() {
                 totalAbsences += (Number(s.absences) || 0);
                 if (Number(s.grade) > 0) {
                     totalGrades += Number(s.grade);
-                    gradedCount++;
+                    gradedStudentsCount++;
                 }
             });
 
-            const avgGrade = gradedCount > 0 ? (totalGrades / gradedCount).toFixed(0) : 0;
+            const avgGrade = gradedStudentsCount > 0 ? (totalGrades / gradedStudentsCount).toFixed(0) : 0;
 
             container.innerHTML += `
-                <div class="glass-card p-14 rounded-[4.5rem] flex flex-col h-full group/card">
-                    <div class="flex justify-between items-start mb-12">
+                <div class="glass-card p-10 rounded-[3rem] shadow-sm flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-8">
                         <div>
-                            <h2 class="text-6xl font-[900] text-gray-900 dark:text-white tracking-tighter leading-none">${level}</h2>
-                            <p class="stat-label text-blue-600 dark:text-blue-400 mt-4">${group.length} ENROLLED STUDENTS</p>
+                            <h2 class="text-4xl font-black text-gray-900 leading-none">${level}</h2>
+                            <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-2">${group.length} Active Students</p>
                         </div>
-                        <div class="bg-blue-600 text-white w-20 h-20 rounded-[2rem] flex flex-col items-center justify-center shadow-2xl shadow-blue-200 dark:shadow-none transition-transform group-hover/card:rotate-12">
-                            <span class="text-2xl font-[900] leading-none">${avgGrade}</span>
-                            <span class="text-[8px] font-black uppercase tracking-widest mt-1">AVG %</span>
+                        <div class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-blue-100">
+                            <span class="text-lg font-black leading-none">${avgGrade}</span>
+                            <span class="text-[8px] font-bold uppercase">Avg %</span>
                         </div>
                     </div>
 
-                    <div class="space-y-8 mb-16 flex-grow">
-                        <div class="flex justify-between items-end border-b-2 border-gray-50 dark:border-gray-800 pb-5">
-                            <span class="stat-label">Projected Revenue</span>
-                            <span class="text-3xl font-[900] text-gray-800 dark:text-gray-100 tracking-tighter">${totalRevenue.toLocaleString()} <span class="text-xs text-gray-400">EGP</span></span>
+                    <div class="space-y-5 mb-10 flex-grow">
+                        <div class="flex justify-between items-end border-b border-gray-50 pb-3">
+                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Monthly Cash</span>
+                            <span class="text-xl font-black text-gray-800">${totalRevenue.toLocaleString()} <span class="text-xs text-gray-300">EGP</span></span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="stat-label">Attendance Metrics</span>
-                            <div class="text-right flex gap-6">
-                                <div><p class="stat-label !text-[8px] opacity-50">Present</p><p class="text-xl font-black text-green-500 uppercase tracking-tighter">✅ ${totalPresents}</p></div>
-                                <div class="w-[1px] h-8 bg-gray-100 dark:bg-gray-800"></div>
-                                <div><p class="stat-label !text-[8px] opacity-50">Absent</p><p class="text-xl font-black text-orange-400 uppercase tracking-tighter">❌ ${totalAbsences}</p></div>
+                        <div class="flex justify-between items-end">
+                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Attendance</span>
+                            <div class="text-right">
+                                <span class="text-sm font-black text-green-500">✅ ${totalPresents}</span>
+                                <span class="text-gray-200 mx-1">/</span>
+                                <span class="text-sm font-black text-orange-400">❌ ${totalAbsences}</span>
                             </div>
                         </div>
                     </div>
 
                     <button onclick="downloadGradeReport('${level}')" 
-                            class="pdf-btn-glow w-full py-7 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-[2.5rem] font-[900] text-xs uppercase tracking-[0.3em] hover:bg-blue-600 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-4 border-2 border-transparent hover:border-blue-400">
-                        Download Intelligence Report
-                        <span class="text-xl">⬇️</span>
+                            class="group w-full py-5 bg-blue-50 text-blue-600 rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
+                        Download PDF Report
+                        <span class="group-hover:translate-y-0.5 transition-transform">⬇️</span>
                     </button>
                 </div>`;
         });
     } catch (e) { 
-        container.innerHTML = `<div class="col-span-full text-center py-20 text-red-500 font-black">CRITICAL DATA FETCH ERROR</div>`; 
+        container.innerHTML = `
+            <div class="col-span-full text-center py-20">
+                <p class="text-red-500 font-black">DATABASE CONNECTION ERROR</p>
+                <button onclick="loadSummary()" class="mt-4 text-blue-600 font-bold underline">Try Again</button>
+            </div>`; 
     }
 }
 
-// FULL PDF ENGINE (UNSTRIPPED)
 function downloadGradeReport(level) {
     const monthSelect = document.getElementById("monthSelect");
     const monthName = monthSelect.options[monthSelect.selectedIndex].text;
     const year = document.getElementById("yearSelect").value;
     const students = allStudentsData.filter(s => s.level === level);
     
+    // Construct HTML for the PDF table
     let rowsHtml = "";
     students.sort((a, b) => a.name.localeCompare(b.name)).forEach(s => {
         rowsHtml += `
-            <tr style="border-bottom: 2px solid #f1f5f9;">
-                <td style="padding: 20px; font-size: 14px; font-weight: 700; color: #0f172a;">${s.name}</td>
-                <td style="padding: 20px; font-size: 14px; color: #64748b;">${s.payments} EGP</td>
-                <td style="padding: 20px; font-size: 14px; font-weight: 600; color: ${s.attendance > s.absences ? '#10b981' : '#f59e0b'};">
-                    ${s.attendance}P / ${s.absences}A
-                </td>
-                <td style="padding: 20px; font-size: 18px; font-weight: 900; color: #2563eb; text-align: right;">${s.grade}%</td>
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 14px; font-size: 14px; font-weight: 600; color: #1e293b;">${s.name}</td>
+                <td style="padding: 14px; font-size: 14px; color: #64748b;">${s.payments} EGP</td>
+                <td style="padding: 14px; font-size: 14px; color: #64748b;">${s.attendance}P / ${s.absences}A</td>
+                <td style="padding: 14px; font-size: 14px; font-weight: 800; color: #2563eb; text-align: right;">${s.grade}%</td>
             </tr>`;
     });
 
     const pdfTemplate = `
-        <div style="padding: 70px; font-family: 'Helvetica', sans-serif; color: #1e293b; background: white;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 8px solid #2563eb; padding-bottom: 40px; margin-bottom: 50px;">
+        <div style="padding: 50px; font-family: 'Helvetica', sans-serif; color: #1e293b;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px;">
                 <div>
-                    <h1 style="font-size: 42px; font-weight: 900; margin: 0; color: #0f172a; letter-spacing: -2px;">${level} REPORT</h1>
-                    <p style="margin: 10px 0 0 0; color: #2563eb; font-weight: 900; text-transform: uppercase; font-size: 14px; letter-spacing: 4px;">Period: ${monthName} ${year}</p>
+                    <h1 style="font-size: 28px; font-weight: 900; margin: 0; color: #0f172a;">${level} ACADEMIC REPORT</h1>
+                    <p style="margin: 5px 0 0 0; color: #64748b; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Period: ${monthName} ${year}</p>
                 </div>
                 <div style="text-align: right;">
-                    <p style="margin: 0; font-size: 24px; font-weight: 900; color: #0f172a; italic">Student <span style="color:#2563eb">Pro</span></p>
-                    <p style="margin: 5px 0 0 0; font-size: 12px; font-weight: bold; color: #94a3b8; text-transform: uppercase;">Instructor: ${currentUser}</p>
+                    <p style="margin: 0; font-weight: 900; color: #2563eb;">STUDENT PRO</p>
+                    <p style="margin: 0; font-size: 10px; color: #94a3b8;">Instructor: ${currentUser}</p>
                 </div>
             </div>
 
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 50px;">
+            <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background-color: #f8fafc; text-align: left;">
-                        <th style="padding: 20px; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; font-weight: 900;">Student Identity</th>
-                        <th style="padding: 20px; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; font-weight: 900;">Monthly Finance</th>
-                        <th style="padding: 20px; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; font-weight: 900;">Attendance</th>
-                        <th style="padding: 20px; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; font-weight: 900; text-align: right;">Final Grade</th>
+                        <th style="padding: 15px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Student Name</th>
+                        <th style="padding: 15px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Payments</th>
+                        <th style="padding: 15px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Attendance</th>
+                        <th style="padding: 15px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; text-align: right;">Final Grade</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -244,20 +218,18 @@ function downloadGradeReport(level) {
                 </tbody>
             </table>
 
-            <div style="margin-top: 100px; padding-top: 30px; border-top: 2px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <p style="font-size: 10px; color: #94a3b8; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">Document Authenticated</p>
-                    <p style="font-size: 9px; color: #cbd5e1; margin-top: 4px;">System Timestamp: ${new Date().toLocaleString()}</p>
-                </div>
-                <div style="height: 40px; width: 40px; background: #f1f5f9; border-radius: 10px;"></div>
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between;">
+                <p style="font-size: 10px; color: #94a3b8;">Generated on ${new Date().toLocaleDateString()}</p>
+                <p style="font-size: 10px; color: #94a3b8;">&copy; Student Pro Admin System</p>
             </div>
         </div>`;
 
+    // PDF Configuration and Save
     const opt = {
         margin: 0,
-        filename: `${level}_Academic_Report_${monthName}_${year}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+        filename: `${level}_Report_${monthName}_${year}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
 
