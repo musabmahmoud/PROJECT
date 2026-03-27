@@ -43,6 +43,22 @@
 const API_TEACHERS = "/api/teachers";
 const currentUser = localStorage.getItem("user");
 
+function openAddTeacher() {
+    // For now, let's use a simple alert or a toggle for a hidden div
+    const name = prompt("Enter Teacher Name:");
+    const subject = prompt("Enter Subject (Math, Physics, etc.):");
+    const salary = prompt("Enter Monthly Salary (EGP):");
+    const admin = localStorage.getItem("user");
+
+    if (name && subject && salary) {
+        fetch('/api/teachers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, subject, salary: Number(salary), admin, owner: admin })
+        }).then(() => loadTeachers());
+    }
+}
+
 window.onload = loadTeachers;
 
 async function loadTeachers() {
