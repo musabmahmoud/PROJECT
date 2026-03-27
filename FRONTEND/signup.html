@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+  <div class="bg-white p-10 rounded-xl shadow-lg w-96 border border-gray-200">
+    <h1 class="text-3xl font-bold mb-2 text-center text-gray-800">Sign Up</h1>
+    <p class="text-gray-500 text-center mb-8 text-sm">Create a new admin account</p>
+    
+    <div class="space-y-4">
+      <input id="username" type="text" placeholder="Choose Username" 
+             class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+      
+      <input id="password" type="password" placeholder="Create Password" 
+             class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+      
+      <button onclick="signup()" 
+              class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow-md transition duration-200">
+        Register
+      </button>
+    </div>
+
+    <p id="msg" class="mt-4 text-center font-medium"></p>
+    <p class="mt-6 text-center text-sm text-gray-600">
+      Already have an account? <a href="login.html" class="text-blue-600 hover:underline">Login here</a>
+    </p>
+  </div>
+
+<script>
+const API = "/api/auth";
+
+async function signup() {
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  const msgElement = document.getElementById("msg");
+
+  if (!username || !password) {
+    msgElement.className = "text-red-500 mt-4 text-center font-medium";
+    msgElement.innerText = "Please fill in all fields.";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/signup`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ username, password })
+    });
+    
+    const data = await res.json();
+    
+    if(res.ok) {
+      msgElement.className = "text-green-600 mt-4 text-center font-medium";
+      msgElement.innerText = "Success! Redirecting to login...";
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 2000);
+    } else {
+      msgElement.className = "text-red-500 mt-4 text-center font-medium";
+      msgElement.innerText = data.error || "Signup failed";
+    }
+  } catch (err) {
+    msgElement.className = "text-red-500 mt-4 text-center font-medium";
+    msgElement.innerText = "Error connecting to server.";
+  }
+}
+</script>
+</body>
+</html>

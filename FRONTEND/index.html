@@ -1,61 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-100 p-8">
+<body class="bg-gray-100 p-4 md:p-8">
 
-  <h1 class="text-3xl font-bold mb-6">Student Dashboard</h1>
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">Student Management Dashboard</h1>
 
-  <div class="grid grid-cols-2 gap-6 mb-6">
-    <div class="bg-white p-6 rounded shadow">
-      <h2 class="text-xl font-bold mb-2">Total Revenue</h2>
-      <p id="totalRevenue">$0</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+        <h2 class="text-sm font-semibold text-gray-500 uppercase">Total Revenue</h2>
+        <p id="totalRevenue" class="text-3xl font-bold text-gray-800">$0</p>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+        <h2 class="text-sm font-semibold text-gray-500 uppercase">Total Attendance</h2>
+        <p id="totalAttendance" class="text-3xl font-bold text-gray-800">0</p>
+      </div>
     </div>
-    <div class="bg-white p-6 rounded shadow">
-      <h2 class="text-xl font-bold mb-2">Total Attendance</h2>
-      <p id="totalAttendance">0</p>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+      <table class="min-w-full leading-normal">
+        <thead>
+          <tr class="bg-gray-50">
+            <th class="py-3 px-5 border-b text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
+            <th class="py-3 px-5 border-b text-left text-xs font-semibold text-gray-600 uppercase">Payments</th>
+            <th class="py-3 px-5 border-b text-left text-xs font-semibold text-gray-600 uppercase">Attendance</th>
+            <th class="py-3 px-5 border-b text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTable" class="text-gray-700">
+          </tbody>
+      </table>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <h2 class="text-xl font-bold mb-4 text-gray-700">Analytics Overview</h2>
+      <canvas id="chart" width="400" height="150"></canvas>
     </div>
   </div>
 
-  <table class="min-w-full bg-white rounded shadow mb-6">
-    <thead>
-      <tr>
-        <th class="py-2 px-4 border-b">Name</th>
-        <th class="py-2 px-4 border-b">Payments</th>
-        <th class="py-2 px-4 border-b">Attendance</th>
-        <th class="py-2 px-4 border-b">Actions</th>
-      </tr>
-    </thead>
-    <tbody id="studentsTable"></tbody>
-  </table>
-
-  <canvas id="chart" width="400" height="200"></canvas>
-
 <script>
-const API = "http://localhost:3000/students";
+// IMPORTANT: Use /api prefix to match your vercel.json mapping
+const API = "/api/students";
 
 async function loadStudents() {
-  const res = await fetch(API);
-  const students = await res.json();
-  const tbody = document.getElementById("studentsTable");
-  tbody.innerHTML = "";
-  students.forEach(s => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="py-2 px-4 border-b">${s.name}</td>
-      <td class="py-2 px-4 border-b">${s.payments}</td>
-      <td class="py-2 px-4 border-b">${s.attendance}</td>
-      <td class="py-2 px-4 border-b">
-        <button onclick="markPresent('${s._id}')" class="bg-green-500 text-white px-2 py-1 rounded">Present</button>
-        <button onclick="addPayment('${s._id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Pay</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-  loadStats();
+  try {
+    const res = await fetch(API);
+    if (!res.ok) throw new Error('Failed to fetch students');
+    
+    const students = await res.json();
+    const tbody = document.getElementById("studentsTable");
+    tbody.innerHTML = "";
+    
+    students.forEach(s => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="py-4 px-5 border-b font-medium">${s.name}</td>
+        <td class="py-4 px-5 border-b">$${s.payments || 0}</td>
+        <td class="py-4 px-5 border-b">${s.attendance || 0}</td>
+        <td class="py-4 px-5 border-b text-center space-x-2">
+          <button onclick="markPresent('${s._id}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition">Present</button>
+          <button onclick="addPayment('${s._id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition">Pay</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+    
+    // Load statistics after table is ready
+    loadStats();
+  } catch (err) {
+    console.error("Error loading students:", err);
+  }
 }
 
 async function markPresent(id) {
@@ -65,7 +85,8 @@ async function markPresent(id) {
 
 async function addPayment(id) {
   const amount = parseInt(prompt("Enter payment amount:"));
-  if(isNaN(amount)) return;
+  if(isNaN(amount) || amount <= 0) return;
+  
   await fetch(`${API}/${id}/pay`, {
     method: "POST",
     headers: {"Content-Type":"application/json"},
@@ -75,25 +96,39 @@ async function addPayment(id) {
 }
 
 async function loadStats() {
-  const res = await fetch(`${API}/stats/all`);
-  const data = await res.json();
-  document.getElementById("totalRevenue").innerText = `$${data.totalMoney}`;
-  document.getElementById("totalAttendance").innerText = data.totalAttendance;
+  try {
+    const res = await fetch(`${API}/stats/all`);
+    const data = await res.json();
+    
+    document.getElementById("totalRevenue").innerText = `$${data.totalMoney || 0}`;
+    document.getElementById("totalAttendance").innerText = data.totalAttendance || 0;
 
-  const ctx = document.getElementById('chart').getContext('2d');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Revenue', 'Attendance'],
-      datasets: [{
-        label: 'Stats',
-        data: [data.totalMoney, data.totalAttendance],
-        backgroundColor: ['#3b82f6','#10b981']
-      }]
-    }
-  });
+    const ctx = document.getElementById('chart').getContext('2d');
+    
+    // Clear old chart if it exists to prevent overlap
+    if (window.myChart) window.myChart.destroy();
+    
+    window.myChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Total Revenue ($)', 'Total Attendance'],
+        datasets: [{
+          label: 'System Stats',
+          data: [data.totalMoney, data.totalAttendance],
+          backgroundColor: ['#3b82f6', '#10b981'],
+          borderRadius: 5
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  } catch (err) {
+    console.error("Error loading stats:", err);
+  }
 }
 
+// Start everything when page loads
 window.onload = loadStudents;
 </script>
 </body>

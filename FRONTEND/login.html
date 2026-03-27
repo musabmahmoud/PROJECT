@@ -1,38 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
-  <div class="bg-white p-10 rounded-xl shadow-md w-96">
-    <h1 class="text-2xl font-bold mb-6 text-center">Login</h1>
-    <input id="username" type="text" placeholder="Username" class="w-full p-3 mb-4 border rounded" />
-    <input id="password" type="password" placeholder="Password" class="w-full p-3 mb-4 border rounded" />
-    <button onclick="login()" class="w-full bg-blue-500 text-white py-3 rounded">Login</button>
-    <p id="msg" class="text-red-500 mt-3"></p>
+  <div class="bg-white p-10 rounded-xl shadow-lg w-96 border border-gray-200">
+    <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">Login</h1>
+    
+    <div class="space-y-4">
+      <input id="username" type="text" placeholder="Username" 
+             class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+      
+      <input id="password" type="password" placeholder="Password" 
+             class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+      
+      <button onclick="login()" 
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md transition duration-200">
+        Sign In
+      </button>
+    </div>
+
+    <p id="msg" class="text-red-500 mt-4 text-center font-medium"></p>
   </div>
 
 <script>
-const API = "http://localhost:3000/auth";
+// IMPORTANT: Changed to relative path to work on Vercel
+const API = "/api/auth";
 
 async function login() {
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
+  const msgElement = document.getElementById("msg");
 
-  const res = await fetch(`${API}/login`, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ username, password })
-  });
-  
-  const data = await res.json();
-  if(res.ok) {
-    window.location.href = "index.html";
-  } else {
-    document.getElementById("msg").innerText = data.error;
+  // Simple validation
+  if (!username || !password) {
+    msgElement.innerText = "Please fill in all fields.";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/login`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ username, password })
+    });
+    
+    const data = await res.json();
+    
+    if(res.ok) {
+      // If login is successful, save user info and go to dashboard
+      localStorage.setItem("user", data.username);
+      window.location.href = "index.html";
+    } else {
+      // Show error from backend (like "Invalid password")
+      msgElement.innerText = data.error || "Login failed";
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    msgElement.innerText = "Server is currently unavailable.";
   }
 }
+
+// Allow pressing "Enter" to login (much better for users!)
+document.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        login();
+    }
+});
 </script>
 </body>
 </html>
