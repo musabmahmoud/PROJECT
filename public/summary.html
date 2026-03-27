@@ -7,11 +7,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
+        // SECURITY: Immediate redirect if not logged in
         if (!localStorage.getItem("user")) { window.location.href = "login.html"; }
     </script>
     <style>
-        body { font-family: sans-serif; background-color: #F8FAFC; }
-        .glass-card { background: white; border: 1px solid #edf2f7; }
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
+        .glass-card { 
+            background: white; 
+            border: 1px solid #edf2f7; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+        }
     </style>
 </head>
 <body class="pb-20">
@@ -19,25 +28,42 @@
     <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 mb-10">
         <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
-                <h1 class="text-2xl font-black text-gray-900">Academic <span class="text-blue-600">Insights</span></h1>
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Classroom Analytics</p>
+                <h1 class="text-2xl font-black text-gray-900 tracking-tight">Academic <span class="text-blue-600">Insights</span></h1>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Classroom Analytics</p>
+                </div>
             </div>
 
             <div class="flex items-center gap-3 bg-gray-100 p-1.5 rounded-2xl border border-gray-200">
-                <select id="monthSelect" onchange="loadSummary()" class="px-4 py-2 bg-white rounded-xl font-bold outline-none">
-                    <option value="01">January</option><option value="02">February</option>
-                    <option value="03" selected>March</option><option value="04">April</option>
+                <select id="monthSelect" onchange="loadSummary()" class="px-4 py-2 bg-white rounded-xl font-bold text-gray-700 outline-none shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                    <option value="01">January</option>
+                    <option value="02">February</option>
+                    <option value="03" selected>March</option>
+                    <option value="04">April</option>
+                    <option value="05">May</option>
+                    <option value="06">June</option>
+                    <option value="07">July</option>
+                    <option value="08">August</option>
+                    <option value="09">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
                 </select>
-                <select id="yearSelect" onchange="loadSummary()" class="px-4 py-2 bg-white rounded-xl font-bold outline-none">
-                    <option value="2025">2025</option><option value="2026" selected>2026</option>
+                <select id="yearSelect" onchange="loadSummary()" class="px-4 py-2 bg-white rounded-xl font-bold text-gray-700 outline-none shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                    <option value="2025">2025</option>
+                    <option value="2026" selected>2026</option>
                 </select>
-                <a href="index.html" class="bg-gray-900 text-white px-6 py-2 rounded-xl font-bold">Back</a>
+                <a href="index.html" class="bg-gray-900 text-white px-6 py-2 rounded-xl font-bold text-sm hover:bg-black transition-all active:scale-95 shadow-lg shadow-gray-200">
+                    ← Back to Dashboard
+                </a>
             </div>
         </div>
     </nav>
 
     <div class="max-w-6xl mx-auto px-6">
-        <div id="summaryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        <div id="summaryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
     </div>
 
 <script>
@@ -45,6 +71,7 @@ const API = "/api/students";
 const currentUser = localStorage.getItem("user");
 let allStudentsData = [];
 
+// Initialize data on load
 window.onload = loadSummary;
 
 async function loadSummary() {
@@ -53,74 +80,160 @@ async function loadSummary() {
     const targetMonth = `${year}-${month}`;
     const container = document.getElementById("summaryContainer");
     
-    container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold animate-pulse">Syncing data for ${currentUser}...</div>`;
+    // Loading State
+    container.innerHTML = `
+        <div class="col-span-full py-32 text-center">
+            <div class="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-gray-400 font-black uppercase tracking-[0.2em] text-xs">Syncing ${currentUser}'s Data...</p>
+        </div>`;
 
     try {
+        // Fetch data with security admin filter
         const res = await fetch(`${API}?month=${targetMonth}&admin=${currentUser}`);
         allStudentsData = await res.json();
         container.innerHTML = "";
 
+        if (allStudentsData.length === 0) {
+            container.innerHTML = `
+                <div class="col-span-full py-20 bg-white rounded-[3rem] border border-dashed border-gray-200 text-center">
+                    <p class="text-gray-400 font-bold">No student records found for ${targetMonth}.</p>
+                </div>`;
+            return;
+        }
+
+        // Group students by Academic Level (e.g., Sec 1, Sec 2)
         const groups = {};
         allStudentsData.forEach(s => {
             if (!groups[s.level]) groups[s.level] = [];
             groups[s.level].push(s);
         });
 
+        // Generate a card for each level
         Object.keys(groups).sort().forEach(level => {
             const group = groups[level];
-            let rev = 0, p = 0, a = 0, g = 0, c = 0;
+            let totalRevenue = 0;
+            let totalPresents = 0;
+            let totalAbsences = 0;
+            let totalGrades = 0;
+            let gradedStudentsCount = 0;
 
             group.forEach(s => {
-                rev += (Number(s.payments) || 0);
-                p += (Number(s.attendance) || 0);
-                a += (Number(s.absences) || 0);
-                if (Number(s.grade) > 0) { g += Number(s.grade); c++; }
+                totalRevenue += (Number(s.payments) || 0);
+                totalPresents += (Number(s.attendance) || 0);
+                totalAbsences += (Number(s.absences) || 0);
+                if (Number(s.grade) > 0) {
+                    totalGrades += Number(s.grade);
+                    gradedStudentsCount++;
+                }
             });
 
+            const avgGrade = gradedStudentsCount > 0 ? (totalGrades / gradedStudentsCount).toFixed(0) : 0;
+
             container.innerHTML += `
-                <div class="glass-card p-8 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all">
-                    <div class="flex justify-between items-start mb-6">
-                        <h2 class="text-3xl font-black text-gray-900">${level}</h2>
-                        <div class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-sm">${c > 0 ? (g/c).toFixed(0) : 0}%</div>
-                    </div>
-                    <div class="space-y-4 mb-8">
-                        <div class="flex justify-between border-b pb-2">
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Revenue</span>
-                            <span class="text-sm font-black text-gray-800">${rev.toLocaleString()} EGP</span>
+                <div class="glass-card p-10 rounded-[3rem] shadow-sm flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-8">
+                        <div>
+                            <h2 class="text-4xl font-black text-gray-900 leading-none">${level}</h2>
+                            <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-2">${group.length} Active Students</p>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Attendance</span>
-                            <span class="text-sm font-black text-green-600">${p}P / ${a}A</span>
+                        <div class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-blue-100">
+                            <span class="text-lg font-black leading-none">${avgGrade}</span>
+                            <span class="text-[8px] font-bold uppercase">Avg %</span>
                         </div>
                     </div>
-                    <button onclick="downloadGradeReport('${level}')" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg">Download Report</button>
+
+                    <div class="space-y-5 mb-10 flex-grow">
+                        <div class="flex justify-between items-end border-b border-gray-50 pb-3">
+                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Monthly Cash</span>
+                            <span class="text-xl font-black text-gray-800">${totalRevenue.toLocaleString()} <span class="text-xs text-gray-300">EGP</span></span>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Attendance</span>
+                            <div class="text-right">
+                                <span class="text-sm font-black text-green-500">✅ ${totalPresents}</span>
+                                <span class="text-gray-200 mx-1">/</span>
+                                <span class="text-sm font-black text-orange-400">❌ ${totalAbsences}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="downloadGradeReport('${level}')" 
+                            class="group w-full py-5 bg-blue-50 text-blue-600 rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
+                        Download PDF Report
+                        <span class="group-hover:translate-y-0.5 transition-transform">⬇️</span>
+                    </button>
                 </div>`;
         });
-    } catch (e) { container.innerHTML = `<p class="text-red-500 font-bold text-center col-span-full">Connection Error</p>`; }
+    } catch (e) { 
+        container.innerHTML = `
+            <div class="col-span-full text-center py-20">
+                <p class="text-red-500 font-black">DATABASE CONNECTION ERROR</p>
+                <button onclick="loadSummary()" class="mt-4 text-blue-600 font-bold underline">Try Again</button>
+            </div>`; 
+    }
 }
 
 function downloadGradeReport(level) {
-    const monthName = document.getElementById("monthSelect").options[document.getElementById("monthSelect").selectedIndex].text;
+    const monthSelect = document.getElementById("monthSelect");
+    const monthName = monthSelect.options[monthSelect.selectedIndex].text;
     const year = document.getElementById("yearSelect").value;
     const students = allStudentsData.filter(s => s.level === level);
     
+    // Construct HTML for the PDF table
     let rowsHtml = "";
-    students.forEach(s => {
-        rowsHtml += `<tr style="border-bottom: 1px solid #eee;"><td style="padding: 12px;">${s.name}</td><td style="padding: 12px;">${s.payments} EGP</td><td style="padding: 12px;">${s.attendance}P / ${s.absences}A</td><td style="padding: 12px; font-weight: bold; color: #2563eb;">${s.grade}%</td></tr>`;
+    students.sort((a, b) => a.name.localeCompare(b.name)).forEach(s => {
+        rowsHtml += `
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 14px; font-size: 14px; font-weight: 600; color: #1e293b;">${s.name}</td>
+                <td style="padding: 14px; font-size: 14px; color: #64748b;">${s.payments} EGP</td>
+                <td style="padding: 14px; font-size: 14px; color: #64748b;">${s.attendance}P / ${s.absences}A</td>
+                <td style="padding: 14px; font-size: 14px; font-weight: 800; color: #2563eb; text-align: right;">${s.grade}%</td>
+            </tr>`;
     });
 
     const pdfTemplate = `
-        <div style="padding: 40px; font-family: sans-serif;">
-            <h1 style="text-align: center; margin-bottom: 20px;">${level} Report - ${monthName} ${year}</h1>
+        <div style="padding: 50px; font-family: 'Helvetica', sans-serif; color: #1e293b;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px;">
+                <div>
+                    <h1 style="font-size: 28px; font-weight: 900; margin: 0; color: #0f172a;">${level} ACADEMIC REPORT</h1>
+                    <p style="margin: 5px 0 0 0; color: #64748b; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Period: ${monthName} ${year}</p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="margin: 0; font-weight: 900; color: #2563eb;">STUDENT PRO</p>
+                    <p style="margin: 0; font-size: 10px; color: #94a3b8;">Instructor: ${currentUser}</p>
+                </div>
+            </div>
+
             <table style="width: 100%; border-collapse: collapse;">
-                <thead style="background: #f8fafc;">
-                    <tr><th style="padding: 12px; text-align: left;">Name</th><th style="padding: 12px; text-align: left;">Paid</th><th style="padding: 12px; text-align: left;">Attendance</th><th style="padding: 12px; text-align: left;">Grade</th></tr>
+                <thead>
+                    <tr style="background-color: #f8fafc; text-align: left;">
+                        <th style="padding: 15px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Student Name</th>
+                        <th style="padding: 15px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Payments</th>
+                        <th style="padding: 15px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Attendance</th>
+                        <th style="padding: 15px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; text-align: right;">Final Grade</th>
+                    </tr>
                 </thead>
-                <tbody>${rowsHtml}</tbody>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
             </table>
+
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between;">
+                <p style="font-size: 10px; color: #94a3b8;">Generated on ${new Date().toLocaleDateString()}</p>
+                <p style="font-size: 10px; color: #94a3b8;">&copy; Student Pro Admin System</p>
+            </div>
         </div>`;
 
-    html2pdf().from(pdfTemplate).set({ filename: `${level}_Report.pdf`, margin: 0.5 }).save();
+    // PDF Configuration and Save
+    const opt = {
+        margin: 0,
+        filename: `${level}_Report_${monthName}_${year}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().from(pdfTemplate).set(opt).save();
 }
 </script>
 </body>

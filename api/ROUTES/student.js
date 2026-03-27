@@ -147,5 +147,29 @@ router.get("/stats/all", async (req, res) => {
     });
   } catch (err) { res.status(500).json({ error: "Stats failed" }); }
 });
+// 7. Delete Student (SECURED: Must match Owner)
+router.delete("/:id", async (req, res) => {
+  try {
+    const admin = req.query.admin; // Passed from frontend ?admin=...
 
+    if (!admin) {
+      return res.status(400).json({ error: "Admin identifier required" });
+    }
+
+    // This ensures Admin A cannot delete Admin B's students
+    const deleted = await Student.findOneAndDelete({ 
+      _id: req.params.id, 
+      owner: admin 
+    });
+
+    if (!deleted) {
+      return res.status(403).json({ error: "Unauthorized or Student not found" });
+    }
+
+    res.json({ message: "Student deleted successfully" });
+  } catch (err) { 
+    console.error("Delete Error:", err);
+    res.status(500).json({ error: "Delete operation failed" }); 
+  }
+});
 module.exports = router;

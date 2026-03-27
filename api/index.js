@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const studentRoutes = require("./ROUTES/student"); 
 const authRoutes = require("./ROUTES/auth");       
+const Student = require("./MODELS/student"); // Import Model for the migration check
 
 const app = express();
 
@@ -16,21 +17,36 @@ if (!mongoURI) {
   console.error("❌ MONGO_URI missing");
 } else {
   mongoose.connect(mongoURI)
-    .then(() => console.log('✅ MongoDB Connected'))
+    .then(async () => {
+      console.log('✅ MongoDB Connected');
+      
+      // --- THE "BIG PROBLEM" FIX (MIGRATION) ---
+      // This runs once on startup to fix old students without owners
+      try {
+        const result = await Student.updateMany(
+          { owner: { $exists: false } }, 
+          { $set: { owner: "Admin" } } 
+        );
+        if(result.modifiedCount > 0) {
+          console.log(`🛠 Fixed ${result.modifiedCount} ownerless students.`);
+        }
+      } catch (err) {
+        console.error("❌ Migration Error:", err);
+      }
+      // -----------------------------------------
+    })
     .catch(err => console.error('❌ MongoDB Error:', err));
 }
 
 // Routes
-// When using the /api folder, Vercel maps requests to the folder name.
 app.use("/api/students", studentRoutes);
 app.use("/api/auth", authRoutes);
 
-// This handles the request to https://your-url.com/api
+// Health Checks
 app.get("/api", (req, res) => {
   res.status(200).send("Backend is running perfectly!");
 });
 
-// Fallback for the root of the function
 app.get("/", (req, res) => {
   res.status(200).send("API Index reached");
 });

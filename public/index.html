@@ -6,6 +6,7 @@
   <title>Student Pro Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
+    // SECURITY: Immediate redirect if not logged in
     if (!localStorage.getItem("user")) { window.location.href = "login.html"; }
   </script>
 </head>
@@ -14,16 +15,18 @@
     
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 gap-4">
       <div>
-        <h1 class="text-2xl font-black text-gray-900">Student Pro</h1>
-        <div class="flex gap-4 mt-1">
-           <span id="userDisplay" class="text-blue-600 font-bold text-sm">Admin</span>
-           <a href="summary.html" class="text-purple-600 font-bold text-sm hover:underline">View Summary →</a>
+        <h1 class="text-2xl font-black text-gray-900 tracking-tight">Student <span class="text-blue-600">Pro</span></h1>
+        <div class="flex gap-4 mt-1 items-center">
+           <span id="userDisplay" class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">Admin</span>
+           <a href="summary.html" class="text-purple-600 font-bold text-xs hover:underline flex items-center gap-1">
+             📊 View Full Summary
+           </a>
         </div>
       </div>
 
       <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-100">
-        <span class="text-sm font-bold text-gray-400 px-2 uppercase">Month:</span>
-        <select id="dashMonth" onchange="loadData()" class="bg-white border-none font-bold text-gray-700 rounded-lg p-1 outline-none shadow-sm">
+        <span class="text-[10px] font-black text-gray-400 px-2 uppercase tracking-widest">Selected Month</span>
+        <select id="dashMonth" onchange="loadData()" class="bg-white border-none font-bold text-gray-700 rounded-lg p-1.5 outline-none shadow-sm cursor-pointer">
           <option value="2026-01">Jan 2026</option>
           <option value="2026-02">Feb 2026</option>
           <option value="2026-03" selected>Mar 2026</option>
@@ -31,32 +34,33 @@
         </select>
       </div>
 
-      <button onclick="logout()" class="bg-red-500 text-white px-5 py-2 rounded-xl font-bold shadow-md hover:bg-red-600 transition">Logout</button>
+      <button onclick="logout()" class="bg-red-500 text-white px-6 py-2.5 rounded-xl font-bold shadow-md hover:bg-red-600 transition-all active:scale-95">Logout</button>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-blue-500">
-        <h2 class="text-xs font-bold text-gray-400 uppercase">Revenue</h2>
+      <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-blue-500 group hover:shadow-md transition-shadow">
+        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Revenue</h2>
         <p id="totalRevenue" class="text-3xl font-black text-gray-800 mt-1">0 EGP</p>
       </div>
-      <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-green-500">
-        <h2 class="text-xs font-bold text-gray-400 uppercase">Presents / Absences</h2>
+      <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-green-500 group hover:shadow-md transition-shadow">
+        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Present / Absent</h2>
         <p id="totalAttendanceDisplay" class="text-3xl font-black text-gray-800 mt-1">0 / 0</p>
       </div>
-      <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-purple-500">
-        <h2 class="text-xs font-bold text-gray-400 uppercase">Students</h2>
+      <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-purple-500 group hover:shadow-md transition-shadow">
+        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Students</h2>
         <p id="totalStudentsCount" class="text-3xl font-black text-gray-800 mt-1">0</p>
       </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
-      <div class="lg:col-span-2 relative">
-        <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Search names..." 
-               class="w-full p-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none">
+      <div class="lg:col-span-2 relative group">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-blue-500 transition-colors">🔍</span>
+        <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Search by student name..." 
+               class="w-full pl-12 pr-4 py-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
       </div>
       <div class="bg-white p-2 rounded-2xl shadow-sm flex gap-2 border border-gray-100 lg:col-span-2">
-        <input id="newStudentName" type="text" placeholder="Full Name" class="flex-1 p-2 bg-gray-50 rounded-lg outline-none" />
-        <select id="newStudentLevel" class="bg-gray-100 p-2 rounded-lg font-bold text-gray-700">
+        <input id="newStudentName" type="text" placeholder="Enter New Name" class="flex-1 p-2 px-4 bg-gray-50 rounded-xl outline-none focus:bg-white transition-all" />
+        <select id="newStudentLevel" class="bg-gray-100 p-2 rounded-xl font-bold text-gray-700 outline-none">
             <option value="Prep 1">Prep 1</option>
             <option value="Prep 2">Prep 2</option>
             <option value="Prep 3">Prep 3</option>
@@ -64,58 +68,64 @@
             <option value="Sec 2" selected>Sec 2</option>
             <option value="Sec 3">Sec 3</option>
         </select>
-        <button onclick="addNewStudent()" class="bg-purple-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg">+</button>
+        <button onclick="addNewStudent()" class="bg-purple-600 text-white px-6 py-2 rounded-xl font-black shadow-lg hover:bg-purple-700 transition-all active:scale-90">+</button>
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 mb-8">
-      <table class="min-w-full">
-        <thead class="bg-gray-50 border-b text-left text-gray-500 text-xs font-bold uppercase">
-          <tr>
-            <th class="py-4 px-6">Name</th>
-            <th class="py-4 px-6">Level</th>
-            <th class="py-4 px-6">Payments</th>
-            <th class="py-4 px-6">Attendance</th>
-            <th class="py-4 px-6 text-purple-600">Grade</th> 
-            <th class="py-4 px-6 text-center">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="studentsTable" class="divide-y divide-gray-100"></tbody>
-      </table>
+    <div class="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100 mb-20">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-gray-50/50 border-b text-left text-gray-400 text-[10px] font-black uppercase tracking-widest">
+            <tr>
+              <th class="py-5 px-8">Student Name</th>
+              <th class="py-5 px-6">Academic Level</th>
+              <th class="py-5 px-6 text-blue-600">Payments</th>
+              <th class="py-5 px-6">Attendance</th>
+              <th class="py-5 px-6 text-purple-600">Grade %</th> 
+              <th class="py-5 px-8 text-center">Quick Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTable" class="divide-y divide-gray-50">
+            </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <div id="paymentModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl">
-      <h3 class="text-2xl font-black mb-2">Add Payment</h3>
+  <div id="paymentModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl">
+      <h3 class="text-2xl font-black mb-1">Add Payment</h3>
+      <p class="text-gray-400 text-xs font-bold uppercase mb-6">Enter amount in EGP</p>
       <input type="hidden" id="payId">
-      <input type="number" id="payAmt" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl mb-6 text-2xl font-black text-blue-600 outline-none" placeholder="0">
-      <div class="flex gap-3">
-        <button onclick="closeModal('paymentModal')" class="flex-1 py-4 font-bold text-gray-400 rounded-2xl">Cancel</button>
-        <button onclick="submitPay()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg">Confirm</button>
+      <input type="number" id="payAmt" class="w-full p-5 bg-gray-50 border-2 border-gray-100 rounded-2xl mb-8 text-4xl font-black text-blue-600 outline-none focus:border-blue-500 transition-all" placeholder="0">
+      <div class="flex gap-4">
+        <button onclick="closeModal('paymentModal')" class="flex-1 py-4 font-bold text-gray-400 hover:text-gray-600 transition-colors">Cancel</button>
+        <button onclick="submitPay()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl hover:bg-blue-700 transition-all">Confirm</button>
       </div>
     </div>
   </div>
 
-  <div id="gradeModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl">
+  <div id="gradeModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl">
       <h3 class="text-2xl font-black mb-1">Update Grade</h3>
-      <p id="gradeStudentName" class="text-gray-400 font-bold text-xs mb-6 uppercase tracking-widest"></p>
+      <p id="gradeStudentName" class="text-blue-600 font-bold text-xs mb-8 uppercase tracking-widest"></p>
       <input type="hidden" id="gradeId">
-      <input type="number" id="gradeInput" class="w-full p-5 bg-gray-50 border-2 border-gray-100 rounded-2xl text-3xl font-black text-purple-600 outline-none mb-8" placeholder="0">
-      <div class="flex gap-3">
-        <button onclick="closeGradeModal()" class="flex-1 py-4 font-bold text-gray-400 rounded-2xl">Cancel</button>
-        <button onclick="submitGrade()" class="flex-1 py-4 bg-purple-600 text-white rounded-2xl font-black shadow-lg">Save</button>
+      <input type="number" id="gradeInput" class="w-full p-5 bg-gray-50 border-2 border-gray-100 rounded-2xl text-4xl font-black text-purple-600 outline-none focus:border-purple-500 mb-8" placeholder="0">
+      <div class="flex gap-4">
+        <button onclick="closeGradeModal()" class="flex-1 py-4 font-bold text-gray-400 hover:text-gray-600 transition-colors">Cancel</button>
+        <button onclick="submitGrade()" class="flex-1 py-4 bg-purple-600 text-white rounded-2xl font-black shadow-xl hover:bg-purple-700 transition-all">Save Grade</button>
       </div>
     </div>
   </div>
 
-  <div id="deleteModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl">
-        <h2 class="text-2xl font-black text-center mb-8">Delete Student?</h2>
-        <div class="flex gap-3">
-            <button onclick="closeDeleteModal()" class="flex-1 py-4 rounded-2xl font-bold text-gray-400">Cancel</button>
-            <button onclick="executeDelete()" class="flex-1 py-4 rounded-2xl font-black text-white bg-red-500">Delete</button>
+  <div id="deleteModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-[2.5rem] w-full max-w-xs p-10 shadow-2xl text-center">
+        <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-6">⚠️</div>
+        <h2 class="text-2xl font-black text-gray-900 mb-2">Are you sure?</h2>
+        <p class="text-gray-400 text-sm font-medium mb-8">This action cannot be undone. All data will be lost.</p>
+        <div class="flex flex-col gap-3">
+            <button onclick="executeDelete()" class="w-full py-4 rounded-2xl font-black text-white bg-red-500 shadow-lg shadow-red-200 hover:bg-red-600 transition-all">Yes, Delete</button>
+            <button onclick="closeDeleteModal()" class="w-full py-4 rounded-2xl font-bold text-gray-400 hover:bg-gray-50 transition-all">Cancel</button>
         </div>
     </div>
   </div>
@@ -132,32 +142,47 @@ window.onload = () => {
 
 async function loadData() {
   const selectedMonth = document.getElementById("dashMonth").value;
-  // SECURITY: Filter by admin on the server
-  const res = await fetch(`${API}?month=${selectedMonth}&admin=${currentUser}`);
-  const students = await res.json();
   const tbody = document.getElementById("studentsTable");
-  tbody.innerHTML = "";
   
-  students.forEach(s => {
-    tbody.innerHTML += `
-      <tr class="hover:bg-gray-50 transition-all">
-        <td class="py-4 px-6 font-bold text-gray-800">${s.name}</td>
-        <td class="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">${s.level}</td>
-        <td class="py-4 px-6 text-blue-600 font-black">${s.payments || 0} EGP</td>
-        <td class="py-4 px-6 text-sm font-medium">✅ ${s.attendance || 0} <span class="text-gray-200 mx-1">|</span> ❌ ${s.absences || 0}</td>
-        <td class="py-4 px-6 font-black text-purple-600">${s.grade || 0}%</td>
-        <td class="py-4 px-6">
-          <div class="flex justify-center gap-2">
-            <button onclick="markAttendance('${s._id}', 'present')" class="w-9 h-9 flex items-center justify-center bg-green-50 text-green-600 rounded-xl font-bold hover:bg-green-600 hover:text-white transition-all">P</button>
-            <button onclick="markAttendance('${s._id}', 'absent')" class="w-9 h-9 flex items-center justify-center bg-orange-50 text-orange-600 rounded-xl font-bold hover:bg-orange-600 hover:text-white transition-all">A</button>
-            <button onclick="openGradeModal('${s._id}', '${s.name}', ${s.grade || 0})" class="w-9 h-9 flex items-center justify-center bg-purple-50 text-purple-600 rounded-xl font-bold hover:bg-purple-600 hover:text-white transition-all">📝</button>
-            <button onclick="openPayModal('${s._id}', ${s.payments || 0})" class="px-3 h-9 bg-blue-50 text-blue-600 rounded-xl font-bold text-xs hover:bg-blue-600 hover:text-white transition-all">Pay</button>
-            <button onclick="openDeleteModal('${s._id}')" class="w-9 h-9 flex items-center justify-center text-red-300 hover:text-red-600 transition-all">✕</button>
-          </div>
-        </td>
-      </tr>`;
-  });
-  updateStats();
+  // Show Loading State
+  tbody.innerHTML = `<tr><td colspan="6" class="py-20 text-center text-gray-300 font-bold animate-pulse uppercase tracking-widest text-xs">Fetching Records...</td></tr>`;
+
+  try {
+    const res = await fetch(`${API}?month=${selectedMonth}&admin=${currentUser}`);
+    const students = await res.json();
+    tbody.innerHTML = "";
+    
+    if (students.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="py-20 text-center text-gray-400 font-medium">No students found for this month.</td></tr>`;
+    }
+
+    students.forEach(s => {
+      tbody.innerHTML += `
+        <tr class="hover:bg-gray-50/80 transition-all group">
+          <td class="py-5 px-8 font-bold text-gray-800">${s.name}</td>
+          <td class="py-5 px-6"><span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter">${s.level}</span></td>
+          <td class="py-5 px-6 text-blue-600 font-black">${s.payments || 0} <span class="text-[10px] text-blue-300">EGP</span></td>
+          <td class="py-5 px-6 text-sm font-bold">
+            <span class="text-green-500">✅ ${s.attendance || 0}</span> 
+            <span class="text-gray-200 mx-2">|</span> 
+            <span class="text-orange-400">❌ ${s.absences || 0}</span>
+          </td>
+          <td class="py-5 px-6 font-black text-purple-600">${s.grade || 0}<span class="text-[10px] opacity-50 ml-0.5">%</span></td>
+          <td class="py-5 px-8">
+            <div class="flex justify-center gap-2">
+              <button onclick="markAttendance('${s._id}', 'present')" title="Present" class="w-10 h-10 flex items-center justify-center bg-green-50 text-green-600 rounded-xl font-black hover:bg-green-600 hover:text-white transition-all active:scale-90">P</button>
+              <button onclick="markAttendance('${s._id}', 'absent')" title="Absent" class="w-10 h-10 flex items-center justify-center bg-orange-50 text-orange-600 rounded-xl font-black hover:bg-orange-600 hover:text-white transition-all active:scale-90">A</button>
+              <button onclick="openGradeModal('${s._id}', '${s.name}', ${s.grade || 0})" title="Grade" class="w-10 h-10 flex items-center justify-center bg-purple-50 text-purple-600 rounded-xl font-bold hover:bg-purple-600 hover:text-white transition-all active:scale-90 text-lg">📝</button>
+              <button onclick="openPayModal('${s._id}', ${s.payments || 0})" class="px-4 h-10 bg-blue-50 text-blue-600 rounded-xl font-black text-xs hover:bg-blue-600 hover:text-white transition-all active:scale-95 shadow-sm shadow-blue-100 uppercase tracking-widest">Pay</button>
+              <button onclick="openDeleteModal('${s._id}')" class="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all hover:rotate-90">✕</button>
+            </div>
+          </td>
+        </tr>`;
+    });
+    updateStats();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-red-500 font-bold">Failed to load data. Please refresh.</td></tr>`;
+  }
 }
 
 async function markAttendance(id, type) {
@@ -197,57 +222,78 @@ async function submitGrade() {
 }
 
 async function addNewStudent() {
-  const name = document.getElementById("newStudentName").value;
+  const nameInput = document.getElementById("newStudentName");
   const level = document.getElementById("newStudentLevel").value;
-  if(!name) return;
+  if(!nameInput.value.trim()) return;
+  
   await fetch(API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, level, owner: currentUser })
+    body: JSON.stringify({ name: nameInput.value.trim(), level, owner: currentUser })
   });
-  document.getElementById("newStudentName").value = "";
+  nameInput.value = "";
   loadData();
 }
 
 function updateStats() {
-  let rev = 0, att = 0, abs = 0;
+  let rev = 0, att = 0, abs = 0, count = 0;
   document.querySelectorAll("#studentsTable tr").forEach(row => {
-    rev += parseInt(row.cells[2].innerText) || 0;
-    const parts = row.cells[3].innerText.match(/\d+/g);
-    if(parts) { att += parseInt(parts[0]); abs += parseInt(parts[1]); }
+    if (row.style.display !== "none" && row.cells.length > 1) {
+      rev += parseInt(row.cells[2].innerText.replace(/[^0-9]/g, "")) || 0;
+      const parts = row.cells[3].innerText.match(/\d+/g);
+      if(parts) { att += parseInt(parts[0]); abs += parseInt(parts[1]); }
+      count++;
+    }
   });
-  document.getElementById("totalRevenue").innerText = `${rev} EGP`;
+  document.getElementById("totalRevenue").innerText = `${rev.toLocaleString()} EGP`;
   document.getElementById("totalAttendanceDisplay").innerText = `${att} / ${abs}`;
-  document.getElementById("totalStudentsCount").innerText = document.querySelectorAll("#studentsTable tr").length;
+  document.getElementById("totalStudentsCount").innerText = count;
 }
 
 function searchStudents() {
   let q = document.getElementById("searchInput").value.toLowerCase();
   document.querySelectorAll("#studentsTable tr").forEach(row => {
-    row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+    if(row.cells.length > 1) {
+       row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+    }
   });
+  updateStats();
 }
 
 function openPayModal(id, current) { 
   document.getElementById("payId").value = id; 
   document.getElementById("payAmt").value = current;
   document.getElementById("paymentModal").classList.remove("hidden"); 
+  document.getElementById("payAmt").focus();
 }
+
 function openGradeModal(id, name, current) {
   document.getElementById("gradeId").value = id;
   document.getElementById("gradeStudentName").innerText = name;
   document.getElementById("gradeInput").value = current;
   document.getElementById("gradeModal").classList.remove("hidden");
+  document.getElementById("gradeInput").focus();
 }
-function openDeleteModal(id) { studentToDelete = id; document.getElementById("deleteModal").classList.remove("hidden"); }
+
+function openDeleteModal(id) { 
+  studentToDelete = id; 
+  document.getElementById("deleteModal").classList.remove("hidden"); 
+}
+
 function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
 function closeGradeModal() { closeModal("gradeModal"); }
 function closeDeleteModal() { closeModal("deleteModal"); }
+
 async function executeDelete() {
-  await fetch(`${API}/${studentToDelete}`, { method: "DELETE" });
-  closeDeleteModal();
-  loadData();
+  const res = await fetch(`${API}/${studentToDelete}?admin=${currentUser}`, { method: "DELETE" });
+  if(res.ok) {
+    closeDeleteModal();
+    loadData();
+  } else {
+    alert("Delete failed. You may not have permission.");
+  }
 }
+
 function logout() { localStorage.clear(); window.location.href="login.html"; }
 </script>
 </body>
