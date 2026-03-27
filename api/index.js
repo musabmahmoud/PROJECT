@@ -17,6 +17,7 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log("✅ TITAN DATABASE: CONNECTED & ONLINE"))
     .catch(err => console.error("❌ DATABASE ERROR:", err));
 
+const API = "/api/students";
 const studentRoutes = require('./ROUTES/student'); // Removed the 's'
 const teacherRoutes = require('./ROUTES/teachers'); // Check if this is singular too!
 const authRoutes = require('./ROUTES/auth');
