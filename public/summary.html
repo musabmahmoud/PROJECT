@@ -56,28 +56,28 @@
 
         <div id="summaryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
     </div>
+
+
 <script>
 let allStudentsData = [];
 
 window.onload = loadSummary;
 
 async function loadSummary() {
-    const month = document.getElementById("monthSelect").value; // e.g., "03"
-    const year = document.getElementById("yearSelect").value;   // e.g., "2026"
-    const targetMonth = `${year}-${month}`; 
-    const container = document.getElementById("summaryContainer");
+    const monthVal = document.getElementById("monthSelect").value; // "03"
+    const yearVal = document.getElementById("yearSelect").value;   // "2026"
+    const monthText = document.getElementById("monthSelect").options[document.getElementById("monthSelect").selectedIndex].text; // "March"
     
-    container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold animate-pulse">Syncing with Database...</div>`;
+    const container = document.getElementById("summaryContainer");
+    container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold animate-pulse">Searching for ${monthText} ${yearVal}...</div>`;
 
     try {
         let res = await fetch("/api/students");
         if (!res.ok) res = await fetch("/students");
         allStudentsData = await res.json();
         
-        // DEBUG: Check your browser console (F12) to see this table!
-        console.log("Current Selection:", targetMonth);
-        if(allStudentsData.length > 0) console.table(allStudentsData[0].records);
-
+        console.log("Total Students Loaded:", allStudentsData.length);
+        
         container.innerHTML = "";
         const groups = {};
         allStudentsData.forEach(s => {
@@ -89,41 +89,42 @@ async function loadSummary() {
             const group = groups[level];
             let mRev = 0, mP = 0, mA = 0, mT = 0, mC = 0;
 
-            group.forEach(s => {
-                // FUZZY MATCH LOGIC: 
-                // Checks for "2026-03", "2026-3", or just "March"
-                const rec = (s.records || []).find(r => {
-                    const rMonth = String(r.month).toLowerCase();
-                    const selectedMonthText = document.getElementById("monthSelect").options[document.getElementById("monthSelect").selectedIndex].text.toLowerCase();
-                    
-                    return rMonth === targetMonth || 
-                           rMonth === `${year}-${parseInt(month)}` ||
-                           (rMonth.includes(selectedMonthText) && rMonth.includes(year));
+            group.forEach(student => {
+                // DEEP SEARCH LOGIC: Look for ANY match in the records
+                const rec = (student.records || []).find(r => {
+                    if (!r.month) return false;
+                    const rStr = String(r.month).toLowerCase();
+                    // Matches "2026-03", "2026-3", "March 2026", "03/2026", etc.
+                    return (rStr.includes(yearVal)) && 
+                           (rStr.includes(monthVal) || rStr.includes(parseInt(monthVal).toString()) || rStr.includes(monthText.toLowerCase()));
                 });
 
                 if (rec) {
                     mRev += (Number(rec.payments) || 0);
                     mP += (Number(rec.attendance) || 0);
                     mA += (Number(rec.absences) || 0);
-                    if (Number(rec.grade) > 0) { mT += Number(rec.grade); mC++; }
+                    if (Number(rec.grade) > 0) { 
+                        mT += Number(rec.grade); 
+                        mC++; 
+                    }
                 }
             });
 
             const avg = mC > 0 ? (mT / mC).toFixed(0) : 0;
 
             container.innerHTML += `
-                <div class="glass-card p-8 rounded-[2.5rem] hover:shadow-2xl transition-all border border-white/50 bg-white">
+                <div class="glass-card p-8 rounded-[2.5rem] bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all">
                     <div class="flex justify-between items-start mb-6">
                         <h2 class="text-3xl font-black text-gray-900">${level}</h2>
                         <div class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-sm">${avg}%</div>
                     </div>
                     <div class="space-y-4 mb-8">
-                        <div class="flex justify-between border-b border-gray-100 pb-2">
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Revenue</span>
+                        <div class="flex justify-between border-b border-gray-50 pb-2">
+                            <span class="text-xs font-bold text-gray-400 uppercase">Revenue</span>
                             <span class="text-sm font-black text-gray-800">${mRev.toLocaleString()} EGP</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Attendance</span>
+                            <span class="text-xs font-bold text-gray-400 uppercase">Attendance</span>
                             <span class="text-sm font-black text-green-600">${mP}P <span class="text-gray-300">/</span> <span class="text-red-500">${mA}A</span></span>
                         </div>
                     </div>
@@ -133,42 +134,40 @@ async function loadSummary() {
                 </div>`;
         });
     } catch (err) {
-        container.innerHTML = `<div class="col-span-full text-center py-20 text-red-500">Error connecting to server.</div>`;
+        container.innerHTML = `<div class="col-span-full text-center py-20 text-red-500 font-bold">Error: API unreachable</div>`;
     }
 }
 
-// Ensure downloadGradeReport uses the same fuzzy logic
 function downloadGradeReport(level) {
-    const month = document.getElementById("monthSelect").value;
-    const year = document.getElementById("yearSelect").value;
-    const targetMonth = `${year}-${month}`;
-    const selectedMonthText = document.getElementById("monthSelect").options[document.getElementById("monthSelect").selectedIndex].text.toLowerCase();
+    const monthVal = document.getElementById("monthSelect").value;
+    const yearVal = document.getElementById("yearSelect").value;
+    const monthText = document.getElementById("monthSelect").options[document.getElementById("monthSelect").selectedIndex].text;
     
     const students = allStudentsData.filter(s => s.level === level);
     let rows = "";
 
     students.forEach(s => {
         const rec = (s.records || []).find(r => {
-            const rMonth = String(r.month).toLowerCase();
-            return rMonth === targetMonth || 
-                   rMonth === `${year}-${parseInt(month)}` ||
-                   (rMonth.includes(selectedMonthText) && rMonth.includes(year));
+            if (!r.month) return false;
+            const rStr = String(r.month).toLowerCase();
+            return (rStr.includes(yearVal)) && 
+                   (rStr.includes(monthVal) || rStr.includes(parseInt(monthVal).toString()) || rStr.includes(monthText.toLowerCase()));
         }) || { payments: 0, attendance: 0, absences: 0, grade: 0 };
 
         rows += `
             <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 12px; font-family: sans-serif;">${s.name}</td>
-                <td style="padding: 12px; font-family: sans-serif;">${rec.payments} EGP</td>
-                <td style="padding: 12px; font-family: sans-serif;">${rec.attendance}P | ${rec.absences}A</td>
-                <td style="padding: 12px; font-family: sans-serif; font-weight: bold; color: #2563eb;">${rec.grade}%</td>
+                <td style="padding: 12px;">${s.name}</td>
+                <td style="padding: 12px; font-weight: bold;">${rec.payments} EGP</td>
+                <td style="padding: 12px;">${rec.attendance}P / ${rec.absences}A</td>
+                <td style="padding: 12px; font-weight: bold; color: #2563eb;">${rec.grade}%</td>
             </tr>`;
     });
 
-    const htmlContent = `
+    const html = `
         <div style="padding: 40px; font-family: sans-serif;">
-            <h1 style="text-align: center;">${level} REPORT - ${selectedMonthText.toUpperCase()} ${year}</h1>
+            <h1 style="text-align: center;">${level} - ${monthText} ${yearVal}</h1>
             <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: left;">
+                <tr style="background: #f8fafc; text-align: left;">
                     <th style="padding: 12px;">Student Name</th><th style="padding: 12px;">Paid</th>
                     <th style="padding: 12px;">Attendance</th><th style="padding: 12px;">Grade</th>
                 </tr>
@@ -176,25 +175,25 @@ function downloadGradeReport(level) {
             </table>
         </div>`;
 
-    html2pdf().from(htmlContent).set({ filename: `${level}_${targetMonth}.pdf`, margin: 0.5 }).save();
+    html2pdf().from(html).set({ filename: `${level}_${monthText}_${yearVal}.pdf`, margin: 0.5 }).save();
 }
 
 function downloadYearlyReport() {
-    const year = document.getElementById("yearSelect").value;
+    const yearVal = document.getElementById("yearSelect").value;
     let rows = "";
     allStudentsData.forEach(s => {
         let yP = 0, yAtt = 0, yAbs = 0, tG = 0, gC = 0;
         (s.records || []).forEach(r => {
-            if (String(r.month).includes(year)) {
+            if (String(r.month).includes(yearVal)) {
                 yP += (Number(r.payments) || 0);
                 yAtt += (Number(r.attendance) || 0);
                 yAbs += (Number(r.absences) || 0);
                 if (Number(r.grade) > 0) { tG += Number(r.grade); gC++; }
             }
         });
-        rows += `<tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px;">${s.name}</td><td>${s.level}</td><td>${yP} EGP</td><td>${yAtt}P/${yAbs}A</td><td>${gC > 0 ? (tG/gC).toFixed(0) : 0}%</td></tr>`;
+        rows += `<tr><td>${s.name}</td><td>${s.level}</td><td>${yP}</td><td>${yAtt}P/${yAbs}A</td><td>${gC > 0 ? (tG/gC).toFixed(0) : 0}%</td></tr>`;
     });
-    html2pdf().from(`<div style="padding: 30px;"><h1>Annual Report ${year}</h1><table border="1" style="width:100%">${rows}</table></div>`).save();
+    html2pdf().from(`<table border="1">${rows}</table>`).save();
 }
 </script>
 </body>
