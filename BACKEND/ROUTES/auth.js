@@ -3,15 +3,13 @@ const router = express.Router();
 const User = require("../MODELS/user");
 const bcrypt = require("bcrypt");
 
-// Register (Signup) - Clean Version
-router.post("/register", async (req, res) => {
+// Signup
+router.post("/signup", async (req, res) => { 
   try {
-    // Just pass the plain password; the Schema's .pre("save") will hash it for you!
     const user = new User({ 
       username: req.body.username, 
       password: req.body.password 
     });
-
     await user.save();
     res.json({ message: "User created" });
   } catch (err) {
