@@ -10,6 +10,7 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; }
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); }
+        .btn-loading { opacity: 0.5; pointer-events: none; }
     </style>
 </head>
 <body class="pb-20">
@@ -58,8 +59,7 @@
     </div>
 
 <script>
-const API = "/api/students";
-let allStudentsData = []; // Store fetched data globally for filtering
+let allStudentsData = [];
 
 window.onload = loadSummary;
 
@@ -72,8 +72,14 @@ async function loadSummary() {
     container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold animate-pulse">Analyzing ${targetMonth}...</div>`;
 
     try {
-        const res = await fetch(API); 
+        // Try /api/students first, then fallback to /students
+        let res = await fetch("/api/students");
+        if (!res.ok) res = await fetch("/students");
+        
+        if (!res.ok) throw new Error("API Route not found (404/500)");
+
         allStudentsData = await res.json();
+        console.log("Data Loaded:", allStudentsData);
         container.innerHTML = "";
 
         const groups = {};
@@ -82,127 +88,147 @@ async function loadSummary() {
             groups[s.level].push(s);
         });
 
-        Object.keys(groups).sort().forEach(level => {
+        const levels = Object.keys(groups).sort();
+        if (levels.length === 0) {
+            container.innerHTML = `<p class="col-span-full text-center py-20 text-gray-400 font-bold">No students found in the database.</p>`;
+            return;
+        }
+
+        levels.forEach(level => {
             const group = groups[level];
-            
-            // Calculate REAL monthly stats for the card UI
-            let mRevenue = 0, mPres = 0, mAbs = 0, mTotalG = 0, mGCount = 0;
+            let mRev = 0, mP = 0, mA = 0, mT = 0, mC = 0;
+
             group.forEach(s => {
-                const rec = s.records.find(r => r.month === targetMonth);
+                const rec = (s.records || []).find(r => r.month === targetMonth);
                 if (rec) {
-                    mRevenue += (Number(rec.payments) || 0);
-                    mPres += (Number(rec.attendance) || 0);
-                    mAbs += (Number(rec.absences) || 0);
-                    if (rec.grade > 0) { mTotalG += rec.grade; mGCount++; }
+                    mRev += (Number(rec.payments) || 0);
+                    mP += (Number(rec.attendance) || 0);
+                    mA += (Number(rec.absences) || 0);
+                    if (rec.grade > 0) { mT += Number(rec.grade); mC++; }
                 }
             });
 
-            const avgGrade = mGCount > 0 ? (mTotalG / mGCount).toFixed(0) : 0;
-            const attendRate = (mPres + mAbs > 0) ? Math.round((mPres / (mPres + mAbs)) * 100) : 0;
+            const avg = mC > 0 ? (mT / mC).toFixed(0) : 0;
+            const rate = (mP + mA > 0) ? Math.round((mP / (mP + mA)) * 100) : 0;
 
             container.innerHTML += `
-                <div class="glass-card p-8 rounded-[2.5rem] hover:shadow-2xl transition-all group">
+                <div class="glass-card p-8 rounded-[2.5rem] hover:shadow-2xl transition-all border border-white/50">
                     <div class="flex justify-between items-start mb-6">
                         <h2 class="text-3xl font-black text-gray-900">${level}</h2>
-                        <div class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-sm">${avgGrade}%</div>
+                        <div class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-sm">${avg}%</div>
                     </div>
                     <div class="space-y-4 mb-8">
-                        <p class="text-sm font-bold text-gray-500">Monthly Revenue: <span class="text-gray-900">${mRevenue.toLocaleString()} EGP</span></p>
-                        <p class="text-sm font-bold text-gray-500">Attendance: <span class="text-green-600">${mPres}P</span> / <span class="text-red-500">${mAbs}A</span></p>
+                        <div class="flex justify-between border-b border-gray-100 pb-2">
+                            <span class="text-xs font-bold text-gray-400 uppercase">Revenue</span>
+                            <span class="text-sm font-black text-gray-800">${mRev.toLocaleString()} EGP</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-xs font-bold text-gray-400 uppercase">Attendance</span>
+                            <span class="text-sm font-black text-green-600">${mP}P <span class="text-gray-300">/</span> <span class="text-red-500">${mA}A</span></span>
+                        </div>
                     </div>
-                    <button onclick="downloadGradeReport('${level}')" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all">
+                    <button onclick="downloadGradeReport('${level}')" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
                         Download ${level} Report
                     </button>
                 </div>
             `;
         });
     } catch (err) {
-        container.innerHTML = `<p class="text-red-500 font-bold">Failed to load data.</p>`;
+        console.error("Critical Error:", err);
+        container.innerHTML = `
+            <div class="col-span-full text-center py-20 bg-red-50 rounded-3xl border border-red-100">
+                <p class="text-red-600 font-black text-lg">Failed to load data.</p>
+                <p class="text-red-400 text-sm mt-1">Error: ${err.message}</p>
+                <button onclick="location.reload()" class="mt-4 px-6 py-2 bg-red-600 text-white rounded-xl font-bold">Refresh Page</button>
+            </div>`;
     }
 }
 
-// 1. DOWNLOAD PDF FOR SPECIFIC GRADE & MONTH
 function downloadGradeReport(level) {
     const month = document.getElementById("monthSelect").value;
     const year = document.getElementById("yearSelect").value;
     const targetMonth = `${year}-${month}`;
-    
-    const gradeStudents = allStudentsData.filter(s => s.level === level);
+    const students = allStudentsData.filter(s => s.level === level);
     
     let rows = "";
-    gradeStudents.forEach(s => {
-        const rec = s.records.find(r => r.month === targetMonth) || { payments: 0, attendance: 0, absences: 0, grade: 0 };
+    students.forEach(s => {
+        const rec = (s.records || []).find(r => r.month === targetMonth) || { payments: 0, attendance: 0, absences: 0, grade: 0 };
         rows += `
             <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 10px;">${s.name}</td>
-                <td style="padding: 10px;">${rec.payments} EGP</td>
-                <td style="padding: 10px;">${rec.attendance}P / ${rec.absences}A</td>
-                <td style="padding: 10px; font-weight: bold;">${rec.grade}%</td>
-            </tr>
-        `;
+                <td style="padding: 12px;">${s.name}</td>
+                <td style="padding: 12px; font-weight: bold; color: #2563eb;">${rec.payments} EGP</td>
+                <td style="padding: 12px;">✅ ${rec.attendance} | ❌ ${rec.absences}</td>
+                <td style="padding: 12px; font-weight: bold; color: #7c3aed;">${rec.grade}%</td>
+            </tr>`;
     });
 
-    const docHtml = `
-        <div style="padding: 30px; font-family: sans-serif;">
-            <h1 style="text-align: center;">${level} - Monthly Report</h1>
-            <p style="text-align: center; color: #666;">Month: ${targetMonth} | Total Students: ${gradeStudents.length}</p>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                <tr style="background: #f4f4f4; text-align: left;">
-                    <th style="padding: 10px;">Student Name</th>
-                    <th style="padding: 10px;">Paid</th>
-                    <th style="padding: 10px;">Attendance</th>
-                    <th style="padding: 10px;">Grade</th>
+    const html = `
+        <div style="padding: 40px; font-family: sans-serif;">
+            <h1 style="text-align: center; margin-bottom: 5px;">${level.toUpperCase()} REPORT</h1>
+            <p style="text-align: center; color: #666; margin-bottom: 30px;">Month: ${targetMonth}</p>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: left;">
+                    <th style="padding: 12px;">Student Name</th>
+                    <th style="padding: 12px;">Payments</th>
+                    <th style="padding: 12px;">Attendance</th>
+                    <th style="padding: 12px;">Grade</th>
                 </tr>
                 ${rows}
             </table>
-        </div>
-    `;
+        </div>`;
 
-    html2pdf().from(docHtml).set({ filename: `${level}_${targetMonth}.pdf`, margin: 0.5 }).save();
+    html2pdf().from(html).set({ 
+        margin: 0.5, 
+        filename: `${level}_Report_${targetMonth}.pdf`,
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    }).save();
 }
 
-// 2. DOWNLOAD ISOLATED YEARLY REPORT (EVERYONE)
 function downloadYearlyReport() {
     const year = document.getElementById("yearSelect").value;
     let rows = "";
 
     allStudentsData.forEach(s => {
-        let yPay = 0, yAtt = 0, yAbs = 0, totalG = 0, gCount = 0;
-        s.records.forEach(r => {
-            if (r.month.startsWith(year)) {
-                yPay += (Number(r.payments) || 0);
+        let yP = 0, yAtt = 0, yAbs = 0, tG = 0, gC = 0;
+        (s.records || []).forEach(r => {
+            if (r.month && r.month.startsWith(year)) {
+                yP += (Number(r.payments) || 0);
                 yAtt += (Number(r.attendance) || 0);
                 yAbs += (Number(r.absences) || 0);
-                if (r.grade > 0) { totalG += r.grade; gCount++; }
+                if (r.grade > 0) { tG += Number(r.grade); gC++; }
             }
         });
 
         rows += `
             <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 8px;">${s.name}</td>
-                <td style="padding: 8px;">${s.level}</td>
-                <td style="padding: 8px; color: blue;">${yPay} EGP</td>
+                <td style="padding: 8px; font-weight: 600;">${s.name}</td>
+                <td style="padding: 8px; color: #666;">${s.level}</td>
+                <td style="padding: 8px; color: #2563eb; font-weight: 800;">${yP} EGP</td>
                 <td style="padding: 8px;">${yAtt}P / ${yAbs}A</td>
-                <td style="padding: 8px; font-weight: bold;">${gCount > 0 ? (totalG/gCount).toFixed(0) : 0}%</td>
-            </tr>
-        `;
+                <td style="padding: 8px; font-weight: 800; color: #7c3aed;">${gC > 0 ? (tG/gC).toFixed(0) : 0}%</td>
+            </tr>`;
     });
 
-    const docHtml = `
-        <div style="padding: 30px; font-family: sans-serif;">
-            <h1 style="text-align: center;">ANNUAL ACADEMIC REPORT ${year}</h1>
+    const html = `
+        <div style="padding: 40px; font-family: sans-serif;">
+            <h1 style="text-align: center; margin-bottom: 5px;">ANNUAL PROGRESS REPORT</h1>
+            <p style="text-align: center; color: #666; margin-bottom: 30px;">Year: ${year}</p>
             <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                <tr style="background: #333; color: white; text-align: left;">
-                    <th style="padding: 8px;">Name</th><th style="padding: 8px;">Level</th>
-                    <th style="padding: 8px;">Yearly Paid</th><th style="padding: 8px;">Attendance</th>
-                    <th style="padding: 8px;">Avg Grade</th>
+                <tr style="background: #1a202c; color: white; text-align: left;">
+                    <th style="padding: 10px;">Name</th>
+                    <th style="padding: 10px;">Level</th>
+                    <th style="padding: 10px;">Total Paid</th>
+                    <th style="padding: 10px;">Attendance</th>
+                    <th style="padding: 10px;">Avg Grade</th>
                 </tr>
                 ${rows}
             </table>
-        </div>
-    `;
+        </div>`;
 
-    html2pdf().from(docHtml).set({ filename: `Annual_Report_${year}.pdf`, margin: 0.5 }).save();
+    html2pdf().from(html).set({ 
+        margin: 0.5, 
+        filename: `Annual_Report_${year}.pdf` 
+    }).save();
 }
 </script>
 </body>
