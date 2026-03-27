@@ -45,7 +45,57 @@ router.delete("/:id", async (req, res) => {
   } catch (err) { res.status(500).json({ error: "Delete failed" }); }
 });
 
-// 9. BULK UPDATE GRADE
+// 8. Update Individual Grade
+router.post("/:id/grade", async (req, res) => {
+  try {
+    // Make sure we are grabbing 'grade' from the request body
+    const gradeValue = Number(req.body.grade);
+    
+    if (isNaN(gradeValue)) {
+      return res.status(400).json({ error: "Invalid grade number" });
+    }
+
+    const student = await Student.findByIdAndUpdate(
+      req.params.id, 
+      { $set: { grade: gradeValue } }, // Use $set to be safe
+      { new: true }
+    );
+
+    if (!student) return res.status(404).json({ error: "Student not found" });
+    
+    res.json(student);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Grade update failed" });
+  }
+});
+
+// 9 Stats for Dashboard & Summary
+router.get("/stats/all", async (req, res) => {
+  try {
+    const students = await Student.find();
+    
+    const totalMoney = students.reduce((a, s) => a + (Number(s.payments) || 0), 0);
+    const totalAttendance = students.reduce((a, s) => a + (Number(s.attendance) || 0), 0);
+    const totalAbsences = students.reduce((a, s) => a + (Number(s.absences) || 0), 0);
+    
+    // ADD THIS: Calculate Average Grade
+    const studentsWithGrades = students.filter(s => s.grade !== undefined && s.grade !== null);
+    const avgGrade = studentsWithGrades.length > 0 
+      ? (studentsWithGrades.reduce((a, s) => a + s.grade, 0) / studentsWithGrades.length).toFixed(1)
+      : 0;
+
+    res.json({ 
+      totalMoney, 
+      totalAttendance, 
+      totalAbsences,
+      avgGrade // Send this to the frontend
+    });
+  } catch (err) { 
+    res.status(500).json(err); 
+  }
+});
+// 10. BULK UPDATE GRADE
 router.patch("/bulk/grade", async (req, res) => {
   try {
     const { level, grade } = req.body;
@@ -54,7 +104,7 @@ router.patch("/bulk/grade", async (req, res) => {
   } catch (err) { res.status(500).json({ error: "Bulk update failed" }); }
 });
 
-// 10. BULK DELETE LEVEL
+// 11. BULK DELETE LEVEL
 router.delete("/bulk/delete", async (req, res) => {
   try {
     const { level } = req.query;
