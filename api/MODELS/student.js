@@ -1,3 +1,5 @@
+const mongoose = require("mongoose"); // <--- 1. MUST HAVE THIS AT THE TOP
+
 const studentSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   level: { type: String, required: true },
@@ -7,3 +9,5 @@ const studentSchema = new mongoose.Schema({
   grade: { type: Number, default: 0 }, 
   dateAdded: { type: Date, default: Date.now }
 });
+
+module.exports = mongoose.model("Student", studentSchema); // <--- 2. MUST HAVE THIS AT THE BOTTOM
