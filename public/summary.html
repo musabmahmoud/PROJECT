@@ -56,62 +56,63 @@
 
         <div id="summaryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
     </div>
-
 <script>
 let allStudentsData = [];
 
 window.onload = loadSummary;
 
 async function loadSummary() {
-    const month = document.getElementById("monthSelect").value;
-    const year = document.getElementById("yearSelect").value;
-    const targetMonth = `${year}-${month}`; // e.g., 2026-03
-    const altTargetMonth = `${year}-${parseInt(month)}`; // e.g., 2026-3
-    
+    const month = document.getElementById("monthSelect").value; // e.g., "03"
+    const year = document.getElementById("yearSelect").value;   // e.g., "2026"
+    const targetMonth = `${year}-${month}`; 
     const container = document.getElementById("summaryContainer");
-    container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold animate-pulse">Fetching ${targetMonth} Data...</div>`;
+    
+    container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 font-bold animate-pulse">Syncing with Database...</div>`;
 
     try {
         let res = await fetch("/api/students");
         if (!res.ok) res = await fetch("/students");
-        if (!res.ok) throw new Error("API not responding");
-
         allStudentsData = await res.json();
-        console.log("Students Loaded:", allStudentsData);
         
+        // DEBUG: Check your browser console (F12) to see this table!
+        console.log("Current Selection:", targetMonth);
+        if(allStudentsData.length > 0) console.table(allStudentsData[0].records);
+
         container.innerHTML = "";
         const groups = {};
-
         allStudentsData.forEach(s => {
             if (!groups[s.level]) groups[s.level] = [];
             groups[s.level].push(s);
         });
 
-        const levels = Object.keys(groups).sort();
-        if (levels.length === 0) {
-            container.innerHTML = `<p class="col-span-full text-center py-20 text-gray-400">No students found.</p>`;
-            return;
-        }
-
-        levels.forEach(level => {
+        Object.keys(groups).sort().forEach(level => {
             const group = groups[level];
             let mRev = 0, mP = 0, mA = 0, mT = 0, mC = 0;
 
             group.forEach(s => {
-                // Find matching record with flexible month format check
-                const rec = (s.records || []).find(r => r.month === targetMonth || r.month === altTargetMonth);
+                // FUZZY MATCH LOGIC: 
+                // Checks for "2026-03", "2026-3", or just "March"
+                const rec = (s.records || []).find(r => {
+                    const rMonth = String(r.month).toLowerCase();
+                    const selectedMonthText = document.getElementById("monthSelect").options[document.getElementById("monthSelect").selectedIndex].text.toLowerCase();
+                    
+                    return rMonth === targetMonth || 
+                           rMonth === `${year}-${parseInt(month)}` ||
+                           (rMonth.includes(selectedMonthText) && rMonth.includes(year));
+                });
+
                 if (rec) {
                     mRev += (Number(rec.payments) || 0);
                     mP += (Number(rec.attendance) || 0);
                     mA += (Number(rec.absences) || 0);
-                    if (rec.grade > 0) { mT += Number(rec.grade); mC++; }
+                    if (Number(rec.grade) > 0) { mT += Number(rec.grade); mC++; }
                 }
             });
 
             const avg = mC > 0 ? (mT / mC).toFixed(0) : 0;
 
             container.innerHTML += `
-                <div class="glass-card p-8 rounded-[2.5rem] hover:shadow-2xl transition-all border border-white/50">
+                <div class="glass-card p-8 rounded-[2.5rem] hover:shadow-2xl transition-all border border-white/50 bg-white">
                     <div class="flex justify-between items-start mb-6">
                         <h2 class="text-3xl font-black text-gray-900">${level}</h2>
                         <div class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-sm">${avg}%</div>
@@ -132,23 +133,28 @@ async function loadSummary() {
                 </div>`;
         });
     } catch (err) {
-        console.error("API Error:", err);
-        container.innerHTML = `<div class="col-span-full text-center py-20 text-red-500 font-bold uppercase tracking-widest">Database Offline or Error</div>`;
+        container.innerHTML = `<div class="col-span-full text-center py-20 text-red-500">Error connecting to server.</div>`;
     }
 }
 
+// Ensure downloadGradeReport uses the same fuzzy logic
 function downloadGradeReport(level) {
     const month = document.getElementById("monthSelect").value;
     const year = document.getElementById("yearSelect").value;
     const targetMonth = `${year}-${month}`;
-    const altTargetMonth = `${year}-${parseInt(month)}`;
+    const selectedMonthText = document.getElementById("monthSelect").options[document.getElementById("monthSelect").selectedIndex].text.toLowerCase();
     
     const students = allStudentsData.filter(s => s.level === level);
-    
     let rows = "";
+
     students.forEach(s => {
-        const rec = (s.records || []).find(r => r.month === targetMonth || r.month === altTargetMonth) 
-                    || { payments: 0, attendance: 0, absences: 0, grade: 0 };
+        const rec = (s.records || []).find(r => {
+            const rMonth = String(r.month).toLowerCase();
+            return rMonth === targetMonth || 
+                   rMonth === `${year}-${parseInt(month)}` ||
+                   (rMonth.includes(selectedMonthText) && rMonth.includes(year));
+        }) || { payments: 0, attendance: 0, absences: 0, grade: 0 };
+
         rows += `
             <tr style="border-bottom: 1px solid #eee;">
                 <td style="padding: 12px; font-family: sans-serif;">${s.name}</td>
@@ -160,67 +166,35 @@ function downloadGradeReport(level) {
 
     const htmlContent = `
         <div style="padding: 40px; font-family: sans-serif;">
-            <h1 style="text-align: center;">${level.toUpperCase()} PERFORMANCE REPORT</h1>
-            <p style="text-align: center; color: #666;">Month: ${targetMonth} | Year: ${year}</p>
+            <h1 style="text-align: center;">${level} REPORT - ${selectedMonthText.toUpperCase()} ${year}</h1>
             <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                 <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: left;">
-                    <th style="padding: 12px;">Student Name</th>
-                    <th style="padding: 12px;">Paid</th>
-                    <th style="padding: 12px;">Attendance</th>
-                    <th style="padding: 12px;">Grade</th>
+                    <th style="padding: 12px;">Student Name</th><th style="padding: 12px;">Paid</th>
+                    <th style="padding: 12px;">Attendance</th><th style="padding: 12px;">Grade</th>
                 </tr>
                 ${rows}
             </table>
         </div>`;
 
-    html2pdf().from(htmlContent).set({ 
-        margin: 0.5, 
-        filename: `${level}_Report_${targetMonth}.pdf`,
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-    }).save();
+    html2pdf().from(htmlContent).set({ filename: `${level}_${targetMonth}.pdf`, margin: 0.5 }).save();
 }
 
 function downloadYearlyReport() {
     const year = document.getElementById("yearSelect").value;
     let rows = "";
-
     allStudentsData.forEach(s => {
         let yP = 0, yAtt = 0, yAbs = 0, tG = 0, gC = 0;
         (s.records || []).forEach(r => {
-            if (r.month && r.month.startsWith(year)) {
+            if (String(r.month).includes(year)) {
                 yP += (Number(r.payments) || 0);
                 yAtt += (Number(r.attendance) || 0);
                 yAbs += (Number(r.absences) || 0);
-                if (r.grade > 0) { tG += Number(r.grade); gC++; }
+                if (Number(r.grade) > 0) { tG += Number(r.grade); gC++; }
             }
         });
-
-        rows += `
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 8px; font-weight: 600;">${s.name}</td>
-                <td style="padding: 8px;">${s.level}</td>
-                <td style="padding: 8px; color: #2563eb;">${yP} EGP</td>
-                <td style="padding: 8px;">${yAtt}P / ${yAbs}A</td>
-                <td style="padding: 8px; font-weight: bold;">${gC > 0 ? (tG/gC).toFixed(0) : 0}%</td>
-            </tr>`;
+        rows += `<tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px;">${s.name}</td><td>${s.level}</td><td>${yP} EGP</td><td>${yAtt}P/${yAbs}A</td><td>${gC > 0 ? (tG/gC).toFixed(0) : 0}%</td></tr>`;
     });
-
-    const htmlContent = `
-        <div style="padding: 30px; font-family: sans-serif;">
-            <h1 style="text-align: center;">FULL ANNUAL ACADEMIC REPORT ${year}</h1>
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 20px;">
-                <tr style="background: #1a202c; color: white; text-align: left;">
-                    <th style="padding: 8px;">Name</th>
-                    <th style="padding: 8px;">Level</th>
-                    <th style="padding: 8px;">Yearly Total</th>
-                    <th style="padding: 8px;">Attendance</th>
-                    <th style="padding: 8px;">Avg Grade</th>
-                </tr>
-                ${rows}
-            </table>
-        </div>`;
-
-    html2pdf().from(htmlContent).set({ margin: 0.5, filename: `Annual_Report_${year}.pdf` }).save();
+    html2pdf().from(`<div style="padding: 30px;"><h1>Annual Report ${year}</h1><table border="1" style="width:100%">${rows}</table></div>`).save();
 }
 </script>
 </body>
