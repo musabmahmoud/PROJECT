@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Global Summary</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-black text-gray-900">System Summary</h1>
+      <a href="index.html" class="bg-gray-200 px-4 py-2 rounded-xl font-bold text-gray-700">← Dashboard</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div>
+        <h2 class="text-xl font-bold mb-4 text-blue-600">Preparatory Stage</h2>
+        <div id="prepStats" class="space-y-4"></div>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold mb-4 text-purple-600">Secondary Stage</h2>
+        <div id="secStats" class="space-y-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function loadSummary() {
+      const res = await fetch("/api/students");
+      const students = await res.json();
+      
+      const render = (list, containerId) => {
+        const container = document.getElementById(containerId);
+        list.forEach(lvl => {
+          const group = students.filter(s => s.level === lvl);
+          const money = group.reduce((a, s) => a + (s.payments || 0), 0);
+          container.innerHTML += `
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+              <div class="flex justify-between items-center">
+                <span class="text-lg font-black">${lvl}</span>
+                <span class="text-blue-600 font-bold">${money} EGP</span>
+              </div>
+              <p class="text-gray-500 text-sm">${group.length} Students</p>
+            </div>`;
+        });
+      };
+
+      render(["Prep 1", "Prep 2", "Prep 3"], "prepStats");
+      render(["Sec 1", "Sec 2", "Sec 3"], "secStats");
+    }
+    loadSummary();
+  </script>
+</body>
+</html>

@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Dashboard Pro</title>
+  <title>Student Pro Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>if (!localStorage.getItem("user")) window.location.href = "login.html";</script>
 </head>
 <body class="bg-gray-50 p-4 md:p-8">
-
   <div class="max-w-6xl mx-auto">
     <div class="flex justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
       <div>
         <h1 class="text-2xl font-black text-gray-900">Student Pro</h1>
-        <p class="text-sm text-gray-500">Admin: <span id="userDisplay" class="text-blue-600 font-bold">...</span></p>
+        <div class="flex gap-4 mt-1">
+           <span id="userDisplay" class="text-blue-600 font-bold text-sm">Admin</span>
+           <a href="summary.html" class="text-purple-600 font-bold text-sm hover:underline">View Summary →</a>
+        </div>
       </div>
       <button onclick="logout()" class="bg-red-500 text-white px-5 py-2 rounded-xl font-bold shadow-md hover:bg-red-600 transition">Logout</button>
     </div>
@@ -25,7 +26,7 @@
         <p id="totalRevenue" class="text-3xl font-black text-gray-800 mt-1">0 EGP</p>
       </div>
       <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-green-500">
-        <h2 class="text-xs font-bold text-gray-400 uppercase">Present / Absent</h2>
+        <h2 class="text-xs font-bold text-gray-400 uppercase">Presents / Absences</h2>
         <p id="totalAttendanceDisplay" class="text-3xl font-black text-gray-800 mt-1">0 / 0</p>
       </div>
       <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-purple-500">
@@ -34,29 +35,50 @@
       </div>
     </div>
 
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
+      <div class="lg:col-span-2 relative">
+        <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Search names..." 
+               class="w-full p-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+      <div class="bg-white p-2 rounded-2xl shadow-sm flex gap-2 border border-gray-100 lg:col-span-2">
+        <input id="newStudentName" type="text" placeholder="Full Name" class="flex-1 p-2 bg-gray-50 rounded-lg outline-none" />
+        <select id="newStudentLevel" class="bg-gray-100 p-2 rounded-lg font-bold text-gray-700">
+          <optgroup label="Preparatory">
+            <option value="Prep 1">Prep 1</option>
+            <option value="Prep 2">Prep 2</option>
+            <option value="Prep 3">Prep 3</option>
+          </optgroup>
+          <optgroup label="Secondary">
+            <option value="Sec 1">Sec 1</option>
+            <option value="Sec 2">Sec 2</option>
+            <option value="Sec 3">Sec 3</option>
+          </optgroup>
+        </select>
+        <button onclick="addNewStudent()" class="bg-purple-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg">+</button>
+      </div>
+    </div>
+
     <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 mb-8">
       <table class="min-w-full">
-        <thead class="bg-gray-50 border-b">
-          <tr class="text-left text-gray-500 text-xs font-bold uppercase">
+        <thead class="bg-gray-50 border-b text-left text-gray-500 text-xs font-bold uppercase">
+          <tr>
             <th class="py-4 px-6">Name</th>
+            <th class="py-4 px-6">Level</th>
             <th class="py-4 px-6">Payments</th>
             <th class="py-4 px-6">Attendance</th>
-            <th class="py-4 px-6">Absences</th>
             <th class="py-4 px-6 text-center">Actions</th>
           </tr>
         </thead>
         <tbody id="studentsTable" class="divide-y divide-gray-100"></tbody>
       </table>
     </div>
-
-    <canvas id="chart" width="400" height="100"></canvas>
   </div>
 
   <div id="paymentModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
     <div class="bg-white w-80 rounded-2xl p-6 shadow-2xl">
       <h3 class="text-lg font-bold mb-4">Add Payment (EGP)</h3>
       <input type="hidden" id="currentId">
-      <input type="number" id="payAmt" class="w-full p-3 bg-gray-100 rounded-xl mb-4 text-xl font-bold outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00">
+      <input type="number" id="payAmt" class="w-full p-3 bg-gray-100 rounded-xl mb-4 text-xl font-bold outline-none" placeholder="0.00">
       <div class="flex gap-2">
         <button onclick="closeModal()" class="flex-1 py-2 bg-gray-100 rounded-lg">Cancel</button>
         <button onclick="submitPay()" class="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold">Confirm</button>
@@ -68,7 +90,7 @@
 const API = "/api/students";
 
 window.onload = () => {
-  document.getElementById("userDisplay").innerText = localStorage.getItem("user");
+  document.getElementById("userDisplay").innerText = localStorage.getItem("user") || "Admin";
   loadData();
 };
 
@@ -80,19 +102,33 @@ async function loadData() {
   
   students.forEach(s => {
     tbody.innerHTML += `
-      <tr class="hover:bg-gray-50 transition">
+      <tr class="hover:bg-gray-50">
         <td class="py-4 px-6 font-bold text-gray-800">${s.name}</td>
+        <td class="py-4 px-6"><span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold">${s.level}</span></td>
         <td class="py-4 px-6 text-blue-600 font-black">${s.payments || 0} EGP</td>
-        <td class="py-4 px-6 font-bold text-green-600">✅ ${s.attendance || 0}</td>
-        <td class="py-4 px-6 font-bold text-red-500">❌ ${s.absences || 0}</td>
+        <td class="py-4 px-6 text-sm">✅ ${s.attendance || 0} / ❌ ${s.absences || 0}</td>
         <td class="py-4 px-6 flex justify-center gap-2">
           <button onclick="action('${s._id}', 'present')" class="bg-green-600 text-white px-3 py-1 rounded-lg text-xs">P</button>
           <button onclick="action('${s._id}', 'absent')" class="bg-orange-500 text-white px-3 py-1 rounded-lg text-xs">A</button>
           <button onclick="openModal('${s._id}')" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs">Pay</button>
+          <button onclick="deleteStudent('${s._id}')" class="text-gray-300 hover:text-red-500">✕</button>
         </td>
       </tr>`;
   });
   updateStats();
+}
+
+async function addNewStudent() {
+  const name = document.getElementById("newStudentName").value;
+  const level = document.getElementById("newStudentLevel").value;
+  if(!name) return;
+  await fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, level })
+  });
+  document.getElementById("newStudentName").value = "";
+  loadData();
 }
 
 async function action(id, type) {
@@ -124,6 +160,18 @@ async function updateStats() {
   const data = await res.json();
   document.getElementById("totalRevenue").innerText = `${data.totalMoney} EGP`;
   document.getElementById("totalAttendanceDisplay").innerText = `${data.totalAttendance} / ${data.totalAbsences}`;
+  document.getElementById("totalStudentsCount").innerText = document.querySelectorAll("#studentsTable tr").length;
+}
+
+function searchStudents() {
+  let q = document.getElementById("searchInput").value.toLowerCase();
+  document.querySelectorAll("#studentsTable tr").forEach(row => {
+    row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+  });
+}
+
+async function deleteStudent(id) {
+  if(confirm("Delete?")) { await fetch(`${API}/${id}`, { method: "DELETE" }); loadData(); }
 }
 
 function logout() { localStorage.clear(); window.location.href="login.html"; }
