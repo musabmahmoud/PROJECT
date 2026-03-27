@@ -15,7 +15,7 @@
 <body class="bg-gray-50 p-4 md:p-8">
   <div class="max-w-6xl mx-auto">
     
-    <div class="flex justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 gap-4">
       <div>
         <h1 class="text-2xl font-black text-gray-900">Student Pro</h1>
         <div class="flex gap-4 mt-1">
@@ -23,6 +23,17 @@
            <a href="summary.html" class="text-purple-600 font-bold text-sm hover:underline">View Summary →</a>
         </div>
       </div>
+
+      <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-100">
+        <span class="text-sm font-bold text-gray-400 px-2 uppercase">Month:</span>
+        <select id="dashMonth" onchange="loadData()" class="bg-white border-none font-bold text-gray-700 rounded-lg p-1 outline-none shadow-sm">
+          <option value="2026-01">Jan 2026</option>
+          <option value="2026-02">Feb 2026</option>
+          <option value="2026-03" selected>Mar 2026</option>
+          <option value="2026-04">Apr 2026</option>
+        </select>
+      </div>
+
       <button onclick="logout()" class="bg-red-500 text-white px-5 py-2 rounded-xl font-bold shadow-md hover:bg-red-600 transition">Logout</button>
     </div>
 
@@ -56,7 +67,7 @@
           </optgroup>
           <optgroup label="Secondary">
             <option value="Sec 1">Sec 1</option>
-            <option value="Sec 2">Sec 2</option>
+            <option value="Sec 2" selected>Sec 2</option>
             <option value="Sec 3">Sec 3</option>
           </optgroup>
         </select>
@@ -84,41 +95,34 @@
   <div id="paymentModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl">
       <h3 class="text-2xl font-black mb-2">Add Payment</h3>
-      <p class="text-gray-400 text-sm mb-6 uppercase font-bold tracking-widest">Amount in EGP</p>
       <input type="hidden" id="payId">
       <input type="number" id="payAmt" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl mb-6 text-2xl font-black text-blue-600 outline-none" placeholder="0">
       <div class="flex gap-3">
         <button onclick="closeModal('paymentModal')" class="flex-1 py-4 font-bold text-gray-400 hover:bg-gray-50 rounded-2xl">Cancel</button>
-        <button onclick="submitPay()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-100">Confirm</button>
+        <button onclick="submitPay()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg">Confirm</button>
       </div>
     </div>
   </div>
 
   <div id="gradeModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div id="gradeBox" class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl scale-95 transition-all duration-300">
-      <div class="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-2xl mb-6">📝</div>
+    <div id="gradeBox" class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl scale-95 transition-all">
       <h3 class="text-2xl font-black mb-1">Update Grade</h3>
       <p id="gradeStudentName" class="text-gray-400 font-bold text-xs mb-6 uppercase tracking-widest"></p>
       <input type="hidden" id="gradeId">
-      <div class="relative mb-8">
-        <input type="number" id="gradeInput" class="w-full p-5 bg-gray-50 border-2 border-gray-100 rounded-2xl text-3xl font-black text-purple-600 outline-none focus:border-purple-500" placeholder="0">
-        <span class="absolute right-5 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-300">%</span>
-      </div>
+      <input type="number" id="gradeInput" class="w-full p-5 bg-gray-50 border-2 border-gray-100 rounded-2xl text-3xl font-black text-purple-600 outline-none mb-8" placeholder="0">
       <div class="flex gap-3">
         <button onclick="closeGradeModal()" class="flex-1 py-4 font-bold text-gray-400 hover:bg-gray-50 rounded-2xl">Cancel</button>
-        <button onclick="submitGrade()" class="flex-1 py-4 bg-purple-600 text-white rounded-2xl font-black shadow-lg shadow-purple-100">Save</button>
+        <button onclick="submitGrade()" class="flex-1 py-4 bg-purple-600 text-white rounded-2xl font-black shadow-lg">Save</button>
       </div>
     </div>
   </div>
 
   <div id="deleteModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div id="deleteBox" class="bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl scale-95 transition-all duration-300">
-        <div class="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center text-3xl mb-6 mx-auto">⚠️</div>
-        <h2 class="text-2xl font-black text-gray-900 text-center mb-2">Delete Student?</h2>
-        <p class="text-gray-500 text-center mb-8 font-medium">This action cannot be undone. Student history will be lost.</p>
+    <div id="deleteBox" class="bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl scale-95 transition-all">
+        <h2 class="text-2xl font-black text-center mb-8">Delete Student?</h2>
         <div class="flex gap-3">
-            <button onclick="closeDeleteModal()" class="flex-1 py-4 rounded-2xl font-bold text-gray-400 hover:bg-gray-50">Cancel</button>
-            <button onclick="executeDelete()" class="flex-1 py-4 rounded-2xl font-black text-white bg-red-500 shadow-lg shadow-red-200">Delete</button>
+            <button onclick="closeDeleteModal()" class="flex-1 py-4 rounded-2xl font-bold text-gray-400">Cancel</button>
+            <button onclick="executeDelete()" class="flex-1 py-4 rounded-2xl font-black text-white bg-red-500">Delete</button>
         </div>
     </div>
   </div>
@@ -133,7 +137,9 @@ window.onload = () => {
 };
 
 async function loadData() {
-  const res = await fetch(API);
+  const selectedMonth = document.getElementById("dashMonth").value;
+  // FETCH SPECIFIC MONTH
+  const res = await fetch(`${API}?month=${selectedMonth}`);
   const students = await res.json();
   const tbody = document.getElementById("studentsTable");
   tbody.innerHTML = "";
@@ -148,10 +154,10 @@ async function loadData() {
         <td class="py-4 px-6 font-black text-purple-600">${s.grade || 0}%</td>
         <td class="py-4 px-6">
           <div class="flex justify-center gap-2">
-            <button onclick="action('${s._id}', 'present')" class="w-9 h-9 flex items-center justify-center bg-green-50 text-green-600 rounded-xl font-bold hover:bg-green-600 hover:text-white transition-all">P</button>
-            <button onclick="action('${s._id}', 'absent')" class="w-9 h-9 flex items-center justify-center bg-orange-50 text-orange-600 rounded-xl font-bold hover:bg-orange-600 hover:text-white transition-all">A</button>
-            <button onclick="openGradeModal('${s._id}', '${s.name}')" class="w-9 h-9 flex items-center justify-center bg-purple-50 text-purple-600 rounded-xl font-bold hover:bg-purple-600 hover:text-white transition-all">📝</button>
-            <button onclick="openPayModal('${s._id}')" class="px-3 h-9 bg-blue-50 text-blue-600 rounded-xl font-bold text-xs hover:bg-blue-600 hover:text-white transition-all">Pay</button>
+            <button onclick="markAttendance('${s._id}', 'present')" class="w-9 h-9 flex items-center justify-center bg-green-50 text-green-600 rounded-xl font-bold hover:bg-green-600 hover:text-white transition-all">P</button>
+            <button onclick="markAttendance('${s._id}', 'absent')" class="w-9 h-9 flex items-center justify-center bg-orange-50 text-orange-600 rounded-xl font-bold hover:bg-orange-600 hover:text-white transition-all">A</button>
+            <button onclick="openGradeModal('${s._id}', '${s.name}', ${s.grade || 0})" class="w-9 h-9 flex items-center justify-center bg-purple-50 text-purple-600 rounded-xl font-bold hover:bg-purple-600 hover:text-white transition-all">📝</button>
+            <button onclick="openPayModal('${s._id}', ${s.payments || 0})" class="px-3 h-9 bg-blue-50 text-blue-600 rounded-xl font-bold text-xs hover:bg-blue-600 hover:text-white transition-all">Pay</button>
             <button onclick="openDeleteModal('${s._id}')" class="w-9 h-9 flex items-center justify-center text-red-300 hover:text-red-600 transition-all">✕</button>
           </div>
         </td>
@@ -160,20 +166,33 @@ async function loadData() {
   updateStats();
 }
 
-// Logic Functions
-async function updateStats() {
-  const res = await fetch(`${API}/stats/all`);
-  const data = await res.json();
-  document.getElementById("totalRevenue").innerText = `${data.totalMoney} EGP`;
-  document.getElementById("totalAttendanceDisplay").innerText = `${data.totalAttendance} / ${data.totalAbsences}`;
-  document.getElementById("totalStudentsCount").innerText = document.querySelectorAll("#studentsTable tr").length;
+async function markAttendance(id, type) {
+  await fetch(`${API}/${id}/${type}`, { method: "POST" });
+  loadData();
 }
 
-function searchStudents() {
-  let q = document.getElementById("searchInput").value.toLowerCase();
-  document.querySelectorAll("#studentsTable tr").forEach(row => {
-    row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+async function submitPay() {
+  const id = document.getElementById("payId").value;
+  const val = document.getElementById("payAmt").value;
+  await fetch(`${API}/${id}/update-value`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ field: "payments", value: val })
   });
+  closeModal('paymentModal');
+  loadData();
+}
+
+async function submitGrade() {
+  const id = document.getElementById("gradeId").value;
+  const val = document.getElementById("gradeInput").value;
+  await fetch(`${API}/${id}/update-value`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ field: "grade", value: val })
+  });
+  closeGradeModal();
+  loadData();
 }
 
 async function addNewStudent() {
@@ -189,77 +208,46 @@ async function addNewStudent() {
   loadData();
 }
 
-async function action(id, type) {
-  await fetch(`${API}/${id}/${type}`, { method: "POST" });
-  loadData();
+function updateStats() {
+  let rev = 0, att = 0, abs = 0;
+  document.querySelectorAll("#studentsTable tr").forEach(row => {
+    rev += parseInt(row.cells[2].innerText) || 0;
+    const parts = row.cells[3].innerText.match(/\d+/g);
+    if(parts) { att += parseInt(parts[0]); abs += parseInt(parts[1]); }
+  });
+  document.getElementById("totalRevenue").innerText = `${rev} EGP`;
+  document.getElementById("totalAttendanceDisplay").innerText = `${att} / ${abs}`;
+  document.getElementById("totalStudentsCount").innerText = document.querySelectorAll("#studentsTable tr").length;
 }
 
-// Modal Controllers
-function openPayModal(id) {
-  document.getElementById("payId").value = id;
-  document.getElementById("paymentModal").classList.remove("hidden");
+function searchStudents() {
+  let q = document.getElementById("searchInput").value.toLowerCase();
+  document.querySelectorAll("#studentsTable tr").forEach(row => {
+    row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+  });
 }
 
-function openGradeModal(id, name) {
+// Modal Handlers
+function openPayModal(id, current) { 
+  document.getElementById("payId").value = id; 
+  document.getElementById("payAmt").value = current;
+  document.getElementById("paymentModal").classList.remove("hidden"); 
+}
+function openGradeModal(id, name, current) {
   document.getElementById("gradeId").value = id;
   document.getElementById("gradeStudentName").innerText = name;
-  const modal = document.getElementById("gradeModal");
-  modal.classList.remove("hidden");
-  setTimeout(() => document.getElementById("gradeBox").classList.remove("scale-95"), 10);
+  document.getElementById("gradeInput").value = current;
+  document.getElementById("gradeModal").classList.remove("hidden");
 }
-
-function openDeleteModal(id) {
-  studentToDelete = id;
-  const modal = document.getElementById("deleteModal");
-  modal.classList.remove("hidden");
-  setTimeout(() => document.getElementById("deleteBox").classList.remove("scale-95"), 10);
-}
-
-// Modal Closers
+function openDeleteModal(id) { studentToDelete = id; document.getElementById("deleteModal").classList.remove("hidden"); }
 function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
-function closeGradeModal() { 
-  document.getElementById("gradeBox").classList.add("scale-95");
-  setTimeout(() => closeModal("gradeModal"), 200);
-}
-function closeDeleteModal() {
-  document.getElementById("deleteBox").classList.add("scale-95");
-  setTimeout(() => closeModal("deleteModal"), 200);
-}
-
-// Submissions
-async function submitPay() {
-  const id = document.getElementById("payId").value;
-  const amount = parseInt(document.getElementById("payAmt").value);
-  await fetch(`${API}/${id}/pay`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ amount })
-  });
-  document.getElementById("payAmt").value = "";
-  closeModal("paymentModal");
-  loadData();
-}
-
-async function submitGrade() {
-  const id = document.getElementById("gradeId").value;
-  const grade = document.getElementById("gradeInput").value;
-  await fetch(`${API}/${id}/grade`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ grade: parseInt(grade) })
-  });
-  document.getElementById("gradeInput").value = "";
-  closeGradeModal();
-  loadData();
-}
-
+function closeGradeModal() { closeModal("gradeModal"); }
+function closeDeleteModal() { closeModal("deleteModal"); }
 async function executeDelete() {
-  if(!studentToDelete) return;
   await fetch(`${API}/${studentToDelete}`, { method: "DELETE" });
   closeDeleteModal();
   loadData();
 }
-
 function logout() { localStorage.clear(); window.location.href="login.html"; }
 </script>
 </body>
