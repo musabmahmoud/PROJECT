@@ -2,35 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>System Intelligence Summary</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 p-6 md:p-12">
   <div class="max-w-6xl mx-auto">
-    <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+    
+    <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
       <div>
-        <h1 class="text-4xl font-black text-gray-900 tracking-tight">System Summary</h1>
-        <p class="text-gray-500 font-medium">Full performance breakdown by educational level</p>
+        <h1 class="text-4xl font-black text-gray-900 tracking-tight">Academic Analytics</h1>
+        <p class="text-gray-500 font-medium">Performance, Attendance, and Revenue Breakdown</p>
       </div>
-      <a href="index.html" class="bg-white border border-gray-200 px-6 py-3 rounded-2xl font-bold text-gray-700 shadow-sm hover:bg-gray-50 transition">← Back to Dashboard</a>
+      <a href="index.html" class="bg-white border border-gray-200 px-8 py-3 rounded-2xl font-bold text-gray-700 shadow-sm hover:bg-gray-100 transition flex items-center gap-2">
+        <span>←</span> Back to Dashboard
+      </a>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
       
       <div>
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
-          <h2 class="text-2xl font-black text-gray-800">Preparatory Levels</h2>
+        <div class="flex items-center gap-3 mb-8">
+          <div class="w-3 h-10 bg-blue-600 rounded-full"></div>
+          <h2 class="text-2xl font-black text-gray-800">Preparatory Stage</h2>
         </div>
-        <div id="prepContainer" class="space-y-6"></div>
+        <div id="prepContainer" class="space-y-8"></div>
       </div>
 
       <div>
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-2 h-8 bg-purple-600 rounded-full"></div>
-          <h2 class="text-2xl font-black text-gray-800">Secondary Levels</h2>
+        <div class="flex items-center gap-3 mb-8">
+          <div class="w-3 h-10 bg-purple-600 rounded-full"></div>
+          <h2 class="text-2xl font-black text-gray-800">Secondary Stage</h2>
         </div>
-        <div id="secContainer" class="space-y-6"></div>
+        <div id="secContainer" class="space-y-8"></div>
       </div>
 
     </div>
@@ -38,47 +42,69 @@
 
   <script>
     async function initSummary() {
-      const res = await fetch("/api/students");
-      const students = await res.json();
+      try {
+        const res = await fetch("/api/students");
+        const students = await res.json();
 
-      const renderSection = (levels, containerId, accentColor) => {
-        const container = document.getElementById(containerId);
-        levels.forEach(lvl => {
-          const group = students.filter(s => s.level === lvl);
-          const totalMoney = group.reduce((a, s) => a + (s.payments || 0), 0);
-          const totalPresent = group.reduce((a, s) => a + (s.attendance || 0), 0);
-          const totalAbsent = group.reduce((a, s) => a + (s.absences || 0), 0);
-          
-          container.innerHTML += `
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition">
-              <div class="flex justify-between items-start mb-4">
-                <div>
-                  <h3 class="text-xl font-black text-gray-800">${lvl}</h3>
-                  <span class="text-sm font-bold text-gray-400">${group.length} Students Enrolled</span>
+        const renderSection = (levels, containerId, accentColor) => {
+          const container = document.getElementById(containerId);
+          levels.forEach(lvl => {
+            const group = students.filter(s => s.level === lvl);
+            
+            // Calculations
+            const totalMoney = group.reduce((a, s) => a + (s.payments || 0), 0);
+            const totalPresent = group.reduce((a, s) => a + (s.attendance || 0), 0);
+            const totalAbsent = group.reduce((a, s) => a + (s.absences || 0), 0);
+            const avgGrade = group.length 
+              ? (group.reduce((a, s) => a + (s.grade || 0), 0) / group.length).toFixed(1) 
+              : 0;
+            
+            container.innerHTML += `
+              <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300">
+                <div class="flex justify-between items-start mb-6">
+                  <div>
+                    <h3 class="text-2xl font-black text-gray-900">${lvl}</h3>
+                    <span class="inline-block mt-1 px-3 py-1 bg-gray-100 rounded-full text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                      ${group.length} Students
+                    </span>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-2xl font-black text-${accentColor}-600">${totalMoney.toLocaleString()} <span class="text-xs">EGP</span></p>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">Collection</span>
+                  </div>
                 </div>
-                <div class="text-right">
-                  <span class="text-2xl font-black text-${accentColor}-600">${totalMoney}</span>
-                  <span class="text-xs font-bold text-gray-400 block uppercase">Total EGP</span>
-                </div>
-              </div>
-              
-              <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-50">
-                <div class="bg-green-50 p-3 rounded-2xl">
-                  <p class="text-[10px] font-bold text-green-600 uppercase">Total Presents</p>
-                  <p class="text-xl font-black text-green-700">✅ ${totalPresent}</p>
-                </div>
-                <div class="bg-red-50 p-3 rounded-2xl">
-                  <p class="text-[10px] font-bold text-red-600 uppercase">Total Absences</p>
-                  <p class="text-xl font-black text-red-700">❌ ${totalAbsent}</p>
-                </div>
-              </div>
-            </div>`;
-        });
-      };
 
-      renderSection(["Prep 1", "Prep 2", "Prep 3"], "prepContainer", "blue");
-      renderSection(["Sec 1", "Sec 2", "Sec 3"], "secContainer", "purple");
+                <div class="mb-6 p-5 bg-purple-50 rounded-2xl flex justify-between items-center border border-purple-100">
+                  <div>
+                    <p class="text-purple-700 font-bold text-xs uppercase tracking-tighter">Academic Average</p>
+                    <p class="text-sm text-purple-500 font-medium">Based on all class exams</p>
+                  </div>
+                  <div class="text-3xl font-black text-purple-900">${avgGrade}%</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="bg-green-50/50 p-4 rounded-2xl border border-green-100">
+                    <p class="text-[10px] font-bold text-green-600 uppercase tracking-widest mb-1">Presents</p>
+                    <p class="text-2xl font-black text-green-700">✅ ${totalPresent}</p>
+                  </div>
+                  <div class="bg-red-50/50 p-4 rounded-2xl border border-red-100">
+                    <p class="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-1">Absences</p>
+                    <p class="text-2xl font-black text-red-700">❌ ${totalAbsent}</p>
+                  </div>
+                </div>
+              </div>`;
+          });
+        };
+
+        // Render Prep and Sec
+        renderSection(["Prep 1", "Prep 2", "Prep 3"], "prepContainer", "blue");
+        renderSection(["Sec 1", "Sec 2", "Sec 3"], "secContainer", "purple");
+
+      } catch (err) {
+        console.error("Summary failed to load:", err);
+      }
     }
+
     initSummary();
   </script>
 </body>

@@ -51,4 +51,17 @@ router.delete("/:id", async (req, res) => {
   res.json({ message: "Deleted" });
 });
 
+// 8. Update Grade 🆕
+router.post("/:id/grade", async (req, res) => {
+  try {
+    const student = await Student.findByIdAndUpdate(
+      req.params.id, 
+      { grade: req.body.grade }, 
+      { new: true }
+    );
+    res.json(student);
+  } catch (err) {
+    res.status(400).json({ error: "Grade update failed" });
+  }
+});
 module.exports = router;
