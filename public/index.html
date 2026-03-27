@@ -7,21 +7,15 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-    body { 
-      font-family: 'Plus Jakarta Sans', sans-serif; 
-      background-color: #f8fafc; 
-      color: #0f172a; 
-    }
-    .card-shadow { 
-      background: white; 
-      border: 1px solid #e2e8f0; 
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); 
-    }
-    .btn-primary { 
-      background-color: #2563eb; 
-      color: white; 
-      transition: all 0.2s; 
-    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+    
+    /* Smooth transitions for inputs */
+    input, select { transition: all 0.2s ease-in-out; }
+    
+    /* The "Titan" shadow effect */
+    .titan-card { background: white; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+    
+    .btn-primary { background-color: #2563eb; color: white; transition: all 0.2s; }
     .btn-primary:hover { background-color: #1d4ed8; transform: translateY(-1px); }
   </style>
 </head>
@@ -29,28 +23,29 @@
 
   <aside class="fixed left-0 top-0 h-full w-20 hidden lg:flex flex-col items-center py-10 bg-white border-r border-slate-200 z-50">
     <div class="text-2xl font-black text-blue-600 mb-12 italic">T.</div>
-    <div class="space-y-10 flex-1">
+    <div class="space-y-10 flex-1 text-center">
       <a href="index.html" class="p-4 bg-blue-600 text-white rounded-2xl block shadow-lg">📊</a>
-      <a href="classes.html" class="p-4 text-slate-400 hover:text-blue-600 transition-all block text-xl text-center">🏫</a>
-      <a href="teachers.html" class="p-4 text-slate-400 hover:text-blue-600 transition-all block text-xl text-center">👨‍🏫</a>
+      <a href="classes.html" class="p-4 text-slate-400 hover:text-blue-600 block text-xl">🏫</a>
+      <a href="teachers.html" class="p-4 text-slate-400 hover:text-blue-600 block text-xl">👨‍🏫</a>
     </div>
   </aside>
 
   <main class="lg:ml-20 p-6 md:p-12 max-w-7xl mx-auto">
     
-    <header class="flex justify-between items-end mb-10">
+    <header class="flex justify-between items-center mb-10">
       <div>
         <h1 class="text-4xl font-black tracking-tighter italic text-slate-900">Titan <span class="text-blue-600">ERP</span></h1>
-        <p class="text-slate-500 font-bold mt-1 uppercase text-[10px] tracking-widest">School Management | <span id="userName" class="text-blue-600">Admin</span></p>
+        <p class="text-slate-400 font-bold mt-1 uppercase text-[10px] tracking-widest">Primary & Preparatory Node</p>
       </div>
-      <button onclick="logout()" class="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-black text-xs uppercase hover:bg-red-50 hover:text-white transition-all">Logout</button>
+      <button onclick="logout()" class="px-6 py-3 bg-red-50 text-red-600 rounded-xl font-black text-xs uppercase hover:bg-red-600 hover:text-white transition-all">Logout</button>
     </header>
 
-    <section class="bg-white p-4 rounded-3xl mb-8 border border-slate-200 shadow-sm">
+    <section class="bg-white p-4 rounded-[2rem] mb-8 border border-slate-200 shadow-sm">
         <div class="grid grid-cols-1 lg:grid-cols-6 gap-3">
-            <input id="newStudentName" type="text" placeholder="Student Full Name..." class="lg:col-span-2 bg-slate-50 p-4 rounded-2xl outline-none font-semibold border border-transparent focus:border-blue-500 transition-all">
+            <input id="newStudentName" type="text" placeholder="Enter Full Name" 
+                   class="lg:col-span-2 bg-slate-50 p-4 rounded-2xl border border-transparent outline-none font-semibold focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
             
-            <select id="newStudentLevel" class="bg-slate-50 p-4 rounded-2xl font-black text-[10px] uppercase outline-none border border-transparent">
+            <select id="newStudentLevel" class="bg-slate-50 p-4 rounded-2xl font-black text-[10px] uppercase outline-none border border-transparent focus:border-blue-500">
                 <optgroup label="Primary Stage">
                     <option value="Primary 1">Primary 1</option>
                     <option value="Primary 2">Primary 2</option>
@@ -66,35 +61,36 @@
                 </optgroup>
             </select>
 
-            <select id="newStudentClass" class="bg-slate-50 p-4 rounded-2xl font-black text-[10px] uppercase outline-none border border-transparent">
+            <select id="newStudentClass" class="bg-slate-50 p-4 rounded-2xl font-black text-[10px] uppercase outline-none border border-transparent focus:border-blue-500">
                 <option value="Group A">Group A</option>
                 <option value="Group B">Group B</option>
             </select>
 
-            <select id="newStudentLang" class="bg-slate-50 p-4 rounded-2xl font-black text-[10px] uppercase outline-none text-blue-600 border border-transparent">
+            <select id="newStudentLang" class="bg-slate-50 p-4 rounded-2xl font-black text-[10px] uppercase outline-none text-blue-600 border border-transparent focus:border-blue-500">
                 <option value="English">English</option>
                 <option value="Arabic">Arabic</option>
             </select>
 
-            <button onclick="addNewStudent()" class="btn-primary rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-md active:scale-95">
+            <button onclick="addNewStudent()" class="btn-primary rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95">
                 Register Student +
             </button>
         </div>
     </section>
 
-    <div class="bg-white rounded-[2rem] overflow-hidden border border-slate-200 shadow-sm">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-            <h3 class="font-black uppercase tracking-widest text-xs text-slate-500">Active Students</h3>
-            <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Search..." class="bg-white px-4 py-2 rounded-xl outline-none text-xs border border-slate-200 w-48 focus:ring-2 focus:ring-blue-500/20">
+    <div class="bg-white rounded-[2.5rem] overflow-hidden border border-slate-200 shadow-sm">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+            <h3 class="font-black uppercase tracking-widest text-[10px] text-slate-500 italic">Database Management</h3>
+            <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Search names or IDs..." 
+                   class="bg-white px-5 py-2 rounded-xl border border-slate-200 text-xs w-64 outline-none focus:border-blue-500">
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 bg-white">
-                        <th class="p-6">Student Information</th>
-                        <th class="p-6">Grade / Group</th>
-                        <th class="p-6">Payment Status</th>
-                        <th class="p-6 text-right">Actions</th>
+                        <th class="p-8">Identification</th>
+                        <th class="p-8 text-center">Academic Track</th>
+                        <th class="p-8">Inject Subject</th>
+                        <th class="p-8 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="studentsTable" class="divide-y divide-slate-50">
@@ -108,15 +104,14 @@
     const API = "/api/students";
     const user = localStorage.getItem("user");
 
-    window.onload = () => {
-        if (!user) window.location.href = "login.html";
-        document.getElementById("userName").innerText = user;
-        loadData();
+    window.onload = () => { 
+        if (!user) window.location.href = "login.html"; 
+        loadData(); 
     };
 
     async function loadData() {
         const tbody = document.getElementById("studentsTable");
-        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center font-bold text-slate-300 animate-pulse">LOADING DATA...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center font-bold text-slate-300 animate-pulse text-xl">UPLINKING TO CLOUD...</td></tr>`;
 
         try {
             const res = await fetch(`${API}?admin=${user}`);
@@ -124,30 +119,67 @@
             tbody.innerHTML = "";
 
             data.forEach(s => {
-                const currentMonth = new Date().toISOString().slice(0, 7);
-                const record = s.records?.find(r => r.month === currentMonth) || { payments: 0 };
-
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50/50 transition-all">
-                        <td class="p-6">
-                            <p class="text-lg font-bold text-slate-800 tracking-tight">${s.name}</p>
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">${s.language || 'English'}</p>
+                    <tr class="hover:bg-blue-50/30 transition-all group">
+                        <td class="p-8">
+                            <p class="text-xl font-extrabold text-slate-800 tracking-tight">${s.name}</p>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">ID: ${s._id.slice(-6)}</p>
                         </td>
-                        <td class="p-6">
-                            <span class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black rounded-lg uppercase">${s.level}</span>
-                            <span class="ml-2 text-[9px] font-bold text-slate-400 uppercase">${s.className || 'A'}</span>
+                        <td class="p-8 text-center">
+                            <span class="px-4 py-1.5 bg-blue-600 text-white text-[9px] font-black rounded-full uppercase">${s.level}</span>
+                            <p class="text-[9px] font-bold text-slate-400 mt-2 uppercase">${s.language || 'English'} | ${s.className || 'A'}</p>
                         </td>
-                        <td class="p-6 text-lg font-black ${record.payments > 0 ? 'text-emerald-600' : 'text-slate-300'}">
-                            ${record.payments} <span class="text-[10px]">EGP</span>
+                        <td class="p-8">
+                            <div class="flex items-center gap-2">
+                                <input type="text" placeholder="Subject" id="subName-${s._id}" 
+                                       class="bg-slate-100 p-2.5 rounded-xl text-[10px] border border-transparent outline-none w-32 font-bold focus:border-blue-500 focus:bg-white">
+                                <input type="number" placeholder="00" id="subScore-${s._id}" 
+                                       class="bg-slate-100 p-2.5 rounded-xl text-[10px] border border-transparent outline-none w-16 font-bold text-center focus:border-blue-500 focus:bg-white">
+                                <button onclick="addSubjectToStudent('${s._id}')" 
+                                        class="bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-[10px] font-black hover:bg-emerald-600 shadow-md shadow-emerald-500/20 active:scale-95 transition-all">
+                                    SAVE
+                                </button>
+                            </div>
                         </td>
-                        <td class="p-6 text-right space-x-2">
-                            <button onclick="window.location.href='tables.html?id=${s._id}'" class="px-4 py-2 bg-slate-900 text-white rounded-xl font-black text-[9px] uppercase hover:bg-blue-600 transition-all shadow-sm">Details</button>
-                            <button onclick="deleteStudent('${s._id}')" class="px-4 py-2 bg-red-50 text-red-600 bg-opacity-10 rounded-xl font-black text-[9px] uppercase hover:bg-red-600 hover:text-white transition-all">Delete</button>
+                        <td class="p-8 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button onclick="window.location.href='tables.html?id=${s._id}'" 
+                                        class="px-5 py-2.5 bg-slate-900 text-white rounded-xl font-black text-[9px] uppercase hover:bg-blue-600 transition-all shadow-lg">HUB</button>
+                                <button onclick="deleteStudent('${s._id}')" 
+                                        class="px-5 py-2.5 bg-red-50 text-red-500 rounded-xl font-black text-[9px] uppercase hover:bg-red-500 hover:text-white transition-all">DEL</button>
+                            </div>
                         </td>
                     </tr>`;
             });
-        } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500 font-black">DATABASE CONNECTION FAILED</td></tr>`;
+        } catch (e) { 
+            tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-red-500 font-black">CONNECTION RESET. CHECK BACKEND.</td></tr>`; 
+        }
+    }
+
+    async function addSubjectToStudent(id) {
+        const subName = document.getElementById(`subName-${id}`).value;
+        const subScore = document.getElementById(`subScore-${id}`).value;
+        const currentMonth = new Date().toISOString().slice(0, 7);
+
+        if(!subName || !subScore) return alert("System requires both Subject Name and Score.");
+
+        const res = await fetch(`${API}/update-value`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                studentId: id, 
+                month: currentMonth, 
+                field: subName.toLowerCase().trim(), 
+                value: Number(subScore) 
+            })
+        });
+
+        if(res.ok) {
+            alert(`Uplink Successful: ${subName} updated.`);
+            document.getElementById(`subName-${id}`).value = "";
+            document.getElementById(`subScore-${id}`).value = "";
+        } else {
+            alert("Uplink Failed. Check Subject Map.");
         }
     }
 
@@ -168,7 +200,7 @@
     }
 
     async function deleteStudent(id) {
-        if(!confirm("Delete student?")) return;
+        if(!confirm("Purge student record permanently?")) return;
         await fetch(`${API}/${id}?admin=${user}`, { method: "DELETE" });
         loadData();
     }
@@ -176,7 +208,9 @@
     function searchStudents() {
         const q = document.getElementById("searchInput").value.toLowerCase();
         const rows = document.querySelectorAll("#studentsTable tr");
-        rows.forEach(row => row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none");
+        rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+        });
     }
 
     function logout() { localStorage.clear(); window.location.href="login.html"; }
