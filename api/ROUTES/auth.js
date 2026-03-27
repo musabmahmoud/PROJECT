@@ -3,33 +3,43 @@ const router = express.Router();
 const User = require("../MODELS/user");
 const bcrypt = require("bcrypt");
 
-// Signup
-router.post("/signup", async (req, res) => { 
+// Signup Route
+router.post("/signup", async (req, res, next) => { 
   try {
-    const user = new User({ 
-      username: req.body.username, 
-      password: req.body.password 
-    });
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "Username and password are required" });
+    }
+
+    const user = new User({ username, password });
     await user.save();
-    res.json({ message: "User created" });
+    
+    return res.status(201).json({ message: "User created" });
   } catch (err) {
+    // If 'next' is failing, we handle the error directly here
     res.status(400).json({ error: err.message });
   }
 });
 
-// Login
-router.post("/login", async (req, res) => {
+// Login Route
+router.post("/login", async (req, res, next) => {
   try {
-    const user = await User.findOne({ username: req.body.username });
-    if (!user) return res.status(400).json({ error: "User not found" });
+    const { username, password } = req.body;
+    
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
+    }
 
-    // This compares the typed password with the scrambled one in the DB
-    const valid = await bcrypt.compare(req.body.password, user.password);
-    if (!valid) return res.status(400).json({ error: "Wrong password" });
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
+      return res.status(400).json({ error: "Wrong password" });
+    }
 
-    res.json({ message: "Login successful", username: user.username });
+    return res.json({ message: "Login successful", username: user.username });
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error", details: err.message });
   }
 });
 

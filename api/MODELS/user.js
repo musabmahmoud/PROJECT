@@ -6,10 +6,12 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
 });
 
-userSchema.pre("save", async function(next) {
-  if (!this.isModified("password")) return next();
+// REMOVE 'next' from the arguments and the call
+userSchema.pre("save", async function() {
+  if (!this.isModified("password")) return; // Just return, don't call next()
+  
   this.password = await bcrypt.hash(this.password, 10);
-  next();
+  // No next() call needed here for async functions
 });
 
 module.exports = mongoose.model("User", userSchema);
