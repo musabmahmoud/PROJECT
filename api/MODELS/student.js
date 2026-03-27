@@ -10,5 +10,4 @@ const studentSchema = new mongoose.Schema({
   dateAdded: { type: Date, default: Date.now }
 });
 
-// This line checks if the model already exists to prevent Vercel recompilation errors
 module.exports = mongoose.models.Student || mongoose.model("Student", studentSchema);
