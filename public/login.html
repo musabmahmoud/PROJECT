@@ -2,29 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Titan ERP | Secure Access</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         
-        /* --- BACKGROUND DESIGN --- 
-           Uses a subtle radial gradient to create depth and a professional "SaaS" look.
-        */
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: radial-gradient(circle at top right, #f8fafc, #f1f5f9); 
-            height: 100vh; 
+            min-height: 100vh; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             margin: 0; 
-            overflow: hidden; 
+            padding: 1.5rem; /* Space for mobile edges */
         }
 
-        /* --- LOGIN CARD ANIMATION --- 
-           Uses a custom cubic-bezier for a "premium" smooth slide-up effect on entry.
-        */
         .login-card { 
             background: white; 
             border: 1px solid #f1f5f9; 
@@ -32,32 +26,36 @@
             border-radius: 2.5rem; 
             width: 100%; 
             max-width: 400px; 
-            padding: 3.5rem; 
+            padding: 2.5rem; /* Reduced padding for mobile */
             text-align: center; 
             animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
         }
 
-        /* --- TITAN INPUT SYSTEM --- */
+        @media (min-width: 768px) {
+            .login-card { padding: 3.5rem; }
+        }
+
         .titan-input { 
             width: 100%; 
             background: #f8fafc; 
             border: 1px solid #e2e8f0; 
             border-radius: 1.25rem; 
             padding: 1.1rem 1.5rem; 
-            font-size: 14px; 
+            font-size: 16px; /* Better for mobile to prevent auto-zoom */
             font-weight: 600; 
             color: #1e293b; 
             outline: none; 
             transition: all 0.2s ease; 
             margin-bottom: 1rem; 
+            appearance: none;
         }
+
         .titan-input:focus { 
             background: white; 
             border-color: #3b82f6; 
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05); 
         }
 
-        /* --- PRIMARY ACTION BUTTON --- */
         .btn-primary { 
             width: 100%; 
             background: #1e293b; 
@@ -65,7 +63,7 @@
             padding: 1.1rem; 
             border-radius: 1.25rem; 
             font-weight: 700; 
-            font-size: 11px; 
+            font-size: 12px; 
             text-transform: uppercase; 
             letter-spacing: 0.1em; 
             transition: all 0.3s ease; 
@@ -73,16 +71,10 @@
             border: none; 
             margin-top: 0.5rem; 
         }
-        .btn-primary:hover { 
-            background: #000; 
-            transform: translateY(-2px); 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
-        }
 
-        .logo-mark { font-size: 3rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; display: inline-block; }
+        .logo-mark { font-size: 3rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
         .dot { color: #3b82f6; }
 
-        /* Animation keyframes for the slideUp effect */
         @keyframes slideUp { 
             from { opacity: 0; transform: translateY(20px); } 
             to { opacity: 1; transform: translateY(0); } 
@@ -109,24 +101,23 @@
     </div>
 
     <script>
-        /**
-         * AUTHENTICATION HANDLER
-         * Note: For this current version, we are simulating a login by saving
-         * the 'User ID' into the browser's LocalStorage. 
-         * This 'user' key is what tells index.html and classes.html which 
-         * students belong to you.
-         */
+        // Check if already logged in
+        if (localStorage.getItem("titan_token")) {
+            window.location.href = "index.html";
+        }
+
         function handleLogin(event) {
-            // Prevent the page from refreshing on form submit
             event.preventDefault();
             
             const user = document.getElementById('username').value;
-            
-            // SESSION START: 
-            // We store the username globally in the browser's memory.
+            const pass = document.getElementById('password').value;
+
+            // FIXING THE LOOP:
+            // index.html looks for 'titan_token'. 
+            // We simulate a token using the username.
+            localStorage.setItem("titan_token", "simulated_token_" + user);
             localStorage.setItem("user", user);
             
-            // ACCESS GRANTED: Redirect to the Master Registry
             window.location.href = "index.html";
         }
     </script>
