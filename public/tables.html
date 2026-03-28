@@ -3,148 +3,269 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Titan ERP | Class Timetables</title>
+  <title>Titan ERP | Universal Grid</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
     
-    :root { --titan-blue: #2563eb; --titan-slate: #f8fafc; }
+    :root { --titan-blue: #2563eb; --titan-emerald: #10b981; --titan-slate: #f8fafc; }
     
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--titan-slate); color: #0f172a; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--titan-slate); color: #0f172a; letter-spacing: -0.01em; }
 
-    .timetable-container {
-      background: white;
-      border-radius: 3rem;
-      border: 1px solid #edf2f7;
-      overflow: hidden;
-    }
+    /* Component Styling */
+    .titan-card { background: white; border-radius: 2.5rem; border: 1px solid #edf2f7; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.02); }
+    
+    /* Subject Colors from your images */
+    .sub-math { background: #fefce8; color: #a16207; border: 2px solid #fef08a; }
+    .sub-science { background: #f0fdf4; color: #15803d; border: 2px solid #bbf7d0; }
+    .sub-english { background: #eff6ff; color: #1d4ed8; border: 2px solid #bfdbfe; }
+    .sub-arabic { background: #fff1f2; color: #be123c; border: 2px solid #fecdd3; }
+    .sub-studies { background: #faf5ff; color: #7e22ce; border: 2px solid #e9d5ff; }
+    .sub-break { background: #f1f5f9; color: #64748b; border: 2px dashed #cbd5e1; }
+    
+    .cell-empty { border: 2px dashed #e2e8f0; background: #f8fafc; color: #cbd5e1; transition: all 0.2s; }
+    .cell-empty:hover { background: white; border-color: var(--titan-blue); color: var(--titan-blue); }
 
-    .time-slot {
-      background: #f8fafc;
-      border-bottom: 1px solid #f1f5f9;
-      height: 100px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
+    .session-item { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+    .session-item:hover { transform: translateY(-3px) scale(1.02); z-index: 20; }
 
-    .session-card {
-      height: 85px;
-      margin: 5px;
-      border-radius: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-      cursor: pointer;
-    }
-
-    .session-card:hover { transform: scale(1.02); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
-
-    /* Subject Colors based on your image */
-    .sub-math { background: #fefce8; color: #a16207; border-color: #fef08a; }
-    .sub-science { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
-    .sub-english { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
-    .sub-arabic { background: #fff1f2; color: #be123c; border-color: #fecdd3; }
-    .sub-studies { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; }
-    .sub-break { background: #f1f5f9; color: #64748b; border-style: dashed; border-color: #cbd5e1; }
+    #editModal { backdrop-filter: blur(12px); display: none; }
   </style>
 </head>
 <body class="min-h-screen">
 
+  <div id="editModal" class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40">
+    <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl border border-slate-100">
+      <div class="flex justify-between items-start mb-8">
+        <div>
+          <h3 class="text-3xl font-black italic tracking-tighter">Edit <span class="text-blue-600">Node</span></h3>
+          <p id="targetCellInfo" class="text-[10px] font-black uppercase text-slate-400 tracking-widest mt-1"></p>
+        </div>
+        <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-red-500 transition-all">✕</button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-4 mb-2 block">Subject Track</label>
+          <input id="editSub" type="text" placeholder="e.g. Math, Arabic, Science..." class="w-full p-5 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-600 focus:bg-white transition-all">
+        </div>
+        <div>
+          <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-4 mb-2 block">Assigned Faculty</label>
+          <input id="editTeach" type="text" placeholder="Teacher Name" class="w-full p-5 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-600 focus:bg-white transition-all">
+        </div>
+        
+        <div class="pt-6 flex gap-3">
+          <button onclick="saveSession()" class="flex-1 bg-slate-900 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-600 transition-all shadow-xl shadow-blue-500/10">Sync Data</button>
+          <button onclick="clearCell()" class="px-6 bg-red-50 text-red-500 rounded-2xl font-black uppercase text-[10px] hover:bg-red-500 hover:text-white transition-all">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <aside class="fixed left-0 top-0 h-full w-24 hidden lg:flex flex-col items-center py-12 bg-white border-r border-slate-100 z-50">
     <div class="text-3xl font-black text-blue-600 mb-20 italic tracking-tighter">T.</div>
     <nav class="space-y-12 flex-1">
-      <a href="index.html" class="p-5 text-slate-300 hover:text-blue-600 block text-2xl">📊</a>
-      <a href="classes.html" class="p-5 text-slate-300 hover:text-blue-600 block text-2xl">🏫</a>
+      <a href="index.html" class="p-5 text-slate-300 hover:text-blue-600 block text-2xl transition-all">📊</a>
+      <a href="classes.html" class="p-5 text-slate-300 hover:text-blue-600 block text-2xl transition-all">🏫</a>
       <a href="tables.html" class="p-5 bg-blue-600 text-white rounded-[1.5rem] block shadow-2xl shadow-blue-500/40 text-2xl">📅</a>
     </nav>
   </aside>
 
   <main class="lg:ml-24 p-8 md:p-16 max-w-[1600px] mx-auto">
     
-    <header class="flex flex-col xl:flex-row justify-between items-end gap-8 mb-12">
+    <header class="flex flex-col xl:flex-row justify-between items-start gap-8 mb-12">
       <div>
         <h1 class="text-6xl font-black tracking-tighter uppercase italic text-slate-900 leading-none">
-          Master <span class="text-blue-600">Schedule</span>
+          Master <span class="text-blue-600">Grid</span>
         </h1>
-        <p class="mt-4 text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em]">Egyptian National Curriculum • 2025/2026</p>
+        <div class="mt-6 flex flex-wrap items-center gap-4">
+           <p class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em]">Node: Academic_Schedule_V4</p>
+           <span class="h-4 w-[1px] bg-slate-200"></span>
+           <button onclick="exportJSON()" class="text-[10px] font-black uppercase text-blue-600 hover:underline">Download Data</button>
+        </div>
       </div>
 
-      <div class="flex gap-4 bg-white p-3 rounded-[2rem] border border-slate-100 shadow-sm">
-        <select id="viewLevel" class="p-4 bg-slate-50 rounded-2xl text-xs font-black uppercase outline-none">
-          <option value="Primary 5">Primary 5</option>
-          <option value="Prep 1">Prep 1</option>
-          <option value="Secondary 2">Secondary 2</option>
+      <div class="flex flex-wrap gap-3 bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm">
+        <select id="selLevel" onchange="renderGrid()" class="p-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase outline-none cursor-pointer hover:bg-slate-100">
+          <optgroup label="Primary">
+            <option value="Primary 1">Primary 1</option><option value="Primary 2">Primary 2</option>
+            <option value="Primary 3">Primary 3</option><option value="Primary 4">Primary 4</option>
+            <option value="Primary 5" selected>Primary 5</option><option value="Primary 6">Primary 6</option>
+          </optgroup>
+          <optgroup label="Preparatory">
+            <option value="Prep 1">Prep 1</option><option value="Prep 2">Prep 2</option><option value="Prep 3">Prep 3</option>
+          </optgroup>
         </select>
-        <button class="bg-slate-900 text-white px-8 rounded-2xl font-black text-[10px] uppercase">Print PDF</button>
+        <select id="selGroup" onchange="renderGrid()" class="p-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase outline-none cursor-pointer">
+          <option value="Group A">Group A Only</option>
+          <option value="Group B">Group B Only</option>
+        </select>
+        <select id="selLang" onchange="renderGrid()" class="p-4 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase outline-none cursor-pointer">
+          <option value="English">English Track</option>
+          <option value="Arabic">Arabic Track</option>
+        </select>
       </div>
     </header>
 
-    <div class="timetable-container shadow-2xl shadow-blue-900/5">
-      <div class="grid grid-cols-8 min-w-[1000px]">
-        
-        <div class="bg-slate-900 text-white p-6 flex items-center justify-center font-black uppercase text-[10px] tracking-widest border-r border-slate-800">Timeline</div>
-        <div class="bg-white p-6 text-center font-black uppercase text-xs border-b border-slate-100">Sunday</div>
-        <div class="bg-white p-6 text-center font-black uppercase text-xs border-b border-slate-100">Monday</div>
-        <div class="bg-white p-6 text-center font-black uppercase text-xs border-b border-slate-100">Tuesday</div>
-        <div class="bg-white p-6 text-center font-black uppercase text-xs border-b border-slate-100">Wednesday</div>
-        <div class="bg-white p-6 text-center font-black uppercase text-xs border-b border-slate-100">Thursday</div>
-        <div class="bg-white p-6 text-center font-black uppercase text-xs border-b border-slate-100">Friday</div>
-        <div class="bg-white p-6 text-center font-black uppercase text-xs border-b border-slate-100">Saturday</div>
+    <section class="titan-card p-6 mb-12 flex flex-wrap items-center justify-between gap-6 bg-white/80 backdrop-blur-md">
+      <div class="flex items-center gap-4">
+        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Schedule Management Tools</span>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="massApply('Break')" class="bg-slate-100 text-slate-900 px-6 py-3 rounded-xl font-black text-[9px] uppercase hover:bg-slate-200 transition-all">Insert Break Row</button>
+        <button onclick="clearWholeGrid()" class="bg-red-50 text-red-500 px-6 py-3 rounded-xl font-black text-[9px] uppercase hover:bg-red-500 hover:text-white transition-all">Clear All</button>
+      </div>
+    </section>
 
-        <div class="time-slot border-r border-slate-100">
-          <span class="text-lg font-black text-slate-800">08:00</span>
-          <span class="text-[9px] font-bold text-slate-400 uppercase">Session 1</span>
-        </div>
-        <div class="p-1 border-b border-r border-slate-50">
-          <div class="session-card sub-math">
-            <span class="text-[10px] font-black uppercase tracking-widest">Math</span>
-            <span class="text-[9px] font-bold opacity-60">Room 201</span>
+    <div class="titan-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <div id="gridContainer" class="grid grid-cols-8 min-w-[1200px]">
           </div>
-        </div>
-        <div class="p-1 border-b border-r border-slate-50">
-          <div class="session-card sub-arabic">
-            <span class="text-[10px] font-black uppercase tracking-widest">Arabic</span>
-          </div>
-        </div>
-        <div class="p-1 border-b border-r border-slate-50"><div class="session-card sub-math"><span>Math</span></div></div>
-        <div class="p-1 border-b border-r border-slate-50"><div class="session-card sub-studies"><span>Social</span></div></div>
-        <div class="p-1 border-b border-r border-slate-50"><div class="session-card sub-math"><span>Math</span></div></div>
-        <div class="p-1 border-b border-r border-slate-50"></div> <div class="p-1 border-b border-slate-50"></div>
-
-        <div class="time-slot border-r border-slate-100 bg-slate-50/50">
-          <span class="text-sm font-black text-blue-600 uppercase">Break</span>
-        </div>
-        <div colspan="7" class="col-span-7 bg-slate-50/30 flex items-center justify-center border-b border-slate-100">
-           <span class="text-[10px] font-black uppercase tracking-[1em] text-slate-300">Academic Recess</span>
-        </div>
-
-        <div class="time-slot border-r border-slate-100">
-          <span class="text-lg font-black text-slate-800">10:30</span>
-          <span class="text-[9px] font-bold text-slate-400 uppercase">Session 2</span>
-        </div>
-        <div class="p-1 border-b border-r border-slate-50">
-            <div class="session-card sub-science">
-              <span class="text-[10px] font-black uppercase tracking-widest">Science</span>
-            </div>
-        </div>
-        <div class="p-1 border-b border-r border-slate-50">
-            <div class="session-card sub-english">
-              <span class="text-[10px] font-black uppercase tracking-widest">English</span>
-            </div>
-        </div>
-        <div class="p-1 border-b border-r border-slate-50"><div class="session-card sub-science"><span>Science</span></div></div>
-        <div class="p-1 border-b border-r border-slate-50"><div class="session-card sub-english"><span>English</span></div></div>
-        <div class="p-1 border-b border-r border-slate-50"><div class="session-card sub-science"><span>Science</span></div></div>
-        <div class="p-1 border-b border-r border-slate-50"></div>
-        <div class="p-1 border-b border-slate-50"></div>
-
       </div>
     </div>
   </main>
+
+  <script>
+    const days = ["Timeline", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const times = ["08:00", "08:45", "09:30", "10:30", "11:15", "12:00", "12:45"];
+    
+    let db = JSON.parse(localStorage.getItem('titan_master_schedules')) || {};
+    let activeCellId = null;
+
+    function renderGrid() {
+      const container = document.getElementById('gridContainer');
+      const level = document.getElementById('selLevel').value;
+      const group = document.getElementById('selGroup').value;
+      const lang = document.getElementById('selLang').value;
+      const configKey = `${level}-${group}-${lang}`;
+      
+      container.innerHTML = "";
+
+      // Headers
+      days.forEach(day => {
+        const isTime = day === 'Timeline';
+        container.innerHTML += `
+          <div class="p-6 text-center font-black uppercase text-[10px] tracking-widest border-b border-slate-100 ${isTime ? 'bg-slate-900 text-white' : 'bg-slate-50/50 text-slate-400'}">
+            ${day}
+          </div>`;
+      });
+
+      // Rows
+      times.forEach(time => {
+        // Timeline Cell
+        container.innerHTML += `
+          <div class="p-8 border-r border-b border-slate-50 flex flex-col items-center justify-center bg-white">
+            <span class="text-xl font-black text-slate-900 tracking-tighter">${time}</span>
+            <span class="text-[8px] font-bold text-blue-600 uppercase mt-1">Period</span>
+          </div>`;
+
+        // Day Cells
+        for(let i=1; i<=7; i++) {
+          const dayName = days[i];
+          const cellId = `${configKey}-${time}-${dayName}`;
+          const data = db[cellId] || null;
+          
+          let colorClass = "cell-empty";
+          if(data) {
+            const sub = data.sub.toLowerCase();
+            if(sub.includes('math')) colorClass = "sub-math";
+            else if(sub.includes('science')) colorClass = "sub-science";
+            else if(sub.includes('english')) colorClass = "sub-english";
+            else if(sub.includes('arabic')) colorClass = "sub-arabic";
+            else if(sub.includes('studies')) colorClass = "sub-studies";
+            else if(sub.includes('break')) colorClass = "sub-break";
+            else colorClass = "bg-slate-900 text-white";
+          }
+
+          container.innerHTML += `
+            <div class="p-2 border-b border-r border-slate-50 bg-white">
+              <div onclick="openEditor('${cellId}', '${dayName}', '${time}')" 
+                   class="rounded-[2rem] p-4 min-h-[110px] flex flex-col items-center justify-center text-center session-item ${colorClass} ${!data ? 'cell-empty' : ''}">
+                <span class="text-[11px] font-black uppercase tracking-tighter leading-tight">${data ? data.sub : '+'}</span>
+                ${data && data.teacher ? `<span class="text-[8px] font-bold opacity-60 mt-2 uppercase tracking-wider">${data.teacher}</span>` : ''}
+              </div>
+            </div>`;
+        }
+      });
+    }
+
+    function openEditor(id, day, time) {
+      activeCellId = id;
+      const data = db[id] || { sub: '', teacher: '' };
+      document.getElementById('targetCellInfo').innerText = `${day} @ ${time}`;
+      document.getElementById('editSub').value = data.sub;
+      document.getElementById('editTeach').value = data.teacher;
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function saveSession() {
+      const sub = document.getElementById('editSub').value.trim();
+      const teacher = document.getElementById('editTeach').value.trim();
+      
+      if(sub) {
+        db[activeCellId] = { sub, teacher };
+      } else {
+        delete db[activeCellId];
+      }
+      
+      saveDB();
+    }
+
+    function clearCell() {
+      delete db[activeCellId];
+      saveDB();
+    }
+
+    function massApply(type) {
+      const time = prompt("Enter time slot for " + type + " (e.g. 10:30):");
+      if(!time || !times.includes(time)) return alert("Invalid time slot");
+      
+      const level = document.getElementById('selLevel').value;
+      const group = document.getElementById('selGroup').value;
+      const lang = document.getElementById('selLang').value;
+      const configKey = `${level}-${group}-${lang}`;
+
+      for(let i=1; i<=7; i++) {
+        const cellId = `${configKey}-${time}-${days[i]}`;
+        db[cellId] = { sub: type, teacher: 'School Wide' };
+      }
+      saveDB();
+    }
+
+    function clearWholeGrid() {
+      if(confirm("Wipe current schedule view?")) {
+        const level = document.getElementById('selLevel').value;
+        const group = document.getElementById('selGroup').value;
+        const lang = document.getElementById('selLang').value;
+        const prefix = `${level}-${group}-${lang}`;
+
+        Object.keys(db).forEach(key => {
+          if(key.startsWith(prefix)) delete db[key];
+        });
+        saveDB();
+      }
+    }
+
+    function saveDB() {
+      localStorage.setItem('titan_master_schedules', JSON.stringify(db));
+      closeModal();
+      renderGrid();
+    }
+
+    function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+    
+    function exportJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href",     dataStr);
+      downloadAnchorNode.setAttribute("download", "titan_schedule_backup.json");
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    }
+
+    window.onload = renderGrid;
+  </script>
 </body>
 </html>
