@@ -179,97 +179,99 @@
   </main>
 
   <script>
+    // 1. Set your API URL clearly (Change this to your actual server address)
+    const API = "http://localhost:5000/api/students"; 
     const token = localStorage.getItem("titan_token"); 
-    const API = "/api/students";
 
     window.onload = () => { 
-        if (!token) window.location.href = "login.html"; 
-        else loadData(); 
+        if (!token) {
+            window.location.href = "login.html"; 
+        } else {
+            loadData(); 
+        }
     };
 
     async function loadData() {
-    const desktopContainer = document.getElementById("studentBodyDesktop");
-    const mobileContainer = document.getElementById("studentBodyMobile");
-    
-    // 1. Get the Admin Identifier (the 'user' key you saved during login)
-    const adminId = localStorage.getItem("user"); 
-    const token = localStorage.getItem("titan_token");
-
-    // 2. Security Check: If no user ID, kick to login
-    if (!adminId || !token) {
-        window.location.href = "login.html";
-        return;
-    }
-
-    const loader = `<div class="p-20 text-center text-slate-300 font-bold uppercase tracking-widest animate-pulse">Syncing Cloud...</div>`;
-    mobileContainer.innerHTML = loader;
-    desktopContainer.innerHTML = `<tr><td colspan="4">${loader}</td></tr>`;
-    
-    try {
-        // 3. Add the admin ID to the URL as a "Query Parameter" 
-        // This tells the server: "Hey, I am Admin X, give me MY students."
-        const res = await fetch(`${API}?adminId=${adminId}`, { 
-            headers: { 'Authorization': token } 
-        });
-
-        if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error || "Unauthorized");
-        }
-
-        const data = await res.json();
+        const desktopContainer = document.getElementById("studentBodyDesktop");
+        const mobileContainer = document.getElementById("studentBodyMobile");
         
-        desktopContainer.innerHTML = "";
-        mobileContainer.innerHTML = "";
-        document.getElementById('totalCount').innerText = data.length.toString().padStart(2, '0');
+        // --- FIXED: Define adminId here ---
+        const adminId = localStorage.getItem("user");
         
-        if (data.length === 0) {
-            const emptyMsg = `<div class="p-20 text-center text-slate-400 italic">No records found.</div>`;
-            mobileContainer.innerHTML = emptyMsg;
-            desktopContainer.innerHTML = `<tr><td colspan="4">${emptyMsg}</td></tr>`;
+        if (!adminId || !token) {
+            window.location.href = "login.html";
             return;
         }
 
-        data.forEach(s => {
-            const initials = s.name ? s.name.charAt(0).toUpperCase() : "?";
-            const shortId = s._id ? s._id.slice(-6).toUpperCase() : "TEMP";
+        const loader = `<div class="p-20 text-center text-slate-300 font-bold uppercase tracking-widest animate-pulse">Syncing Cloud...</div>`;
+        mobileContainer.innerHTML = loader;
+        desktopContainer.innerHTML = `<tr><td colspan="4">${loader}</td></tr>`;
+        
+        try {
+            // --- FIXED: Added adminId to headers so the server sees it ---
+            const res = await fetch(`${API}?adminId=${adminId}`, { 
+                headers: { 
+                    'Authorization': token,
+                    'adminId': adminId 
+                } 
+            });
 
-            // Desktop Row
-            desktopContainer.innerHTML += `
-                <tr class="hover:bg-slate-50/50 transition-colors">
-                    <td class="p-6">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-extrabold text-slate-400 text-xs">${initials}</div>
-                            <div><p class="text-sm font-extrabold text-slate-800">${s.name}</p><p class="text-[9px] font-bold text-slate-300 uppercase">ID: ${shortId}</p></div>
-                        </div>
-                    </td>
-                    <td class="p-6 text-xs font-bold text-slate-600">${s.level}</td>
-                    <td class="p-6 text-[9px] font-bold text-blue-500 uppercase tracking-tighter">${s.className} • ${s.language}</td>
-                    <td class="p-6 text-right"><button onclick="deleteStudent('${s._id}')" class="text-red-300 hover:text-red-500 font-bold">✕</button></td>
-                </tr>`;
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Unauthorized");
+            }
 
-            // Mobile Card
-            mobileContainer.innerHTML += `
-                <div class="p-6 flex flex-col gap-4">
-                    <div class="flex justify-between items-start">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center font-bold">${initials}</div>
-                            <div><p class="font-extrabold text-slate-800 text-sm">${s.name}</p><p class="text-[9px] font-bold text-slate-300">ID: ${shortId}</p></div>
+            const data = await res.json();
+            
+            desktopContainer.innerHTML = "";
+            mobileContainer.innerHTML = "";
+            document.getElementById('totalCount').innerText = data.length.toString().padStart(2, '0');
+            
+            if (data.length === 0) {
+                const emptyMsg = `<div class="p-20 text-center text-slate-400 italic">No records found.</div>`;
+                mobileContainer.innerHTML = emptyMsg;
+                desktopContainer.innerHTML = `<tr><td colspan="4">${emptyMsg}</td></tr>`;
+                return;
+            }
+
+            data.forEach(s => {
+                const initials = s.name ? s.name.charAt(0).toUpperCase() : "?";
+                const shortId = s._id ? s._id.slice(-6).toUpperCase() : "TEMP";
+
+                desktopContainer.innerHTML += `
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="p-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-extrabold text-slate-400 text-xs">${initials}</div>
+                                <div><p class="text-sm font-extrabold text-slate-800">${s.name}</p><p class="text-[9px] font-bold text-slate-300 uppercase">ID: ${shortId}</p></div>
+                            </div>
+                        </td>
+                        <td class="p-6 text-xs font-bold text-slate-600">${s.level}</td>
+                        <td class="p-6 text-[9px] font-bold text-blue-500 uppercase tracking-tighter">${s.className} • ${s.language}</td>
+                        <td class="p-6 text-right"><button onclick="deleteStudent('${s._id}')" class="text-red-300 hover:text-red-500 font-bold">✕</button></td>
+                    </tr>`;
+
+                mobileContainer.innerHTML += `
+                    <div class="p-6 flex flex-col gap-4">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center font-bold">${initials}</div>
+                                <div><p class="font-extrabold text-slate-800 text-sm">${s.name}</p><p class="text-[9px] font-bold text-slate-300">ID: ${shortId}</p></div>
+                            </div>
+                            <button onclick="deleteStudent('${s._id}')" class="bg-red-50 text-red-500 px-3 py-1 rounded-lg text-[10px] font-bold uppercase">Delete</button>
                         </div>
-                        <button onclick="deleteStudent('${s._id}')" class="bg-red-50 text-red-500 px-3 py-1 rounded-lg text-[10px] font-bold uppercase">Delete</button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 border-t border-slate-50 pt-4">
-                        <div><span class="mobile-label">Level</span><p class="text-xs font-bold text-slate-600">${s.level}</p></div>
-                        <div><span class="mobile-label">Track</span><p class="text-[10px] font-extrabold text-blue-500 uppercase">${s.className} • ${s.language}</p></div>
-                    </div>
-                </div>`;
-        });
-    } catch (e) { 
-        const errorMsg = `<div class="p-10 text-center text-red-400 font-bold">ERROR: ${e.message}</div>`;
-        mobileContainer.innerHTML = errorMsg;
-        desktopContainer.innerHTML = `<tr><td colspan="4">${errorMsg}</td></tr>`;
+                        <div class="grid grid-cols-2 gap-4 border-t border-slate-50 pt-4">
+                            <div><span class="mobile-label">Level</span><p class="text-xs font-bold text-slate-600">${s.level}</p></div>
+                            <div><span class="mobile-label">Track</span><p class="text-[10px] font-extrabold text-blue-500 uppercase">${s.className} • ${s.language}</p></div>
+                        </div>
+                    </div>`;
+            });
+        } catch (e) { 
+            const errorMsg = `<div class="p-10 text-center text-red-400 font-bold">ERROR: ${e.message}</div>`;
+            mobileContainer.innerHTML = errorMsg;
+            desktopContainer.innerHTML = `<tr><td colspan="4">${errorMsg}</td></tr>`;
+        }
     }
-}
 
     async function enrollStudent() {
         const btn = document.getElementById("enrollBtn");
@@ -277,6 +279,7 @@
         const level = document.getElementById("sLevel").value;
         const className = document.getElementById("sClass").value;
         const language = document.getElementById("sLang").value;
+        const adminId = localStorage.getItem("user");
 
         if(!name) return alert("Enter Student Name");
 
@@ -284,42 +287,62 @@
         btn.disabled = true;
 
         try {
+            // --- FIXED: Combined everything into one clean fetch ---
             const res = await fetch(API, { 
                 method: "POST", 
-                headers: { "Content-Type": "application/json", "Authorization": token }, 
-                body: JSON.stringify({ name, level, className, language }) 
+                headers: { 
+                    "Content-Type": "application/json", 
+                    "Authorization": token 
+                }, 
+                body: JSON.stringify({ 
+                    name, 
+                    level, 
+                    className, 
+                    language,
+                    adminId: adminId
+                }) 
             });
 
             if (res.ok) {
                 document.getElementById("sName").value = "";
                 btn.innerText = "Success ✓";
-                setTimeout(() => { btn.innerText = "Enroll Now"; btn.disabled = false; loadData(); }, 1000);
+                setTimeout(() => { 
+                    btn.innerText = "Enroll Now"; 
+                    btn.disabled = false; 
+                    loadData(); 
+                }, 1000);
+            } else {
+                const err = await res.json();
+                throw new Error(err.error || "Failed to enroll");
             }
-        } catch (e) { btn.innerText = "Error"; btn.disabled = false; }
-    const res = await fetch(API, { 
-    method: "POST", 
-    headers: { 
-        "Content-Type": "application/json", 
-        "Authorization": token 
-    }, 
-    body: JSON.stringify({ 
-        name, 
-        level, 
-        className, 
-        language,
-        adminId: localStorage.getItem("user")
-    }) 
-});
+        } catch (e) { 
+            alert(e.message);
+            btn.innerText = "Error"; 
+            btn.disabled = false; 
+        }
     }
 
     async function deleteStudent(id) { 
         if(confirm("Confirm deletion?")) { 
-            await fetch(`${API}/${id}`, { method: "DELETE", headers: { 'Authorization': token } });
-            loadData();
+            try {
+                await fetch(`${API}/${id}`, { 
+                    method: "DELETE", 
+                    headers: { 
+                        'Authorization': token,
+                        'adminId': localStorage.getItem("user") 
+                    } 
+                });
+                loadData();
+            } catch(e) {
+                alert("Delete failed");
+            }
         } 
     }
 
-    function logout() { localStorage.clear(); window.location.href="login.html"; }
-  </script>
+    function logout() { 
+        localStorage.clear(); 
+        window.location.href="login.html"; 
+    }
+</script>
 </body>
 </html>

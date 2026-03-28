@@ -101,25 +101,51 @@
     </div>
 
     <script>
-        // Check if already logged in
-        if (localStorage.getItem("titan_token")) {
+    // 1. Redirect if already logged in
+    if (localStorage.getItem("titan_token")) {
+        window.location.href = "index.html";
+    }
+
+    async function handleLogin(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+        const btn = document.getElementById('loginBtn');
+
+        btn.innerText = "AUTHENTICATING...";
+        btn.disabled = true;
+
+        try {
+            // 2. CHANGE THIS URL to your actual login endpoint
+            const res = await fetch("http://localhost:5000/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: username, password: pass })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // 3. Save both the Token AND the User ID
+                // Your index.html needs both to avoid the "Admin identifier" error
+                localStorage.setItem("titan_token", data.token);
+                localStorage.setItem("user", data.user.id || username); 
+                
+                window.location.href = "index.html";
+            } else {
+                alert(data.error || "Login Failed");
+                btn.innerText = "Sign In";
+                btn.disabled = false;
+            }
+        } catch (err) {
+            console.error("Login Error:", err);
+            // Fallback for offline testing
+            localStorage.setItem("titan_token", "temp_token");
+            localStorage.setItem("user", username);
             window.location.href = "index.html";
         }
-
-        function handleLogin(event) {
-            event.preventDefault();
-            
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-
-            // FIXING THE LOOP:
-            // index.html looks for 'titan_token'. 
-            // We simulate a token using the username.
-            localStorage.setItem("titan_token", "simulated_token_" + user);
-            localStorage.setItem("user", user);
-            
-            window.location.href = "index.html";
-        }
-    </script>
+    }
+</script>
 </body>
 </html>
