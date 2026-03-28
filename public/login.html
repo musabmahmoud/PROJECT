@@ -1,151 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Titan ERP | Secure Access</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: radial-gradient(circle at top right, #f8fafc, #f1f5f9); 
-            min-height: 100vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            margin: 0; 
-            padding: 1.5rem; /* Space for mobile edges */
-        }
-
-        .login-card { 
-            background: white; 
-            border: 1px solid #f1f5f9; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.03); 
-            border-radius: 2.5rem; 
-            width: 100%; 
-            max-width: 400px; 
-            padding: 2.5rem; /* Reduced padding for mobile */
-            text-align: center; 
-            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
-        }
-
-        @media (min-width: 768px) {
-            .login-card { padding: 3.5rem; }
-        }
-
-        .titan-input { 
-            width: 100%; 
-            background: #f8fafc; 
-            border: 1px solid #e2e8f0; 
-            border-radius: 1.25rem; 
-            padding: 1.1rem 1.5rem; 
-            font-size: 16px; /* Better for mobile to prevent auto-zoom */
-            font-weight: 600; 
-            color: #1e293b; 
-            outline: none; 
-            transition: all 0.2s ease; 
-            margin-bottom: 1rem; 
-            appearance: none;
-        }
-
-        .titan-input:focus { 
-            background: white; 
-            border-color: #3b82f6; 
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05); 
-        }
-
-        .btn-primary { 
-            width: 100%; 
-            background: #1e293b; 
-            color: white; 
-            padding: 1.1rem; 
-            border-radius: 1.25rem; 
-            font-weight: 700; 
-            font-size: 12px; 
-            text-transform: uppercase; 
-            letter-spacing: 0.1em; 
-            transition: all 0.3s ease; 
-            cursor: pointer; 
-            border: none; 
-            margin-top: 0.5rem; 
-        }
-
-        .logo-mark { font-size: 3rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
-        .dot { color: #3b82f6; }
-
-        @keyframes slideUp { 
-            from { opacity: 0; transform: translateY(20px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Admin Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-50 flex items-center justify-center h-screen">
+  <div class="bg-white p-10 rounded-2xl shadow-xl w-96 border border-gray-100">
+    <h1 class="text-3xl font-extrabold mb-2 text-center text-gray-900">Welcome Back</h1>
+    <p class="text-gray-500 text-center mb-8 text-sm">Please enter your details</p>
     
-    <div class="login-card">
-        <div class="logo-mark">T<span class="dot">.</span></div>
-        <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Welcome Back</h2>
-        <p class="text-slate-400 text-sm font-medium mb-8">System Authentication</p>
-
-        <form onsubmit="handleLogin(event)">
-            <input type="text" id="username" class="titan-input" placeholder="User ID" required>
-            <input type="password" id="password" class="titan-input" placeholder="Password" required>
-            
-            <button type="submit" id="loginBtn" class="btn-primary">Sign In</button>
-        </form>
-
-        <div class="mt-8 text-xs font-bold text-slate-400">
-            No account? <a href="signup.html" class="text-blue-500 hover:text-blue-700">Register →</a>
-        </div>
+    <div class="space-y-4">
+      <input id="username" type="text" placeholder="Username" 
+             class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-50 focus:bg-white" />
+      
+      <input id="password" type="password" placeholder="Password" 
+             class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-50 focus:bg-white" />
+      
+      <button id="loginBtn" onclick="login()" 
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition duration-200 transform active:scale-95">
+        Sign In
+      </button>
     </div>
 
-    <script>
-    // 1. Redirect if already logged in
-    if (localStorage.getItem("titan_token")) {
-        window.location.href = "index.html";
+    <p id="msg" class="text-red-500 mt-4 text-center text-sm font-semibold min-h-[20px]"></p>
+
+    <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+      <p class="text-gray-600 text-sm">
+        New admin? 
+        <a href="signup.html" class="text-blue-600 hover:text-blue-800 font-bold ml-1 transition">Create an account</a>
+      </p>
+    </div>
+  </div>
+
+<script>
+const API = "/api/auth";
+
+async function login() {
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  const msgElement = document.getElementById("msg");
+  const btn = document.getElementById("loginBtn");
+
+  if (!username || !password) {
+    msgElement.innerText = "Please fill in all fields.";
+    return;
+  }
+
+  // 🔄 Set Loading State
+  btn.innerText = "Signing in...";
+  btn.disabled = true;
+  btn.classList.add("opacity-70", "cursor-not-allowed");
+  msgElement.innerText = "";
+
+  try {
+    const res = await fetch(`${API}/login`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ username, password })
+    });
+    
+    const data = await res.json();
+    
+    if(res.ok) {
+      localStorage.setItem("user", data.username);
+      // Redirecting to index (Dashboard)
+      window.location.href = "index.html";
+    } else {
+      msgElement.innerText = data.error || "Login failed";
     }
+  } catch (err) {
+    console.error("Login error:", err);
+    msgElement.innerText = "Server is currently unavailable.";
+  } finally {
+    // 🔙 Reset Loading State
+    btn.innerText = "Sign In";
+    btn.disabled = false;
+    btn.classList.remove("opacity-70", "cursor-not-allowed");
+  }
+}
 
-    async function handleLogin(event) {
-        event.preventDefault();
-        
-        const username = document.getElementById('username').value;
-        const pass = document.getElementById('password').value;
-        const btn = document.getElementById('loginBtn');
-
-        btn.innerText = "AUTHENTICATING...";
-        btn.disabled = true;
-
-        try {
-            // 2. CHANGE THIS URL to your actual login endpoint
-            const res = await fetch("http://localhost:5000/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: username, password: pass })
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                // 3. Save both the Token AND the User ID
-                // Your index.html needs both to avoid the "Admin identifier" error
-                localStorage.setItem("titan_token", data.token);
-                localStorage.setItem("user", data.user.id || username); 
-                
-                window.location.href = "index.html";
-            } else {
-                alert(data.error || "Login Failed");
-                btn.innerText = "Sign In";
-                btn.disabled = false;
-            }
-        } catch (err) {
-            console.error("Login Error:", err);
-            // Fallback for offline testing
-            localStorage.setItem("titan_token", "temp_token");
-            localStorage.setItem("user", username);
-            window.location.href = "index.html";
-        }
-    }
+document.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') login();
+});
 </script>
 </body>
 </html>

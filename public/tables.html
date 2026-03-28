@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Titan ERP | Class Online Academy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Titan ERP | Academic Schedule</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     
-    /* --- TITAN BRAND TOKENS --- */
     :root { 
       --titan-blue: #1e293b; 
       --accent-blue: #3b82f6;
@@ -22,90 +21,80 @@
       color: #334155; 
       margin: 0;
       -webkit-font-smoothing: antialiased;
-      padding-bottom: 80px; /* Space for Mobile Nav */
     }
 
-    @media (min-width: 768px) { body { padding-bottom: 0; } }
-
-    /* --- NAVIGATION SIDEBAR (Desktop) --- */
+    /* --- SIDEBAR --- */
     .sidebar { 
       width: var(--sidebar-width); 
       height: 100vh; 
       position: fixed; 
-      left: 0; top: 0; 
+      left: 0; 
+      top: 0; 
       background: white; 
       border-right: 1px solid #f1f5f9; 
-      z-index: 500; 
-      display: flex; flex-direction: column; align-items: center; padding-top: 2.5rem;
-    }
-
-    /* --- BOTTOM NAV (Mobile) --- */
-    .mobile-nav {
-        position: fixed; bottom: 0; left: 0; right: 0;
-        background: white; border-top: 1px solid #f1f5f9;
-        display: flex; justify-content: space-around; padding: 1rem;
-        z-index: 500;
+      z-index: 100; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      padding-top: 2.5rem;
     }
 
     .nav-icon { 
-      width: 54px; height: 54px; margin-bottom: 1.5rem; 
-      display: flex; align-items: center; justify-content: center; 
-      border-radius: 16px; cursor: pointer; transition: all 0.3s ease; 
-      font-size: 22px; text-decoration: none; color: #94a3b8;
+      width: 54px; 
+      height: 54px; 
+      margin-bottom: 1.5rem; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      border-radius: 16px; 
+      cursor: pointer; 
+      transition: all 0.3s ease; 
+      font-size: 22px; 
+      text-decoration: none;
+      color: #94a3b8;
     }
+
     .nav-icon:hover { background: #f8fafc; color: var(--accent-blue); }
     .nav-icon.active { background: #f1f5f9; color: var(--titan-blue); }
 
-    /* Main Content Responsiveness */
-    .main-content { margin-left: 0; padding: 2rem 1.2rem; max-width: 100%; }
-    @media (min-width: 768px) { .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1700px; } }
+    .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1600px; }
 
     .titan-card { background: white; border-radius: 2rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 20px rgba(0,0,0,0.01); }
 
-    /* --- GRID STYLING --- */
+    /* --- GRID --- */
     .grid-header { 
       background: #fafbfd; text-transform: uppercase; font-size: 10px; letter-spacing: 0.15em; 
       padding: 1.5rem; color: #94a3b8; font-weight: 700; border-bottom: 1px solid #f1f5f9; text-align: center;
     }
 
-    .time-cell { 
-        background: white; border-right: 1px solid #f8fafc; border-bottom: 1px solid #f8fafc; 
-        display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; 
-    }
+    .time-cell { background: white; border-right: 1px solid #f8fafc; border-bottom: 1px solid #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
 
-    /* --- COLOR ENGINE: LUXURY SUBJECT THEMES --- */
+    /* Subject Styles */
     .sub-math { background: #fefce8; color: #854d0e; border: 1px solid #fef08a; }
     .sub-science { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-    .sub-physics { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-    .sub-chemistry { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
     .sub-english { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
     .sub-arabic { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; }
     .sub-german { background: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff; }
-    .sub-history { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
     .sub-break { background: #f8fafc; color: #64748b; border: 1px dashed #cbd5e1; }
     .cell-empty { border: 1px dashed #e2e8f0; background: transparent; color: #cbd5e1; }
 
     .session-item { transition: all 0.3s ease; cursor: pointer; border-radius: 1.2rem; }
     .session-item:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); }
 
-    /* MODAL OVERLAY */
     .modal-backdrop { 
         backdrop-filter: blur(8px); display: none; background: rgba(15, 23, 42, 0.1); 
         position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center;
     }
 
-    /* PRINT OPTIMIZATION */
     @media print {
-      .sidebar, .mobile-nav, .no-print { display: none !important; }
+      .sidebar, .no-print { display: none !important; }
       .main-content { margin-left: 0 !important; padding: 0 !important; }
     }
   </style>
 </head>
 <body class="min-h-screen">
 
-  <div id="overlay" class="modal-backdrop" onclick="closeModal()"></div>
-
-  <aside class="sidebar hidden md:flex no-print">
+  <aside class="sidebar no-print">
     <div class="text-slate-900 font-bold text-3xl mb-16 tracking-tighter">T<span class="text-blue-500">.</span></div>
     <nav>
       <a href="index.html" class="nav-icon">👥</a>
@@ -113,83 +102,61 @@
       <a href="classes.html" class="nav-icon">🏫</a>
       <a href="teachers.html" class="nav-icon">👨‍🏫</a>
     </nav>
-    <div class="mt-auto mb-10 text-slate-300 hover:text-red-500 cursor-pointer transition-colors" onclick="logout()">
+    <div class="mt-auto mb-10 text-slate-300 hover:text-red-500 cursor-pointer" onclick="logout()">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
     </div>
   </aside>
 
-  <nav class="mobile-nav md:hidden no-print">
-    <a href="index.html" class="text-2xl">👥</a>
-    <a href="tables.html" class="text-2xl border-b-2 border-blue-500 pb-1">📅</a>
-    <a href="classes.html" class="text-2xl">🏫</a>
-    <a href="teachers.html" class="text-2xl">👨‍🏫</a>
-    <div onclick="logout()" class="text-2xl">🚪</div>
-  </nav>
-
   <div id="editModal" class="modal-backdrop">
-    <div class="bg-white w-[90%] max-w-md rounded-[2.5rem] p-10 shadow-2xl border border-slate-100 relative">
-      <h3 class="text-2xl font-extrabold text-slate-900 mb-2">Modify <span class="text-blue-500">Session</span></h3>
-      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Scheduling Uplink</p>
-      
+    <div class="bg-white w-full max-w-md rounded-[2rem] p-10 shadow-2xl border border-slate-100">
+      <h3 class="text-xl font-extrabold text-slate-900 mb-6">Modify <span class="text-blue-500">Session</span></h3>
       <div class="space-y-4">
-        <div>
-            <label class="text-[9px] font-bold text-slate-400 uppercase ml-4 mb-2 block">Subject Name</label>
-            <input id="editSub" type="text" placeholder="e.g. Physics" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none focus:border-blue-400 text-slate-800 transition-all">
-        </div>
-        <div>
-            <label class="text-[9px] font-bold text-slate-400 uppercase ml-4 mb-2 block">Instructor</label>
-            <input id="editTeach" type="text" placeholder="e.g. Dr. Ahmed" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none focus:border-blue-400 text-slate-800 transition-all">
-        </div>
-        
-        <div class="flex gap-3 pt-6">
-          <button onclick="saveSession()" class="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all">Update System</button>
-          <button onclick="closeModal()" class="px-6 bg-slate-100 text-slate-400 rounded-2xl font-bold hover:bg-red-50 hover:text-red-500 transition-all">✕</button>
+        <input id="editSub" type="text" placeholder="Course Name" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl font-semibold outline-none focus:border-blue-400">
+        <input id="editTeach" type="text" placeholder="Instructor" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl font-semibold outline-none focus:border-blue-400">
+        <div class="flex gap-3 pt-4">
+          <button onclick="saveSession()" class="flex-1 bg-slate-900 text-white py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest">Update</button>
+          <button onclick="closeModal()" class="px-6 bg-slate-100 text-slate-400 rounded-xl font-bold">✕</button>
         </div>
       </div>
     </div>
   </div>
 
   <div id="timeModal" class="modal-backdrop">
-    <div class="bg-white w-[90%] max-w-md rounded-[2.5rem] p-10 shadow-2xl border border-slate-100">
-      <h3 class="text-2xl font-extrabold text-slate-900 mb-2 italic">Manage <span class="text-blue-500">Timeline</span></h3>
-      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Period Sequencing</p>
-      
-      <div id="timeList" class="space-y-3 mb-8 max-h-64 overflow-y-auto pr-2"></div>
-      
-      <div class="flex gap-2 mb-8">
-        <input id="newTimeInput" type="text" placeholder="09:00" class="flex-1 p-4 bg-slate-50 rounded-2xl font-bold outline-none border border-slate-100 focus:border-blue-400 transition-all">
-        <button onclick="addTimeSlot()" class="bg-blue-500 text-white px-8 rounded-2xl font-bold text-xl hover:scale-105 transition-transform">+</button>
+    <div class="bg-white w-full max-w-md rounded-[2rem] p-10 shadow-2xl border border-slate-100">
+      <h3 class="text-xl font-extrabold text-slate-900 mb-6 italic">Manage <span class="text-blue-500">Timeline</span></h3>
+      <div id="timeList" class="space-y-3 mb-6 max-h-64 overflow-y-auto pr-2"></div>
+      <div class="flex gap-2 mb-6">
+        <input id="newTimeInput" type="text" placeholder="09:00" class="flex-1 p-4 bg-slate-50 rounded-xl font-bold outline-none border border-slate-100">
+        <button onclick="addTimeSlot()" class="bg-blue-500 text-white px-6 rounded-xl font-bold text-lg">+</button>
       </div>
-      
-      <button onclick="closeTimeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-emerald-500 transition-all">Sync Timeline</button>
+      <button onclick="closeTimeModal()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest">Sync Timeline</button>
     </div>
   </div>
 
   <main class="main-content">
-    <header class="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-12 gap-8">
+    <header class="flex flex-col xl:flex-row justify-between items-end mb-12 gap-8">
       <div>
         <div class="flex items-center gap-2 mb-3">
             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Institutional Timing</p>
         </div>
-        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">Class <span class="text-slate-400 font-light">Online Academy</span></h1>
+        <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">Academic <span class="text-slate-400 font-light">Schedule</span></h1>
       </div>
 
-      <div class="no-print flex flex-wrap items-center gap-3 bg-white p-3 rounded-3xl border border-slate-100 shadow-sm w-full xl:w-auto">
-        <select id="selLevel" onchange="renderGrid()" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none flex-1 md:flex-none">
-            <optgroup label="Secondary Stage">
-                <option value="Sec 1">1st Secondary</option>
-                <option value="Sec 2" selected>2nd Secondary</option>
-                <option value="Sec 3">3rd Secondary</option>
+      <div class="no-print flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+        <select id="selLevel" onchange="renderGrid()" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none">
+            <optgroup label="Primary Stage">
+                <option>Primary 1</option><option>Primary 2</option><option>Primary 3</option>
+                <option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
             </optgroup>
             <optgroup label="Preparatory Stage">
                 <option>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
             </optgroup>
         </select>
-        <select id="selGroup" onchange="renderGrid()" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none flex-1 md:flex-none"><option>Group A</option><option>Group B</option></select>
-        <select id="selLang" onchange="renderGrid()" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none flex-1 md:flex-none"><option>English Track</option><option>Arabic Track</option></select>
-        <div class="hidden xl:block w-[1px] h-6 bg-slate-100 mx-2"></div>
-        <button onclick="window.print()" class="w-full md:w-auto px-6 py-2 bg-slate-900 text-white xl:bg-transparent xl:text-slate-400 rounded-xl text-[10px] font-bold uppercase hover:bg-blue-500 hover:text-white transition-all">Export PDF</button>
+        <select id="selGroup" onchange="renderGrid()" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none"><option>Group A</option><option>Group B</option></select>
+        <select id="selLang" onchange="renderGrid()" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none"><option>English Track</option><option>Arabic Track</option></select>
+        <div class="w-[1px] h-6 bg-slate-100 mx-2"></div>
+        <button onclick="window.print()" class="px-5 py-2 hover:bg-slate-50 text-slate-400 rounded-xl text-[10px] font-bold uppercase">Export</button>
       </div>
     </header>
 
@@ -199,146 +166,104 @@
         </div>
     </div>
 
-    <footer class="mt-12 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
-        <button onclick="openTimeManager()" class="flex items-center gap-2 text-[10px] font-bold text-blue-500 uppercase tracking-widest hover:underline group">
-            <span class="text-lg group-hover:rotate-90 transition-transform inline-block">⚙️</span> Configure Global Time Slots
-        </button>
-        <p class="text-[10px] text-slate-300 font-bold uppercase tracking-widest">Titan Cloud Systems • v4.2.0 • Online Secure</p>
+    <footer class="mt-8 flex justify-between items-center no-print">
+        <button onclick="openTimeManager()" class="text-[10px] font-bold text-blue-500 uppercase tracking-widest hover:underline">⚙️ Configure Time Slots</button>
+        <p class="text-[10px] text-slate-300 font-medium italic">Titan Cloud Systems v4.2.0</p>
     </footer>
   </main>
 
   <script>
-    /* --- CONFIG & STATE --- */
     const days = ["Period", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
-    
-    // Persistence: Ensure schedules and times survive refresh
-    let times = JSON.parse(localStorage.getItem('titan_times')) || ["08:00", "09:00", "10:00", "11:00", "12:00"];
+    let times = JSON.parse(localStorage.getItem('titan_times')) || ["08:00", "08:45", "09:30", "10:30", "11:15", "12:00"];
     let db = JSON.parse(localStorage.getItem('titan_master_schedules')) || {};
     let activeCellId = null;
 
-    /**
-     * RENDER GRID: Builds the 6-column timetable dynamically.
-     */
     function renderGrid() {
       const container = document.getElementById('gridContainer');
       const level = document.getElementById('selLevel').value;
       const group = document.getElementById('selGroup').value;
       const lang = document.getElementById('selLang').value;
-      
       const configKey = `${level}-${group}-${lang}`;
       container.innerHTML = "";
 
-      // Header Row
       days.forEach(day => { container.innerHTML += `<div class="grid-header">${day}</div>`; });
 
-      // Body Rows
       times.forEach(time => {
-        // Time Slot Column
-        container.innerHTML += `
-          <div class="time-cell">
-            <span class="text-sm font-extrabold text-slate-900">${time}</span>
-            <span class="text-[8px] text-slate-300 font-bold uppercase mt-1 tracking-widest">Start Time</span>
-          </div>`;
-        
-        // Subject Columns (Sun - Thu)
+        container.innerHTML += `<div class="time-cell"><span class="text-sm font-bold text-slate-900">${time}</span><span class="text-[9px] text-slate-300 font-bold uppercase mt-1">Start</span></div>`;
         for(let i=1; i<=5; i++) {
           const cellId = `${configKey}-${time}-${days[i]}`;
           const data = db[cellId] || null;
           let colorClass = data ? getColor(data.sub) : "cell-empty";
-          
           container.innerHTML += `
-            <div class="p-3 border-r border-b border-slate-50 bg-white">
-              <div onclick="openEditor('${cellId}')" class="session-item p-5 min-h-[110px] flex flex-col items-center justify-center text-center ${colorClass}">
-                <span class="text-[10px] font-extrabold uppercase tracking-tighter leading-tight">${data ? data.sub : '+ New'}</span>
-                ${data ? `<span class="text-[8px] font-bold opacity-60 mt-3 uppercase tracking-widest border-t border-current pt-2 w-full">${data.teacher}</span>` : ''}
+            <div class="p-3 border-r border-bottom border-slate-50 bg-white">
+              <div onclick="openEditor('${cellId}')" class="session-item p-4 min-h-[100px] flex flex-col items-center justify-center text-center ${colorClass}">
+                <span class="text-[10px] font-extrabold uppercase tracking-tight">${data ? data.sub : '+'}</span>
+                ${data ? `<span class="text-[8px] font-bold opacity-60 mt-2 uppercase tracking-widest">${data.teacher}</span>` : ''}
               </div>
             </div>`;
         }
       });
     }
 
-    /**
-     * COLOR ENGINE: Keywords detection for automatic styling.
-     */
     function getColor(sub) {
         sub = sub.toLowerCase();
         if(sub.includes('math')) return "sub-math";
-        if(sub.includes('science') || sub.includes('physics') || sub.includes('chemistry') || sub.includes('bio')) return "sub-science";
-        if(sub.includes('eng')) return "sub-english";
-        if(sub.includes('ara')) return "sub-arabic";
-        if(sub.includes('ger')) return "sub-german";
-        if(sub.includes('his') || sub.includes('geo')) return "sub-history";
-        if(sub.includes('break') || sub.includes('rest')) return "sub-break";
-        return "bg-slate-900 text-white"; // Default for custom subjects
+        if(sub.includes('science')) return "sub-science";
+        if(sub.includes('english')) return "sub-english";
+        if(sub.includes('arabic')) return "sub-arabic";
+        if(sub.includes('german')) return "sub-german";
+        if(sub.includes('break')) return "sub-break";
+        return "bg-slate-900 text-white";
     }
 
-    /* --- TIMELINE LOGIC --- */
+    /* --- TIME MANAGER LOGIC --- */
     function openTimeManager() {
       const list = document.getElementById('timeList');
       list.innerHTML = "";
       times.forEach((t, i) => {
         list.innerHTML += `
-          <div class="flex items-center gap-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-            <span class="font-extrabold text-slate-800 flex-1 ml-2 text-sm">${t}</span>
-            <button onclick="removeTimeSlot(${i})" class="text-red-300 hover:text-red-500 font-bold px-2 transition-colors">✕</button>
+          <div class="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <span class="font-bold text-slate-800 flex-1 ml-2 text-sm">${t}</span>
+            <button onclick="removeTimeSlot(${i})" class="text-red-400 font-bold px-2">✕</button>
           </div>`;
       });
       document.getElementById('timeModal').style.display = 'flex';
-      document.getElementById('overlay').style.display = 'block';
     }
 
     function addTimeSlot() {
-      const val = document.getElementById('newTimeInput').value.trim();
-      if(val) { 
-          times.push(val); 
-          times.sort(); 
-          document.getElementById('newTimeInput').value = ""; 
-          openTimeManager(); 
-      }
+      const val = document.getElementById('newTimeInput').value;
+      if(val) { times.push(val); times.sort(); document.getElementById('newTimeInput').value = ""; openTimeManager(); }
     }
 
     function removeTimeSlot(i) { times.splice(i, 1); openTimeManager(); }
 
     function closeTimeModal() {
       localStorage.setItem('titan_times', JSON.stringify(times));
-      closeModal();
+      document.getElementById('timeModal').style.display = 'none';
       renderGrid();
     }
 
-    /* --- EDITOR LOGIC --- */
+    /* --- SESSION EDITING --- */
     function openEditor(id) {
       activeCellId = id;
       const data = db[id] || { sub: '', teacher: '' };
       document.getElementById('editSub').value = data.sub;
       document.getElementById('editTeach').value = data.teacher;
       document.getElementById('editModal').style.display = 'flex';
-      document.getElementById('overlay').style.display = 'block';
     }
 
     function saveSession() {
       const sub = document.getElementById('editSub').value.trim();
       const teacher = document.getElementById('editTeach').value.trim();
-      
-      if(sub) {
-        db[activeCellId] = { sub, teacher };
-      } else {
-        delete db[activeCellId];
-      }
-      
+      if(sub) db[activeCellId] = { sub, teacher };
+      else delete db[activeCellId];
       localStorage.setItem('titan_master_schedules', JSON.stringify(db));
       closeModal();
       renderGrid();
     }
 
-    function closeModal() { 
-        document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); 
-        document.getElementById('overlay').style.display = 'none';
-    }
-    
-    function logout() { 
-        localStorage.clear(); 
-        window.location.href="login.html"; 
-    }
+    function closeModal() { document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); }
+    function logout() { localStorage.clear(); window.location.href="login.html"; }
 
     window.onload = renderGrid;
   </script>

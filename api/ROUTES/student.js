@@ -2,27 +2,19 @@ const express = require("express");
 const router = express.Router();
 const Student = require("../MODELS/student");
 
-/**
- * TITAN ERP | STUDENT OPERATIONS ROUTE
- * Standardized to use 'adminId' for all owner-based queries.
- */
-
 // Utility to get current month (e.g., "2026-03")
 const getMonth = () => new Date().toISOString().slice(0, 7);
 
 // --- 1. GLOBAL LIST & FILTER ---
-// This feeds your index.html table.
+// Restored all filters: level, language, and className
 router.get("/", async (req, res) => {
   try {
-    const { adminId, level, language, className, month } = req.query;
+    const { admin, level, language, className, month } = req.query;
     const targetMonth = month || getMonth();
 
-    // Block request if no Admin ID is provided
-    if (!adminId) {
-      return res.status(400).json({ error: "Admin identifier required" });
-    }
+    if (!admin) return res.status(400).json({ error: "Admin identifier required" });
 
-    let query = { owner: adminId };
+    let query = { owner: admin };
     if (level) query.level = level;
     if (language) query.language = language;
     if (className && className !== "Both") query.className = className;
@@ -40,9 +32,11 @@ router.get("/", async (req, res) => {
         level: s.level,
         className: s.className,
         language: s.language || "English",
+        // Monthly stats for index.html
         monthlyPayments: rec.payments,
         monthlyAttendance: rec.attendance,
         monthlyAbsences: rec.absences,
+        // Top-level Academic Vault data
         totalPayments: s.payments,
         academicVault: s.grades,
         lastSeen: s.lastSeen
@@ -56,21 +50,17 @@ router.get("/", async (req, res) => {
 });
 
 // --- 2. ADD NEW STUDENT ---
-// Triggered by the Enrollment portal.
 router.post("/", async (req, res) => {
   try {
-    const { name, level, language, className, adminId } = req.body;
-
-    if (!adminId) {
-      return res.status(400).json({ error: "Admin ID required for enrollment" });
-    }
+    const { name, level, language, className, owner } = req.body;
 
     const student = new Student({ 
       name, 
       level,
       language: language || "English",
       className: className || "Group A",
-      owner: adminId,
+      owner,
+      // Initialize with empty vault and first record
       payments: 0,
       attendance: 0,
       absences: 0,
@@ -87,17 +77,16 @@ router.post("/", async (req, res) => {
   }
 });
 
-// --- 3. THE MASTER DAILY SYNC ---
-// Updates Timeline, Vault, and Finance in one go.
+// --- 3. THE MASTER DAILY SYNC (Timeline + Vault + Finance) ---
 router.post("/daily-log", async (req, res) => {
-  const { studentId, date, subject, status, grade, payment, adminId } = req.body;
+  const { studentId, date, subject, status, grade, payment, admin } = req.body;
   const targetMonth = date.slice(0, 7);
 
   try {
-    const student = await Student.findOne({ _id: studentId, owner: adminId });
+    const student = await Student.findOne({ _id: studentId, owner: admin });
     if (!student) return res.status(404).json({ error: "Student not found" });
 
-    // Update Logs
+    // A. Update the Timeline Logs (Memory)
     const logIndex = student.logs.findIndex(l => l.date === date && l.subject.toLowerCase() === subject.toLowerCase());
     const logEntry = { date, subject, status: status || 'present', grade: Number(grade) || 0, payment: Number(payment) || 0 };
 
@@ -107,17 +96,18 @@ router.post("/daily-log", async (req, res) => {
       student.logs.push(logEntry);
     }
 
-    // Update Totals
+    // B. Update Top-Level Academic Vault & Finance Tracker
     if (payment) student.payments += Number(payment);
     if (status === 'present') student.attendance += 1;
     if (status === 'absent') student.absences += 1;
     
+    // Map subject string to the specific schema field (e.g., "Math" -> grades.math)
     const subKey = subject.toLowerCase().trim();
     if (student.grades[subKey] !== undefined) {
       student.grades[subKey] = Number(grade);
     }
 
-    // Sync Monthly Record
+    // C. Sync with Monthly Records for Dashboard Stats
     let rec = student.records.find(r => r.month === targetMonth);
     if (!rec) {
       rec = { month: targetMonth, payments: 0, attendance: 0, absences: 0, grades: {} };
@@ -138,16 +128,17 @@ router.post("/daily-log", async (req, res) => {
   }
 });
 
-// --- 4. INDIVIDUAL HISTORY ---
+// --- 4. INDIVIDUAL HISTORY (For Side-Panel/Intelligence) ---
 router.get("/history", async (req, res) => {
-  const { adminId, name } = req.query;
+  const { admin, name } = req.query;
   try {
     const student = await Student.findOne({ 
-      owner: adminId, 
+      owner: admin, 
       name: { $regex: new RegExp("^" + name + "$", "i") } 
     });
     if (!student) return res.status(404).json({ error: "Student not found" });
     
+    // Send back logs sorted by date (newest first)
     const history = student.logs.sort((a,b) => new Date(b.date) - new Date(a.date));
     res.json({ name: student.name, history, vault: student.grades });
   } catch (err) {
@@ -155,13 +146,13 @@ router.get("/history", async (req, res) => {
   }
 });
 
-// --- 5. SYSTEM ANALYTICS ---
+// --- 5. STATS ENGINE (Restored) ---
 router.get("/stats/all", async (req, res) => {
   try {
-    const { adminId, month } = req.query;
+    const { admin, month } = req.query;
     const targetMonth = month || getMonth();
     
-    const students = await Student.find({ owner: adminId });
+    const students = await Student.find({ owner: admin });
     
     let stats = {
       totalRevenue: 0,
@@ -188,9 +179,9 @@ router.get("/stats/all", async (req, res) => {
 // --- 6. DELETE STUDENT ---
 router.delete("/:id", async (req, res) => {
   try {
-    const { adminId } = req.query;
-    const deleted = await Student.findOneAndDelete({ _id: req.params.id, owner: adminId });
-    if (!deleted) return res.status(403).json({ error: "Unauthorized or not found" });
+    const { admin } = req.query;
+    const deleted = await Student.findOneAndDelete({ _id: req.params.id, owner: admin });
+    if (!deleted) return res.status(403).json({ error: "Unauthorized" });
     res.json({ success: true });
   } catch (err) { 
     res.status(500).json({ error: "Delete failed" }); 
