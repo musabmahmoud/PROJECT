@@ -2,81 +2,42 @@ const express = require('express');
 const router = express.Router();
 const { Table, TableConfig } = require('../MODELS/table');
 
-/**
- * TITAN ERP | ACADEMIC SCHEDULE ROUTE
- * Handles Grid Sessions and Timeline Configurations.
- */
-
-// --- 1. GET FULL SCHEDULE ---
+// Get the grid data
 router.get('/', async (req, res) => {
-    const { adminId } = req.query;
     try {
-        if (!adminId) return res.status(400).json({ error: "Admin ID required" });
-
-        const entries = await Table.find({ owner: adminId });
-        
-        // Convert the database array into an object for the frontend:
-        // { "cellId": { sub: "Math", teacher: "Mr. Smith" } }
-        const scheduleMap = {};
-        entries.forEach(e => {
-            if (e.session) {
-                scheduleMap[e.cellId] = e.session;
-            }
-        });
-        
-        res.json(scheduleMap);
-    } catch (err) {
-        res.status(500).json({ error: "Failed to fetch schedule" });
-    }
+        const entries = await Table.find({ owner: req.query.adminId });
+        const map = {};
+        entries.forEach(e => { map[e.cellId] = e.session; });
+        res.json(map);
+    } catch (err) { res.status(500).json(err); }
 });
 
-// --- 2. SAVE OR DELETE SESSION ---
+// Save a session
 router.post('/', async (req, res) => {
     const { adminId, cellId, session } = req.body;
     try {
-        if (!session || !session.sub) {
-            // If the subject is empty, we remove that cell from the DB
-            await Table.findOneAndDelete({ owner: adminId, cellId });
-            return res.json({ message: "Session cleared" });
-        }
-
-        // Update existing or create new (upsert)
-        const updated = await Table.findOneAndUpdate(
+        await Table.findOneAndUpdate(
             { owner: adminId, cellId },
-            { session, updatedAt: new Date() },
-            { upsert: true, new: true }
+            { session },
+            { upsert: true }
         );
-
-        res.json(updated);
-    } catch (err) {
-        res.status(500).json({ error: "Sync failed" });
-    }
+        res.json({ success: true });
+    } catch (err) { res.status(500).json(err); }
 });
 
-// --- 3. TIMELINE: GET CUSTOM SLOTS ---
+// Get/Save Time Slots (The flexible part)
 router.get('/config/times', async (req, res) => {
-    const { adminId } = req.query;
-    try {
-        const config = await TableConfig.findOne({ owner: adminId });
-        res.json(config || { slots: ["08:00", "08:45", "09:30", "10:30", "11:15", "12:00"] });
-    } catch (err) {
-        res.status(500).json({ error: "Failed to load timeline" });
-    }
+    const config = await TableConfig.findOne({ owner: req.query.adminId });
+    res.json(config || { slots: ["08:00", "08:45", "09:30", "10:30", "11:15", "12:00"] });
 });
 
-// --- 4. TIMELINE: SAVE CUSTOM SLOTS ---
 router.post('/config/times', async (req, res) => {
-    const { adminId, slots } = req.body;
-    try {
-        const updatedConfig = await TableConfig.findOneAndUpdate(
-            { owner: adminId },
-            { slots },
-            { upsert: true, new: true }
-        );
-        res.json(updatedConfig);
-    } catch (err) {
-        res.status(500).json({ error: "Timeline sync failed" });
-    }
+    await TableConfig.findOneAndUpdate(
+        { owner: req.body.adminId },
+        { slots: req.body.slots },
+        { upsert: true }
+    );
+    res.json({ success: true });
 });
 
 module.exports = router;
