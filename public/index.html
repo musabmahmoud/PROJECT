@@ -220,8 +220,8 @@
       const btn = document.getElementById('enrollBtn');
       const name = document.getElementById('sName').value;
       const level = document.getElementById('sLevel').value;
-      const group = document.getElementById('sGroup').value;
-      const track = document.getElementById('sTrack').value;
+      const group = document.getElementById('sGroup').value;   // UI name
+      const track = document.getElementById('sTrack').value;   // UI name
 
       if(!name) return alert("Validation Failed: Student Name Required");
 
@@ -232,7 +232,15 @@
           const res = await fetch(API, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, level, group, track, admin: user })
+            // CHANGED: We map 'group' to 'className' and 'track' to 'language' 
+            // to satisfy your backend requirements.
+            body: JSON.stringify({ 
+                name: name, 
+                level: level, 
+                className: group,  // Back to old key name
+                language: track,   // Back to old key name
+                admin: user 
+            })
           });
 
           if(res.ok) {
@@ -245,13 +253,20 @@
                 btn.disabled = false;
             }, 2000);
             loadStudents();
+          } else {
+            // This captures the "Entry creation failed" error from the server
+            const errData = await res.json();
+            alert("Server Error: " + errData.error);
+            btn.innerText = "Enroll Student";
+            btn.disabled = false;
           }
       } catch (err) {
-          alert("Network Error");
+          alert("Network connection lost.");
           btn.disabled = false;
           btn.innerText = "Enroll Student";
       }
     }
+    
 
     async function deleteStudent(id) {
       if(!confirm("Permanent Deletion Request: Proceed?")) return;
