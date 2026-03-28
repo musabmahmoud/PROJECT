@@ -137,31 +137,50 @@
         const group = document.getElementById("newStudentClass").value;
         const track = document.getElementById("newStudentLang").value;
 
-        if(!name) return alert("Name required");
-        btn.innerText = "SAVING...";
+        if(!name) return alert("Name is required");
+        
+        // Prepare the payload
+        const payload = { 
+            name: name, 
+            level: level, 
+            className: group, 
+            language: track, 
+            admin: user,   // Trying 'admin'
+            owner: user    // Also sending 'owner' just in case the server prefers this
+        };
+
+        console.log("Sending Payload:", payload); // Look at this in F12 Console
+        btn.innerText = "SENDING...";
 
         try {
             const res = await fetch(API, { 
                 method: "POST", 
-                headers: { "Content-Type": "application/json" }, 
-                body: JSON.stringify({ name, level, className: group, language: track, admin: user }) 
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                }, 
+                body: JSON.stringify(payload) 
             });
 
             if(res.ok) {
                 document.getElementById("newStudentName").value = "";
                 btn.innerText = "SUCCESS ✓";
-                btn.classList.add('bg-emerald-500');
+                btn.style.backgroundColor = "#10b981";
                 setTimeout(() => {
                     btn.innerText = "Confirm Enrollment";
-                    btn.classList.remove('bg-emerald-500');
+                    btn.style.backgroundColor = "";
                     loadData();
                 }, 1500);
             } else {
                 const err = await res.json();
-                alert(err.error || "Failed");
+                console.error("Server Rejected Data:", err);
+                alert("Server Error (400): " + (err.message || err.error || "Check your console"));
                 btn.innerText = "Confirm Enrollment";
             }
-        } catch (err) { btn.innerText = "Confirm Enrollment"; }
+        } catch (err) { 
+            console.error("Network Error:", err);
+            btn.innerText = "Confirm Enrollment"; 
+        }
     }
 
     async function deleteStudent(id) { 
