@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Titan ERP | Class Online Academy</title>
+  <title>Titan ERP | Student Registry</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     
-    /* --- TITAN BRAND TOKENS --- */
     :root { 
       --titan-blue: #1e293b; 
       --accent-blue: #3b82f6; 
@@ -22,99 +21,74 @@
       color: #334155; 
       margin: 0; 
       -webkit-font-smoothing: antialiased;
-      padding-bottom: 80px; /* Space for Mobile Nav */
+      padding-bottom: 90px; /* Space for Mobile Nav */
     }
 
     @media (min-width: 768px) { body { padding-bottom: 0; } }
 
-    /* --- NAVIGATION SIDEBAR (Desktop) --- */
+    /* --- NAVIGATION --- */
     .sidebar { 
-      width: var(--sidebar-width); 
-      height: 100vh; 
-      position: fixed; 
-      left: 0; top: 0; 
-      background: white; 
-      border-right: 1px solid #f1f5f9; 
-      z-index: 500; 
-      display: flex; flex-direction: column; align-items: center; padding-top: 2.5rem; 
+      width: var(--sidebar-width); height: 100vh; position: fixed; 
+      left: 0; top: 0; background: white; border-right: 1px solid #f1f5f9; 
+      z-index: 500; display: flex; flex-direction: column; align-items: center; padding-top: 2.5rem; 
     }
 
-    /* --- BOTTOM NAV (Mobile) --- */
     .mobile-nav {
         position: fixed; bottom: 0; left: 0; right: 0;
         background: white; border-top: 1px solid #f1f5f9;
         display: flex; justify-content: space-around; padding: 1rem;
-        z-index: 500;
+        z-index: 500; box-shadow: 0 -10px 20px rgba(0,0,0,0.02);
     }
 
     .nav-icon { 
-      width: 54px; height: 54px; margin-bottom: 1.5rem; 
-      display: flex; align-items: center; justify-content: center; 
+      width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; 
       border-radius: 16px; cursor: pointer; transition: all 0.3s ease; 
       font-size: 22px; color: #94a3b8; text-decoration: none; 
     }
-
-    .nav-icon:hover { background: #f8fafc; color: var(--accent-blue); }
     .nav-icon.active { background: #f1f5f9; color: var(--titan-blue); }
 
     /* Main Content Responsiveness */
-    .main-content { margin-left: 0; padding: 2rem 1.2rem; max-width: 100%; }
+    .main-content { margin-left: 0; padding: 1.5rem; max-width: 100%; }
     @media (min-width: 768px) { .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1700px; } }
 
     /* --- LUXURY UI CARDS --- */
     .titan-card { 
-      background: white; 
-      border-radius: 2rem; 
-      border: 1px solid #f1f5f9; 
+      background: white; border-radius: 2rem; border: 1px solid #f1f5f9; 
       box-shadow: 0 4px 20px rgba(0,0,0,0.01); 
     }
 
-    /* Table Swiping for Mobile */
-    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .erp-table { min-width: 800px; }
-
-    /* --- TITAN INPUT FIELD SYSTEM --- */
+    /* --- TITAN INPUT SYSTEM --- */
     .titan-input { 
-      background: #f8fafc; 
-      border: 1px solid #e2e8f0; 
-      border-radius: 1rem; 
-      padding: 1rem 1.2rem; 
-      font-weight: 600; 
-      font-size: 13px; 
-      outline: none; 
-      width: 100%; 
-      color: #1e293b; 
-      transition: all 0.2s ease; 
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1.2rem; 
+      padding: 1.2rem; font-weight: 600; font-size: 14px; 
+      outline: none; width: 100%; color: #1e293b; transition: all 0.2s ease; 
     }
-    .titan-input:focus { border-color: var(--accent-blue); background: white; }
+    .titan-input:focus { border-color: var(--accent-blue); background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05); }
 
-    /* --- PRIMARY ACTION BUTTON --- */
+    /* --- BUTTONS --- */
     .btn-primary { 
-      background: var(--titan-blue); 
-      color: white; 
-      padding: 1rem 2rem; 
-      border-radius: 1rem; 
-      font-weight: 800; 
-      font-size: 11px; 
-      text-transform: uppercase; 
-      letter-spacing: 0.15em; 
-      transition: all 0.3s ease; 
-      box-shadow: 0 4px 12px rgba(30, 41, 59, 0.15);
+      background: var(--titan-blue); color: white; padding: 1.2rem; 
+      border-radius: 1.2rem; font-weight: 800; font-size: 11px; 
+      text-transform: uppercase; letter-spacing: 0.15em; transition: 0.3s;
+      width: 100%;
     }
-    .btn-primary:hover { background: var(--accent-blue); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3); }
+    @media (min-width: 1280px) { .btn-primary { width: auto; } }
 
-    /* --- ERP DATA TABLE DESIGN --- */
-    .erp-table th { 
-      background: #fafbfd; 
-      text-transform: uppercase; 
-      font-size: 10px; 
-      letter-spacing: 0.15em; 
-      padding: 1.5rem 2.5rem; 
-      color: #94a3b8; 
-      font-weight: 700; 
-      border-bottom: 1px solid #f1f5f9; 
+    /* --- MOBILE DATA CARDS (Replaces Table on Small Screens) --- */
+    #studentBody { display: block; }
+    .student-item { 
+        display: flex; flex-direction: column; padding: 1.5rem; border-bottom: 1px solid #f8fafc; 
+        gap: 1rem; transition: 0.2s;
     }
-    .erp-table td { padding: 1.8rem 2.5rem; border-bottom: 1px solid #f8fafc; }
+    
+    @media (min-width: 768px) {
+        #studentBody { display: table-row-group; }
+        .student-item { display: table-row; flex-direction: row; padding: 0; }
+        .student-item td { padding: 1.8rem 2.5rem; border-bottom: 1px solid #f8fafc; }
+    }
+
+    .mobile-label { display: block; font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+    @media (min-width: 768px) { .mobile-label { display: none; } }
 
     @media print { .sidebar, .mobile-nav, .no-print { display: none !important; } .main-content { margin-left: 0 !important; } }
   </style>
@@ -135,26 +109,26 @@
   </aside>
 
   <nav class="mobile-nav md:hidden no-print">
-    <a href="index.html" class="text-2xl opacity-100 border-b-2 border-blue-500 pb-1">👥</a>
-    <a href="tables.html" class="text-2xl">📅</a>
-    <a href="classes.html" class="text-2xl">🏫</a>
-    <a href="teachers.html" class="text-2xl">👨‍🏫</a>
-    <div onclick="logout()" class="text-2xl">🚪</div>
+    <a href="index.html" class="nav-icon active">👥</a>
+    <a href="tables.html" class="nav-icon">📅</a>
+    <a href="classes.html" class="nav-icon">🏫</a>
+    <a href="teachers.html" class="nav-icon">👨‍🏫</a>
+    <div onclick="logout()" class="nav-icon text-red-400">🚪</div>
   </nav>
 
   <main class="main-content">
-    <header class="mb-16">
+    <header class="mb-10 md:mb-16">
       <div class="flex items-center gap-2 mb-3">
           <div class="w-2 h-2 rounded-full bg-blue-500"></div>
           <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Student Registry</p>
       </div>
-      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">Class <span class="text-slate-400 font-light">Online Academy</span></h1>
+      <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-slate-900">Class <span class="text-slate-400 font-light">Online Academy</span></h1>
     </header>
 
-    <section class="titan-card p-8 mb-10 border-l-4 border-l-blue-500 no-print">
-        <h4 class="text-[9px] font-bold uppercase text-slate-400 mb-6 tracking-widest">Enrollment Portal</h4>
+    <section class="titan-card p-6 md:p-8 mb-10 border-l-4 border-l-blue-500 no-print">
+        <h4 class="text-[10px] font-bold uppercase text-slate-400 mb-6 tracking-widest">Enrollment Portal</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
-            <input id="sName" type="text" placeholder="Full Legal Name" class="titan-input">
+            <input id="sName" type="text" placeholder="Student Full Name" class="titan-input">
             
             <select id="sLevel" class="titan-input">
                 <optgroup label="Secondary Stage">
@@ -162,118 +136,122 @@
                     <option value="Sec 2" selected>2nd Secondary</option>
                     <option value="Sec 3">3rd Secondary</option>
                 </optgroup>
-                <optgroup label="Preparatory Stage">
+                <optgroup label="Prep Stage">
                     <option>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
-                </optgroup>
-                <optgroup label="Primary Stage">
-                    <option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
                 </optgroup>
             </select>
 
             <select id="sClass" class="titan-input">
-                <option>Group A</option><option>Group B</option><option>Group C</option>
+                <option>Group A</option><option>Group B</option>
             </select>
             
             <select id="sLang" class="titan-input">
                 <option>English Track</option><option>Arabic Track</option><option>German Track</option>
             </select>
 
-            <button id="enrollBtn" onclick="enrollStudent()" class="btn-primary">Enroll Student</button>
+            <button id="enrollBtn" onclick="enrollStudent()" class="btn-primary">Enroll Now</button>
         </div>
     </section>
 
     <div class="titan-card overflow-hidden">
-        <div class="table-container">
-            <table class="w-full text-left erp-table">
-                <thead>
-                    <tr>
-                        <th class="w-[35%]">Student Profile</th>
-                        <th>Grade / Level</th>
-                        <th>Class & Track</th>
-                        <th class="text-right">Manage</th>
-                    </tr>
-                </thead>
-                <tbody id="studentBody"></tbody>
-            </table>
-        </div>
+        <table class="w-full text-left hidden md:table">
+            <thead class="bg-slate-50/50">
+                <tr>
+                    <th class="p-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student Profile</th>
+                    <th class="p-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Level</th>
+                    <th class="p-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Class / Track</th>
+                    <th class="p-6 text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest">Manage</th>
+                </tr>
+            </thead>
+            <tbody id="studentBodyDesktop"></tbody>
+        </table>
+
+        <div id="studentBodyMobile" class="md:hidden divide-y divide-slate-50"></div>
     </div>
 
-    <footer class="mt-10 flex items-center justify-between no-print">
-        <div class="bg-white px-8 py-5 rounded-3xl border border-slate-100 shadow-sm">
-            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1 tracking-widest">Total Active Enrollment</p>
-            <p id="totalCount" class="text-3xl font-extrabold text-slate-900 tracking-tighter">00</p>
+    <footer class="mt-10 flex flex-col md:flex-row items-center justify-between gap-6 no-print">
+        <div class="bg-white w-full md:w-auto px-8 py-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center md:items-start">
+            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1 tracking-widest">Active Enrollment</p>
+            <p id="totalCount" class="text-4xl font-extrabold text-slate-900 tracking-tighter">00</p>
         </div>
-        <button onclick="window.print()" class="bg-slate-100 text-slate-500 px-6 py-3 rounded-2xl font-bold text-[10px] uppercase hover:bg-slate-900 hover:text-white transition-all">Generate Report</button>
+        <button onclick="window.print()" class="w-full md:w-auto bg-slate-100 text-slate-500 px-8 py-4 rounded-2xl font-bold text-[10px] uppercase hover:bg-slate-900 hover:text-white transition-all tracking-widest">Generate Report</button>
     </footer>
   </main>
 
   <script>
-    /* --- CONFIGURATION & SECURITY --- */
     const token = localStorage.getItem("titan_token"); 
     const API = "/api/students";
 
     window.onload = () => { 
-        if (!token) {
-            window.location.href = "login.html"; 
-        } else {
-            loadData(); 
-        }
+        if (!token) window.location.href = "login.html"; 
+        else loadData(); 
     };
 
-    /**
-     * LOAD DATA: 
-     * Fetches only the students owned by the logged-in administrator.
-     * Token is passed in headers for authentication.
-     */
     async function loadData() {
-        const tbody = document.getElementById("studentBody");
-        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-300 font-bold uppercase tracking-widest animate-pulse">Syncing Titan Cloud...</td></tr>`;
+        const desktopContainer = document.getElementById("studentBodyDesktop");
+        const mobileContainer = document.getElementById("studentBodyMobile");
+        const loader = `<div class="p-20 text-center text-slate-300 font-bold uppercase tracking-widest animate-pulse">Syncing Cloud...</div>`;
+        
+        mobileContainer.innerHTML = loader;
+        desktopContainer.innerHTML = `<tr><td colspan="4">${loader}</td></tr>`;
         
         try {
-            const res = await fetch(API, {
-                headers: { 'Authorization': token }
-            });
-
+            const res = await fetch(API, { headers: { 'Authorization': token } });
             if (!res.ok) throw new Error("Unauthorized");
-
             const data = await res.json();
             
-            tbody.innerHTML = "";
+            desktopContainer.innerHTML = "";
+            mobileContainer.innerHTML = "";
             document.getElementById('totalCount').innerText = data.length.toString().padStart(2, '0');
             
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-400 italic">Your student registry is currently empty.</td></tr>`;
+                const emptyMsg = `<div class="p-20 text-center text-slate-400 italic">No records found.</div>`;
+                mobileContainer.innerHTML = emptyMsg;
+                desktopContainer.innerHTML = `<tr><td colspan="4">${emptyMsg}</td></tr>`;
                 return;
             }
 
             data.forEach(s => {
-                tbody.innerHTML += `
+                const initials = s.name.charAt(0).toUpperCase();
+                const shortId = s._id.slice(-6).toUpperCase();
+
+                // Desktop Row
+                desktopContainer.innerHTML += `
                     <tr class="hover:bg-slate-50/50 transition-colors">
-                        <td>
+                        <td class="p-6">
                             <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-extrabold text-slate-400 text-xs">${s.name.charAt(0)}</div>
-                                <div>
-                                    <p class="text-sm font-extrabold text-slate-800">${s.name}</p>
-                                    <p class="text-[9px] font-bold text-slate-300 uppercase">ID: ${s._id.slice(-6).toUpperCase()}</p>
-                                </div>
+                                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-extrabold text-slate-400 text-xs">${initials}</div>
+                                <div><p class="text-sm font-extrabold text-slate-800">${s.name}</p><p class="text-[9px] font-bold text-slate-300 uppercase">ID: ${shortId}</p></div>
                             </div>
                         </td>
-                        <td class="text-xs font-bold text-slate-600">${s.level}</td>
-                        <td class="text-[9px] font-bold text-blue-500 uppercase tracking-tighter">${s.className} • ${s.language}</td>
-                        <td class="text-right">
-                            <button onclick="deleteStudent('${s._id}')" class="w-8 h-8 rounded-lg hover:bg-red-50 text-red-300 hover:text-red-500 font-bold transition-all">✕</button>
-                        </td>
+                        <td class="p-6 text-xs font-bold text-slate-600">${s.level}</td>
+                        <td class="p-6 text-[9px] font-bold text-blue-500 uppercase tracking-tighter">${s.className} • ${s.language}</td>
+                        <td class="p-6 text-right"><button onclick="deleteStudent('${s._id}')" class="text-red-300 hover:text-red-500 font-bold">✕</button></td>
                     </tr>`;
+
+                // Mobile Card
+                mobileContainer.innerHTML += `
+                    <div class="p-6 flex flex-col gap-4">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center font-bold">${initials}</div>
+                                <div><p class="font-extrabold text-slate-800 text-sm">${s.name}</p><p class="text-[9px] font-bold text-slate-300">ID: ${shortId}</p></div>
+                            </div>
+                            <button onclick="deleteStudent('${s._id}')" class="bg-red-50 text-red-500 p-2 rounded-lg text-xs font-bold">Delete</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 border-t border-slate-50 pt-4">
+                            <div><span class="mobile-label">Level</span><p class="text-xs font-bold text-slate-600">${s.level}</p></div>
+                            <div><span class="mobile-label">Track</span><p class="text-[10px] font-extrabold text-blue-500 uppercase">${s.className} • ${s.language}</p></div>
+                        </div>
+                    </div>`;
             });
         } catch (e) { 
-            tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-red-400 font-bold">SECURITY BREACH: Server Link Failed</td></tr>`;
+            const errorMsg = `<div class="p-10 text-center text-red-400 font-bold">Connection Failed</div>`;
+            mobileContainer.innerHTML = errorMsg;
+            desktopContainer.innerHTML = `<tr><td colspan="4">${errorMsg}</td></tr>`;
         }
     }
 
-    /**
-     * ENROLL STUDENT: 
-     * Creates a student record linked to the specific admin account.
-     */
     async function enrollStudent() {
         const btn = document.getElementById("enrollBtn");
         const name = document.getElementById("sName").value;
@@ -281,10 +259,7 @@
         const className = document.getElementById("sClass").value;
         const language = document.getElementById("sLang").value;
 
-        if(!name) {
-            alert("Please enter the student's full name.");
-            return;
-        }
+        if(!name) return alert("Enter Student Name");
 
         btn.innerText = "Processing...";
         btn.disabled = true;
@@ -292,57 +267,26 @@
         try {
             const res = await fetch(API, { 
                 method: "POST", 
-                headers: { 
-                    "Content-Type": "application/json",
-                    "Authorization": token
-                }, 
+                headers: { "Content-Type": "application/json", "Authorization": token }, 
                 body: JSON.stringify({ name, level, className, language }) 
             });
 
             if (res.ok) {
                 document.getElementById("sName").value = "";
-                btn.innerText = "ENROLLED ✓";
-                btn.classList.replace('bg-slate-900', 'bg-emerald-500');
-                
-                setTimeout(() => { 
-                    btn.innerText = "Enroll Student"; 
-                    btn.disabled = false;
-                    btn.classList.replace('bg-emerald-500', 'bg-slate-900');
-                    loadData(); 
-                }, 1500);
-            } else {
-                alert("Enrollment failed. Please check your connection.");
-                btn.innerText = "Enroll Student";
-                btn.disabled = false;
+                btn.innerText = "Success ✓";
+                setTimeout(() => { btn.innerText = "Enroll Now"; btn.disabled = false; loadData(); }, 1000);
             }
-        } catch (e) { 
-            btn.innerText = "Enroll Student"; 
-            btn.disabled = false;
-        }
+        } catch (e) { btn.innerText = "Error"; btn.disabled = false; }
     }
 
-    /**
-     * TERMINATE ENTRY: 
-     * Permanently removes a student record.
-     */
     async function deleteStudent(id) { 
-        if(confirm("Are you sure you want to remove this student permanently? This action cannot be undone.")) { 
-            try {
-                const res = await fetch(`${API}/${id}`, { 
-                    method: "DELETE",
-                    headers: { 'Authorization': token }
-                });
-                if(res.ok) loadData();
-            } catch (e) {
-                alert("Could not complete deletion.");
-            }
+        if(confirm("Confirm deletion?")) { 
+            await fetch(`${API}/${id}`, { method: "DELETE", headers: { 'Authorization': token } });
+            loadData();
         } 
     }
 
-    function logout() { 
-        localStorage.clear(); 
-        window.location.href="login.html"; 
-    }
+    function logout() { localStorage.clear(); window.location.href="login.html"; }
   </script>
 </body>
 </html>
