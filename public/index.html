@@ -209,12 +209,13 @@
         
         try {
             // --- FIXED: Added adminId to headers so the server sees it ---
-            const res = await fetch(`${API}?adminId=${adminId}`, { 
-                headers: { 
-                    'Authorization': token,
-                    'adminId': adminId 
-                } 
-            });
+         // Change this line in loadData():
+const res = await fetch(`${API}?adminId=${adminId}`, { 
+    headers: { 
+        'Authorization': token,
+        'adminId': adminId // This ensures the backend gets it no matter what
+    } 
+});
 
             if (!res.ok) {
                 const errorData = await res.json();
