@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Titan ERP | V10 Flexible Grid</title>
+  <title>Titan ERP | V11 Stable Grid</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
@@ -28,7 +28,7 @@
     @media print {
       .no-print { display: none !important; }
       body { background: white; padding: 0; }
-      .titan-card { border: none; box-shadow: none; }
+      .titan-card { border: none; box-shadow: none; border-radius: 0; }
       #gridContainer { grid-template-columns: repeat(6, 1fr) !important; min-width: 100% !important; }
     }
   </style>
@@ -37,32 +37,28 @@
 
   <div id="timeModal" class="fixed inset-0 z-[110] modal-backdrop flex items-center justify-center p-6">
     <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl">
-      <h3 class="text-2xl font-black italic mb-2 uppercase">Adjust <span class="text-blue-600">Periods</span></h3>
-      <p class="text-[9px] font-bold text-slate-400 mb-6 tracking-widest uppercase">Use arrows to move up/down</p>
+      <h3 class="text-2xl font-black italic mb-6 uppercase">Timeline <span class="text-blue-600">Order</span></h3>
       
       <div id="timeList" class="space-y-2 mb-6 max-h-80 overflow-y-auto pr-2"></div>
       
       <div class="flex gap-2 mb-6">
-        <input id="newTimeInput" type="text" placeholder="e.g. 08:00 AM" class="flex-1 p-4 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-600">
-        <button onclick="addTimeSlot()" class="bg-blue-600 text-white px-6 rounded-2xl font-black text-xl hover:bg-slate-900 transition-colors">+</button>
+        <input id="newTimeInput" type="text" placeholder="e.g. 09:30" class="flex-1 p-4 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-600">
+        <button onclick="addTimeSlot()" class="bg-blue-600 text-white px-6 rounded-2xl font-black text-xl">+</button>
       </div>
       
-      <button onclick="closeTimeModal()" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest">Save Timeline Order</button>
+      <button onclick="closeTimeModal()" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest">Save Schedule</button>
     </div>
   </div>
 
   <div id="editModal" class="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-6">
     <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl">
-      <div class="flex justify-between mb-8">
-        <h3 class="text-3xl font-black italic">Manage <span class="text-blue-600">Node</span></h3>
-        <button onclick="startCopy()" class="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Copy ❐</button>
-      </div>
+      <h3 class="text-3xl font-black italic mb-8">Edit <span class="text-blue-600">Node</span></h3>
       <div class="space-y-4">
-        <input id="editSub" type="text" placeholder="Subject Name" class="w-full p-5 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-600">
-        <input id="editTeach" type="text" placeholder="Faculty Name" class="w-full p-5 bg-slate-50 rounded-2xl font-bold outline-none">
+        <input id="editSub" type="text" placeholder="Subject" class="w-full p-5 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-600">
+        <input id="editTeach" type="text" placeholder="Teacher" class="w-full p-5 bg-slate-50 rounded-2xl font-bold outline-none">
         <div class="flex gap-3 pt-4">
-          <button onclick="saveSession()" class="flex-1 bg-blue-600 text-white py-5 rounded-2xl font-black uppercase text-[10px]">Sync</button>
-          <button onclick="clearCell()" class="px-6 bg-red-50 text-red-500 rounded-2xl font-black uppercase text-[10px]">X</button>
+          <button onclick="saveSession()" class="flex-1 bg-blue-600 text-white py-5 rounded-2xl font-black uppercase text-[10px]">Sync Data</button>
+          <button onclick="clearCell()" class="px-6 bg-red-50 text-red-500 rounded-2xl font-black uppercase text-[10px]">Clear</button>
           <button onclick="closeModal()" class="px-6 bg-slate-100 text-slate-400 rounded-2xl font-black uppercase text-[10px]">✕</button>
         </div>
       </div>
@@ -77,8 +73,13 @@
         <button onclick="window.print()" class="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">Download PDF 📄</button>
         <button onclick="openTimeModal()" class="px-6 py-3 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest">Edit Times ⏱</button>
         <select id="selLevel" onchange="renderGrid()" class="px-4 py-3 bg-slate-50 rounded-xl text-[10px] font-black uppercase outline-none">
-            <optgroup label="Primary"><option>Primary 1</option><option>Primary 2</option><option>Primary 3</option><option>Primary 4</option><option>Primary 5</option><option>Primary 6</option></optgroup>
-            <optgroup label="Prep"><option>Prep 1</option><option>Prep 2</option><option>Prep 3</option></optgroup>
+            <optgroup label="Primary">
+                <option>Primary 1</option><option>Primary 2</option><option>Primary 3</option>
+                <option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
+            </optgroup>
+            <optgroup label="Prep">
+                <option>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
+            </optgroup>
         </select>
         <select id="selGroup" onchange="renderGrid()" class="px-4 py-3 bg-slate-50 rounded-xl text-[10px] font-black uppercase outline-none"><option>Group A</option><option>Group B</option></select>
         <select id="selLang" onchange="renderGrid()" class="px-4 py-3 bg-slate-50 rounded-xl text-[10px] font-black uppercase outline-none"><option>English</option><option>Arabic</option></select>
@@ -100,20 +101,33 @@
 
     function renderGrid() {
       const container = document.getElementById('gridContainer');
-      const configKey = `${document.getElementById('selLevel').value}-${document.getElementById('selGroup').value}-${document.getElementById('selLang').value}`;
+      const level = document.getElementById('selLevel').value;
+      const group = document.getElementById('selGroup').value;
+      const lang = document.getElementById('selLang').value;
+      const configKey = `${level}-${group}-${lang}`;
+      
       container.innerHTML = "";
 
+      // Headers
       days.forEach(day => {
         container.innerHTML += `<div class="p-6 text-center font-black uppercase text-[10px] tracking-widest border-b border-slate-100 ${day==='Timeline'?'bg-slate-900 text-white':'bg-slate-50/50 text-slate-400'}">${day}</div>`;
       });
 
+      // Rows
       times.forEach(time => {
         container.innerHTML += `<div class="p-8 border-r border-b border-slate-50 flex flex-col items-center justify-center bg-white"><span class="text-xl font-black text-slate-900 tracking-tighter">${time}</span></div>`;
         for(let i=1; i<=5; i++) {
           const cellId = `${configKey}-${time}-${days[i]}`;
           const data = db[cellId] || null;
           let colorClass = data ? getColor(data.sub) : "cell-empty";
-          container.innerHTML += `<div class="p-2 border-b border-r border-slate-50 bg-white"><div onclick="openEditor('${cellId}')" class="rounded-[2rem] p-4 min-h-[110px] flex flex-col items-center justify-center text-center session-item ${colorClass}"><span class="text-[11px] font-black uppercase tracking-tighter leading-tight">${data ? data.sub : '+'}</span>${data ? `<span class="text-[8px] font-bold opacity-50 mt-2 uppercase tracking-widest">${data.teacher}</span>` : ''}</div></div>`;
+          
+          container.innerHTML += `
+            <div class="p-2 border-b border-r border-slate-50 bg-white">
+              <div onclick="openEditor('${cellId}')" class="rounded-[2rem] p-4 min-h-[110px] flex flex-col items-center justify-center text-center session-item ${colorClass}">
+                <span class="text-[11px] font-black uppercase tracking-tighter leading-tight">${data ? data.sub : '+'}</span>
+                ${data ? `<span class="text-[8px] font-bold opacity-50 mt-2 uppercase tracking-widest">${data.teacher}</span>` : ''}
+              </div>
+            </div>`;
         }
       });
     }
@@ -128,7 +142,7 @@
         return "bg-slate-900 text-white";
     }
 
-    // --- TIMELINE CONTROLS (THE FIX) ---
+    // --- Timeline Management ---
     function openTimeModal() {
       const list = document.getElementById('timeList');
       list.innerHTML = "";
@@ -136,9 +150,9 @@
         list.innerHTML += `
           <div class="flex items-center gap-2 bg-slate-50 p-3 rounded-2xl border border-slate-100">
             <span class="font-black text-slate-800 flex-1 ml-2">${t}</span>
-            <button onclick="moveTime(${i}, -1)" class="w-8 h-8 bg-white rounded-lg shadow-sm font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors">↑</button>
-            <button onclick="moveTime(${i}, 1)" class="w-8 h-8 bg-white rounded-lg shadow-sm font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors">↓</button>
-            <button onclick="removeTime(${i})" class="w-8 h-8 text-red-400 font-bold hover:text-red-600 ml-2">✕</button>
+            <button onclick="moveTime(${i}, -1)" class="w-8 h-8 bg-white rounded-lg shadow-sm font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-all">↑</button>
+            <button onclick="moveTime(${i}, 1)" class="w-8 h-8 bg-white rounded-lg shadow-sm font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-all">↓</button>
+            <button onclick="removeTime(${i})" class="w-8 h-8 text-red-400 font-bold ml-2">✕</button>
           </div>`;
       });
       document.getElementById('timeModal').style.display = 'flex';
@@ -150,7 +164,7 @@
         const temp = times[index];
         times[index] = times[newIndex];
         times[newIndex] = temp;
-        openTimeModal(); // Refresh list UI
+        openTimeModal();
       }
     }
 
@@ -167,7 +181,7 @@
       renderGrid();
     }
 
-    // --- EDITOR LOGIC ---
+    // --- Session Editing ---
     function openEditor(id) {
       activeCellId = id;
       const data = db[id] || { sub: '', teacher: '' };
@@ -177,16 +191,23 @@
     }
 
     function saveSession() {
-      const sub = document.getElementById('editSub').value;
-      const teacher = document.getElementById('editTeach').value;
+      const sub = document.getElementById('editSub').value.trim();
+      const teacher = document.getElementById('editTeach').value.trim();
       if(sub) db[activeCellId] = { sub, teacher };
       else delete db[activeCellId];
       saveDB();
     }
 
     function clearCell() { delete db[activeCellId]; saveDB(); }
-    function saveDB() { localStorage.setItem('titan_master_schedules', JSON.stringify(db)); closeModal(); renderGrid(); }
+
+    function saveDB() {
+      localStorage.setItem('titan_master_schedules', JSON.stringify(db));
+      closeModal();
+      renderGrid();
+    }
+
     function closeModal() { document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); }
+
     window.onload = renderGrid;
   </script>
 </body>
