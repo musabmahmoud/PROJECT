@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Titan ERP | Strategic Grid V9</title>
+  <title>Titan ERP | V10 Flexible Grid</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
@@ -12,78 +12,49 @@
 
     .titan-card { background: white; border-radius: 2.5rem; border: 1px solid #edf2f7; }
     
-    /* Subject Colors */
+    /* Subject Style Dictionary */
     .sub-math { background: #fefce8; color: #a16207; border: 2px solid #fef08a; }
     .sub-science { background: #f0fdf4; color: #15803d; border: 2px solid #bbf7d0; }
     .sub-english { background: #eff6ff; color: #1d4ed8; border: 2px solid #bfdbfe; }
     .sub-arabic { background: #fff1f2; color: #be123c; border: 2px solid #fecdd3; }
-    .sub-studies { background: #faf5ff; color: #7e22ce; border: 2px solid #e9d5ff; }
     .sub-break { background: #f1f5f9; color: #64748b; border: 2px dashed #cbd5e1; }
     .cell-empty { border: 2px dashed #e2e8f0; background: #f8fafc; color: #cbd5e1; }
 
     .session-item { transition: all 0.2s ease; cursor: pointer; }
     .session-item:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
     
-    .copy-active { outline: 4px solid #10b981; outline-offset: 4px; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-
     .modal-backdrop { backdrop-filter: blur(12px); display: none; background: rgba(15, 23, 42, 0.4); }
 
     @media print {
-      .no-print, aside, header, .stats-bar { display: none !important; }
+      .no-print { display: none !important; }
       body { background: white; padding: 0; }
-      .lg\:ml-24 { margin-left: 0 !important; }
-      .titan-card { border: none; box-shadow: none; border-radius: 0; }
+      .titan-card { border: none; box-shadow: none; }
       #gridContainer { grid-template-columns: repeat(6, 1fr) !important; min-width: 100% !important; }
     }
   </style>
 </head>
 <body class="min-h-screen pb-20">
 
-  <aside class="fixed left-0 top-0 h-full w-24 hidden lg:flex flex-col items-center py-12 bg-white border-r border-slate-100 z-50 no-print">
-    <div class="text-3xl font-black text-blue-600 mb-20 italic">T.</div>
-    <nav class="space-y-10">
-      <div class="p-4 text-slate-300 text-2xl">📊</div>
-      <div class="p-4 bg-blue-600 text-white rounded-2xl text-2xl">📅</div>
-    </nav>
-  </aside>
-
-  <main class="lg:ml-24 p-8 md:p-12 max-w-[1600px] mx-auto">
-    
-    <header class="flex flex-col xl:flex-row justify-between items-center gap-8 mb-12 no-print">
-      <div>
-        <h1 class="text-5xl font-black tracking-tighter uppercase italic">Master <span class="text-blue-600">Grid</span></h1>
-        <div id="copyAlert" class="hidden mt-4 bg-emerald-500 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest animate-bounce">
-          Copy Mode Active: Click empty cells to paste
-        </div>
+  <div id="timeModal" class="fixed inset-0 z-[110] modal-backdrop flex items-center justify-center p-6">
+    <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl">
+      <h3 class="text-2xl font-black italic mb-2 uppercase">Adjust <span class="text-blue-600">Periods</span></h3>
+      <p class="text-[9px] font-bold text-slate-400 mb-6 tracking-widest uppercase">Use arrows to move up/down</p>
+      
+      <div id="timeList" class="space-y-2 mb-6 max-h-80 overflow-y-auto pr-2"></div>
+      
+      <div class="flex gap-2 mb-6">
+        <input id="newTimeInput" type="text" placeholder="e.g. 08:00 AM" class="flex-1 p-4 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-600">
+        <button onclick="addTimeSlot()" class="bg-blue-600 text-white px-6 rounded-2xl font-black text-xl hover:bg-slate-900 transition-colors">+</button>
       </div>
-
-      <div class="flex flex-wrap gap-3 bg-white p-3 rounded-[2.5rem] border shadow-sm">
-        <button onclick="window.print()" class="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600">Download PDF 📄</button>
-        <button onclick="openTimeModal()" class="px-6 py-3 bg-slate-100 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest">Times ⏱</button>
-        <select id="selLevel" onchange="renderGrid()" class="px-4 py-3 bg-slate-50 rounded-xl text-[10px] font-black uppercase outline-none">
-            <optgroup label="Primary"><option>Primary 1</option><option>Primary 2</option><option>Primary 3</option><option>Primary 4</option><option>Primary 5</option><option>Primary 6</option></optgroup>
-            <optgroup label="Prep"><option>Prep 1</option><option>Prep 2</option><option>Prep 3</option></optgroup>
-        </select>
-        <select id="selGroup" onchange="renderGrid()" class="px-4 py-3 bg-slate-50 rounded-xl text-[10px] font-black uppercase outline-none"><option>Group A</option><option>Group B</option></select>
-        <select id="selLang" onchange="renderGrid()" class="px-4 py-3 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase outline-none"><option>English</option><option>Arabic</option></select>
-      </div>
-    </header>
-
-    <div class="titan-card overflow-hidden shadow-2xl shadow-blue-900/5 bg-white">
-        <div class="p-6 bg-slate-900 text-white text-center hidden show-on-print block">
-            <h2 class="text-2xl font-black uppercase italic" id="printTitle">Academic Schedule</h2>
-        </div>
-      <div class="overflow-x-auto">
-        <div id="gridContainer" class="grid grid-cols-6 min-w-[1000px]"></div>
-      </div>
+      
+      <button onclick="closeTimeModal()" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest">Save Timeline Order</button>
     </div>
-  </main>
+  </div>
 
   <div id="editModal" class="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-6">
     <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl">
       <div class="flex justify-between mb-8">
-        <h3 class="text-3xl font-black italic">Manage <span class="text-blue-600">Cell</span></h3>
+        <h3 class="text-3xl font-black italic">Manage <span class="text-blue-600">Node</span></h3>
         <button onclick="startCopy()" class="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Copy ❐</button>
       </div>
       <div class="space-y-4">
@@ -95,29 +66,41 @@
           <button onclick="closeModal()" class="px-6 bg-slate-100 text-slate-400 rounded-2xl font-black uppercase text-[10px]">✕</button>
         </div>
       </div>
-      <button onclick="stopCopy()" id="stopCopyBtn" class="hidden w-full mt-4 bg-emerald-500 text-white py-3 rounded-xl font-black text-[10px] uppercase">Finish Copying</button>
     </div>
   </div>
 
-  <div id="timeModal" class="fixed inset-0 z-[110] modal-backdrop flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl"><h3 class="text-2xl font-black italic mb-6">Timeline</h3><div id="timeList" class="space-y-2 mb-6 max-h-60 overflow-y-auto"></div><div class="flex gap-2 mb-4"><input id="newTimeInput" type="text" placeholder="14:00" class="flex-1 p-4 bg-slate-50 rounded-2xl font-bold outline-none"><button onclick="addTimeSlot()" class="bg-blue-600 text-white px-6 rounded-2xl font-black">+</button></div><button onclick="closeTimeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase text-[10px]">Apply</button></div></div>
+  <main class="lg:ml-24 p-8 md:p-12 max-w-[1600px] mx-auto">
+    <header class="flex flex-col xl:flex-row justify-between items-center gap-8 mb-12 no-print">
+      <h1 class="text-5xl font-black tracking-tighter uppercase italic">Master <span class="text-blue-600">Grid</span></h1>
+
+      <div class="flex flex-wrap gap-3 bg-white p-3 rounded-[2.5rem] border shadow-sm">
+        <button onclick="window.print()" class="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">Download PDF 📄</button>
+        <button onclick="openTimeModal()" class="px-6 py-3 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest">Edit Times ⏱</button>
+        <select id="selLevel" onchange="renderGrid()" class="px-4 py-3 bg-slate-50 rounded-xl text-[10px] font-black uppercase outline-none">
+            <optgroup label="Primary"><option>Primary 1</option><option>Primary 2</option><option>Primary 3</option><option>Primary 4</option><option>Primary 5</option><option>Primary 6</option></optgroup>
+            <optgroup label="Prep"><option>Prep 1</option><option>Prep 2</option><option>Prep 3</option></optgroup>
+        </select>
+        <select id="selGroup" onchange="renderGrid()" class="px-4 py-3 bg-slate-50 rounded-xl text-[10px] font-black uppercase outline-none"><option>Group A</option><option>Group B</option></select>
+        <select id="selLang" onchange="renderGrid()" class="px-4 py-3 bg-slate-50 rounded-xl text-[10px] font-black uppercase outline-none"><option>English</option><option>Arabic</option></select>
+      </div>
+    </header>
+
+    <div class="titan-card overflow-hidden shadow-2xl bg-white">
+      <div class="overflow-x-auto">
+        <div id="gridContainer" class="grid grid-cols-6 min-w-[1000px]"></div>
+      </div>
+    </div>
+  </main>
 
   <script>
-    // Removed Friday and Saturday
     const days = ["Timeline", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
     let times = JSON.parse(localStorage.getItem('titan_times')) || ["08:00", "08:45", "09:30", "10:30", "11:15", "12:00"];
     let db = JSON.parse(localStorage.getItem('titan_master_schedules')) || {};
-    
     let activeCellId = null;
-    let copySourceData = null;
 
     function renderGrid() {
       const container = document.getElementById('gridContainer');
-      const level = document.getElementById('selLevel').value;
-      const group = document.getElementById('selGroup').value;
-      const lang = document.getElementById('selLang').value;
-      const configKey = `${level}-${group}-${lang}`;
-      
-      document.getElementById('printTitle').innerText = `${level} | ${group} | ${lang} Track`;
+      const configKey = `${document.getElementById('selLevel').value}-${document.getElementById('selGroup').value}-${document.getElementById('selLang').value}`;
       container.innerHTML = "";
 
       days.forEach(day => {
@@ -126,70 +109,81 @@
 
       times.forEach(time => {
         container.innerHTML += `<div class="p-8 border-r border-b border-slate-50 flex flex-col items-center justify-center bg-white"><span class="text-xl font-black text-slate-900 tracking-tighter">${time}</span></div>`;
-
         for(let i=1; i<=5; i++) {
           const cellId = `${configKey}-${time}-${days[i]}`;
           const data = db[cellId] || null;
-          let colorClass = "cell-empty";
-          
-          if(data) {
-            const sub = data.sub.toLowerCase();
-            if(sub.includes('math')) colorClass = "sub-math";
-            else if(sub.includes('science')) colorClass = "sub-science";
-            else if(sub.includes('english')) colorClass = "sub-english";
-            else if(sub.includes('arabic')) colorClass = "sub-arabic";
-            else if(sub.includes('studies')) colorClass = "sub-studies";
-            else if(sub.includes('break')) colorClass = "sub-break";
-            else colorClass = "bg-slate-900 text-white";
-          }
-
-          container.innerHTML += `
-            <div class="p-2 border-b border-r border-slate-50 bg-white">
-              <div onclick="handleCellClick('${cellId}')" 
-                   class="rounded-[2rem] p-4 min-h-[110px] flex flex-col items-center justify-center text-center session-item ${colorClass} ${copySourceData ? 'hover:scale-105 border-emerald-400 border-2' : ''}">
-                <span class="text-[11px] font-black uppercase tracking-tighter leading-tight">${data ? data.sub : '+'}</span>
-                ${data ? `<span class="text-[8px] font-bold opacity-50 mt-2 uppercase tracking-widest">${data.teacher}</span>` : ''}
-              </div>
-            </div>`;
+          let colorClass = data ? getColor(data.sub) : "cell-empty";
+          container.innerHTML += `<div class="p-2 border-b border-r border-slate-50 bg-white"><div onclick="openEditor('${cellId}')" class="rounded-[2rem] p-4 min-h-[110px] flex flex-col items-center justify-center text-center session-item ${colorClass}"><span class="text-[11px] font-black uppercase tracking-tighter leading-tight">${data ? data.sub : '+'}</span>${data ? `<span class="text-[8px] font-bold opacity-50 mt-2 uppercase tracking-widest">${data.teacher}</span>` : ''}</div></div>`;
         }
       });
     }
 
-    function handleCellClick(id) {
-      if (copySourceData) {
-        db[id] = JSON.parse(JSON.stringify(copySourceData));
-        saveDB();
-      } else {
-        openEditor(id);
+    function getColor(sub) {
+        sub = sub.toLowerCase();
+        if(sub.includes('math')) return "sub-math";
+        if(sub.includes('science')) return "sub-science";
+        if(sub.includes('english')) return "sub-english";
+        if(sub.includes('arabic')) return "sub-arabic";
+        if(sub.includes('break')) return "sub-break";
+        return "bg-slate-900 text-white";
+    }
+
+    // --- TIMELINE CONTROLS (THE FIX) ---
+    function openTimeModal() {
+      const list = document.getElementById('timeList');
+      list.innerHTML = "";
+      times.forEach((t, i) => {
+        list.innerHTML += `
+          <div class="flex items-center gap-2 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+            <span class="font-black text-slate-800 flex-1 ml-2">${t}</span>
+            <button onclick="moveTime(${i}, -1)" class="w-8 h-8 bg-white rounded-lg shadow-sm font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors">↑</button>
+            <button onclick="moveTime(${i}, 1)" class="w-8 h-8 bg-white rounded-lg shadow-sm font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors">↓</button>
+            <button onclick="removeTime(${i})" class="w-8 h-8 text-red-400 font-bold hover:text-red-600 ml-2">✕</button>
+          </div>`;
+      });
+      document.getElementById('timeModal').style.display = 'flex';
+    }
+
+    function moveTime(index, direction) {
+      const newIndex = index + direction;
+      if (newIndex >= 0 && newIndex < times.length) {
+        const temp = times[index];
+        times[index] = times[newIndex];
+        times[newIndex] = temp;
+        openTimeModal(); // Refresh list UI
       }
     }
 
-    // --- DUPLICATE SESSION FEATURE ---
-    function startCopy() {
-      const data = db[activeCellId];
-      if(!data) return alert("Select a cell with data to duplicate!");
-      copySourceData = data;
-      closeModal();
-      document.getElementById('copyAlert').classList.remove('hidden');
-      renderGrid();
+    function addTimeSlot() {
+      const val = document.getElementById('newTimeInput').value;
+      if(val) { times.push(val); document.getElementById('newTimeInput').value = ""; openTimeModal(); }
     }
 
-    function stopCopy() {
-      copySourceData = null;
-      document.getElementById('copyAlert').classList.add('hidden');
-      renderGrid();
-    }
-
-    // ESC Key to stop copying
-    window.addEventListener('keydown', (e) => { if(e.key === 'Escape') stopCopy(); });
-
-    // --- REST OF LOGIC ---
-    function openTimeModal() { const list = document.getElementById('timeList'); list.innerHTML = times.map((t, i) => `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl mb-2"><span class="font-black">${t}</span><button onclick="removeTime(${i})" class="text-red-400 font-bold px-2">✕</button></div>`).join(""); document.getElementById('timeModal').style.display = 'flex'; }
-    function addTimeSlot() { const val = document.getElementById('newTimeInput').value; if(val) { times.push(val); times.sort(); document.getElementById('newTimeInput').value = ""; openTimeModal(); } }
     function removeTime(i) { times.splice(i, 1); openTimeModal(); }
-    function closeTimeModal() { localStorage.setItem('titan_times', JSON.stringify(times)); document.getElementById('timeModal').style.display = 'none'; renderGrid(); }
-    function openEditor(id) { activeCellId = id; const data = db[id] || { sub: '', teacher: '' }; document.getElementById('editSub').value = data.sub; document.getElementById('editTeach').value = data.teacher; document.getElementById('editModal').style.display = 'flex'; }
-    function saveSession() { const sub = document.getElementById('editSub').value, teach = document.getElementById('editTeach').value; if(sub) db[activeCellId] = { sub, teacher: teach }; else delete db[activeCellId]; saveDB(); }
+
+    function closeTimeModal() {
+      localStorage.setItem('titan_times', JSON.stringify(times));
+      document.getElementById('timeModal').style.display = 'none';
+      renderGrid();
+    }
+
+    // --- EDITOR LOGIC ---
+    function openEditor(id) {
+      activeCellId = id;
+      const data = db[id] || { sub: '', teacher: '' };
+      document.getElementById('editSub').value = data.sub;
+      document.getElementById('editTeach').value = data.teacher;
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function saveSession() {
+      const sub = document.getElementById('editSub').value;
+      const teacher = document.getElementById('editTeach').value;
+      if(sub) db[activeCellId] = { sub, teacher };
+      else delete db[activeCellId];
+      saveDB();
+    }
+
     function clearCell() { delete db[activeCellId]; saveDB(); }
     function saveDB() { localStorage.setItem('titan_master_schedules', JSON.stringify(db)); closeModal(); renderGrid(); }
     function closeModal() { document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); }
