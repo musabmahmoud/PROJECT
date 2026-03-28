@@ -82,29 +82,49 @@
   </main>
 
   <script>
-    const API = "/api/students";
-    const user = localStorage.getItem("user");
+const API = "/api/students";
+    // This grabs the ID you used during Login/Signup
+    let user = localStorage.getItem("user"); 
 
-    window.onload = () => { if (!user) window.location.href = "login.html"; loadData(); };
+    window.onload = () => { 
+        if (!user) {
+            window.location.href = "login.html"; 
+        } else {
+            loadData(); 
+        }
+    };
 
     async function loadData() {
         const tbody = document.getElementById("studentBody");
-        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center italic text-slate-300">Syncing...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center italic text-slate-300">Syncing Titan Cloud...</td></tr>`;
+        
         try {
+            // We MUST send the admin ID to the server to get YOUR specific table
             const res = await fetch(`${API}?admin=${user}`);
             const data = await res.json();
+            
             tbody.innerHTML = "";
             document.getElementById('totalCount').innerText = data.length.toString().padStart(2, '0');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-400 font-medium">No students found in your registry.</td></tr>`;
+                return;
+            }
+
             data.forEach(s => {
                 tbody.innerHTML += `
                     <tr>
                         <td class="text-sm font-bold text-slate-800">${s.name}</td>
                         <td class="text-xs font-bold text-slate-700">${s.level}</td>
                         <td class="text-[9px] font-bold text-blue-400 uppercase">${s.className} | ${s.language}</td>
-                        <td class="text-right"><button onclick="deleteStudent('${s._id}')" class="text-red-400 hover:text-red-600 font-bold">✕</button></td>
+                        <td class="text-right">
+                            <button onclick="deleteStudent('${s._id}')" class="text-red-400 hover:text-red-600 font-bold">✕</button>
+                        </td>
                     </tr>`;
             });
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-red-400">Sync Error: Server Unreachable</td></tr>`;
+        }
     }
 
     async function enrollStudent() {
@@ -115,14 +135,14 @@
         const language = document.getElementById("sLang").value;
 
         if(!name) return alert("Enter Student Name");
-        btn.innerText = "SENDING...";
+        btn.innerText = "SAVING...";
 
         try {
             const res = await fetch(API, { 
                 method: "POST", 
                 headers: { "Content-Type": "application/json" }, 
-                // Using exact keys and values that match your existing entry "Musab"
-                body: JSON.stringify({ name, level, className, language, owner: user }) 
+                // We send 'owner' and 'admin' as the current logged-in user
+                body: JSON.stringify({ name, level, className, language, owner: user, admin: user }) 
             });
 
             if (res.ok) {
@@ -130,8 +150,7 @@
                 btn.innerText = "SUCCESS ✓";
                 setTimeout(() => { btn.innerText = "Enroll Student"; loadData(); }, 1500);
             } else {
-                const err = await res.json();
-                alert("Error: " + err.error);
+                alert("Server rejected the entry.");
                 btn.innerText = "Enroll Student";
             }
         } catch (e) { btn.innerText = "Enroll Student"; }
