@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Titan ERP | System Enrollment</title>
+    <title>Titan ERP | Register</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at bottom left, #f8fafc, #eff6ff); height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
-        .signup-card { background: white; border: 1px solid #f1f5f9; box-shadow: 0 25px 60px rgba(0,0,0,0.04); border-radius: 2.5rem; width: 100%; max-width: 440px; padding: 3.5rem; text-align: center; animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
-        .titan-input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1.25rem; padding: 1.1rem 1.5rem; font-size: 13px; font-weight: 600; color: #1e293b; outline: none; transition: all 0.2s ease; margin-bottom: 1rem; }
+        .signup-card { background: white; border: 1px solid #f1f5f9; box-shadow: 0 25px 60px rgba(0,0,0,0.04); border-radius: 2.5rem; width: 100%; max-width: 400px; padding: 3.5rem; text-align: center; animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
+        .titan-input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1.25rem; padding: 1.1rem 1.5rem; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all 0.2s ease; margin-bottom: 1rem; }
         .titan-input:focus { background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05); }
-        .btn-signup { width: 100%; background: #3b82f6; color: white; padding: 1.1rem; border-radius: 1.25rem; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s ease; cursor: pointer; border: none; }
-        .btn-signup:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2); }
+        .btn-primary { width: 100%; background: #3b82f6; color: white; padding: 1.1rem; border-radius: 1.25rem; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s ease; cursor: pointer; border: none; margin-top: 0.5rem; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2); }
         .logo-mark { font-size: 2.5rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
         .dot { color: #3b82f6; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
@@ -21,18 +21,17 @@
 <body>
     <div class="signup-card">
         <div class="logo-mark">T<span class="dot">.</span></div>
-        <h2 class="text-2xl font-extrabold text-slate-900 mb-2">System Enrollment</h2>
-        <p class="text-slate-400 text-sm font-medium mb-10">Provision your administrative access</p>
+        <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Enrollment</h2>
+        <p class="text-slate-400 text-sm font-medium mb-8">Create your credentials</p>
 
         <form onsubmit="handleSignup(event)">
-            <input type="text" id="fullName" class="titan-input" placeholder="Full Legal Name" required>
-            <input type="text" id="regUser" class="titan-input" placeholder="Create Admin ID" required>
-            <input type="password" id="regPass" class="titan-input" placeholder="Security Password" required>
-            <button type="submit" id="signupBtn" class="btn-signup">Create Titan Account</button>
+            <input type="text" id="regUser" class="titan-input" placeholder="Create User ID" required>
+            <input type="password" id="regPass" class="titan-input" placeholder="Set Password" required>
+            <button type="submit" id="signupBtn" class="btn-primary">Create Account</button>
         </form>
 
         <div class="mt-8 text-xs font-bold text-slate-400">
-            Already have access? <a href="login.html" class="text-slate-900 underline decoration-2 underline-offset-4 hover:text-blue-600 transition-colors ml-1">Log In</a>
+            Already registered? <a href="login.html" class="text-slate-900 underline underline-offset-4">Log In</a>
         </div>
     </div>
 
@@ -40,12 +39,8 @@
         function handleSignup(event) {
             event.preventDefault();
             const user = document.getElementById('regUser').value;
-            const btn = document.getElementById('signupBtn');
-            btn.innerText = "PROVISIONING...";
-            setTimeout(() => {
-                localStorage.setItem("user", user);
-                window.location.href = "index.html";
-            }, 1000);
+            localStorage.setItem("user", user);
+            window.location.href = "index.html";
         }
     </script>
 </body>

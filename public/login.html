@@ -8,12 +8,12 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at top right, #f8fafc, #f1f5f9); height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; overflow: hidden; }
-        .login-card { background: white; border: 1px solid #f1f5f9; box-shadow: 0 20px 50px rgba(0,0,0,0.03); border-radius: 2.5rem; width: 100%; max-width: 420px; padding: 3.5rem; text-align: center; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-        .titan-input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1.25rem; padding: 1.1rem 1.5rem; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all 0.2s ease; margin-bottom: 1.25rem; }
+        .login-card { background: white; border: 1px solid #f1f5f9; box-shadow: 0 20px 50px rgba(0,0,0,0.03); border-radius: 2.5rem; width: 100%; max-width: 400px; padding: 3.5rem; text-align: center; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .titan-input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1.25rem; padding: 1.1rem 1.5rem; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all 0.2s ease; margin-bottom: 1rem; }
         .titan-input:focus { background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05); }
-        .btn-login { width: 100%; background: #1e293b; color: white; padding: 1.1rem; border-radius: 1.25rem; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s ease; cursor: pointer; border: none; }
-        .btn-login:hover { background: #000; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .logo-mark { font-size: 3rem; font-weight: 800; letter-spacing: -0.05em; color: #1e293b; margin-bottom: 0.5rem; display: inline-block; }
+        .btn-primary { width: 100%; background: #1e293b; color: white; padding: 1.1rem; border-radius: 1.25rem; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s ease; cursor: pointer; border: none; margin-top: 0.5rem; }
+        .btn-primary:hover { background: #000; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .logo-mark { font-size: 3rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; display: inline-block; }
         .dot { color: #3b82f6; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -22,20 +22,16 @@
     <div class="login-card">
         <div class="logo-mark">T<span class="dot">.</span></div>
         <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Welcome Back</h2>
-        <p class="text-slate-400 text-sm font-medium mb-10">Titan Cloud ERP Authentication</p>
+        <p class="text-slate-400 text-sm font-medium mb-8">System Authentication</p>
 
         <form onsubmit="handleLogin(event)">
-            <input type="text" id="username" class="titan-input" placeholder="Administrator ID" required>
-            <input type="password" id="password" class="titan-input" placeholder="Security Password" required>
-            <button type="submit" id="loginBtn" class="btn-login">Sign In to System</button>
+            <input type="text" id="username" class="titan-input" placeholder="User ID" required>
+            <input type="password" id="password" class="titan-input" placeholder="Password" required>
+            <button type="submit" id="loginBtn" class="btn-primary">Sign In</button>
         </form>
 
         <div class="mt-8 text-xs font-bold text-slate-400">
-            New Administrator? <a href="signup.html" class="text-blue-500 hover:text-blue-700 transition-colors">Create Account →</a>
-        </div>
-
-        <div class="mt-10 pt-6 border-t border-slate-50">
-            <p class="text-[9px] uppercase font-bold text-slate-300 tracking-[0.2em]">Secure Session Active</p>
+            No account? <a href="signup.html" class="text-blue-500 hover:text-blue-700">Register →</a>
         </div>
     </div>
 
@@ -43,12 +39,8 @@
         function handleLogin(event) {
             event.preventDefault();
             const user = document.getElementById('username').value;
-            const btn = document.getElementById('loginBtn');
-            btn.innerText = "AUTHENTICATING...";
-            setTimeout(() => {
-                localStorage.setItem("user", user);
-                window.location.href = "index.html";
-            }, 800);
+            localStorage.setItem("user", user);
+            window.location.href = "index.html";
         }
     </script>
 </body>
