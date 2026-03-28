@@ -140,19 +140,18 @@
         if(!name) return alert("Validation: Name is required");
         
         btn.innerText = "PROCESSING...";
-        btn.disabled = true;
 
-        // This payload covers all possible keys your backend might require
+        // CLEANING THE DATA:
+        // Your server likely wants "English" instead of "English Track"
+        const cleanLanguage = track.split(' ')[0]; 
+
         const payload = { 
             name: name, 
             level: level, 
-            className: group,  // Some servers use 'className'
-            language: track,   // Some servers use 'language'
-            group: group,      // Some servers use 'group'
-            track: track,      // Some servers use 'track'
-            admin: user,       // Standard admin key
-            owner: user,       // Backup owner key
-            status: "active"   // Some schemas require a default status
+            className: group,  
+            language: cleanLanguage, // Changed "English Track" -> "English"
+            admin: user,
+            owner: user // Adding owner as a backup identifier
         };
 
         try {
@@ -162,31 +161,30 @@
                 body: JSON.stringify(payload) 
             });
 
+            const result = await res.json();
+
             if(res.ok) {
                 document.getElementById("newStudentName").value = "";
                 btn.innerText = "SUCCESS ✓";
-                btn.classList.add('bg-emerald-500');
+                btn.style.backgroundColor = "#10b981";
                 
                 setTimeout(() => {
                     btn.innerText = "Confirm Enrollment";
-                    btn.classList.remove('bg-emerald-500');
-                    btn.disabled = false;
-                    loadData(); // Refresh the table
+                    btn.style.backgroundColor = "";
+                    loadData();
                 }, 1500);
             } else {
-                const errData = await res.json();
-                console.error("Backend Error:", errData);
-                alert("Server Rejected: " + (errData.error || "Entry creation failed"));
+                // This will tell us EXACTLY what the server didn't like
+                console.error("Server Detail:", result);
+                alert("Server Error: " + (result.error || "Check Console"));
                 btn.innerText = "Confirm Enrollment";
-                btn.disabled = false;
             }
         } catch (err) { 
-            alert("Network Error: Check Server");
+            alert("Connection Error");
             btn.innerText = "Confirm Enrollment";
-            btn.disabled = false;
         }
     }
-
+    
     async function deleteStudent(id) { 
         if(confirm("Delete record?")) { await fetch(`${API}/${id}?admin=${user}`, { method: "DELETE" }); loadData(); } 
     }
