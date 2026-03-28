@@ -3,174 +3,323 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Titan ERP | Daily Timeline Master</title>
+  <title>Titan ERP | Master Timeline V16</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
     
-    :root { --titan-blue: #2563eb; --titan-emerald: #10b981; --titan-slate: #f8fafc; }
-    
+    :root { 
+      --titan-blue: #2563eb; 
+      --titan-emerald: #10b981; 
+      --titan-slate: #f8fafc; 
+      --sidebar-width: 120px;
+      --glass-bg: rgba(255, 255, 255, 0.7);
+    }
+
+    /* --- BASE ARCHITECTURE --- */
     body { 
       font-family: 'Plus Jakarta Sans', sans-serif; 
       background-color: var(--titan-slate); 
       color: #0f172a; 
-      letter-spacing: -0.01em;
+      margin: 0;
+      -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      cursor: default;
     }
 
+    /* --- ADVANCED SIDEBAR (GLASS-TECH) --- */
+    .sidebar { 
+      width: var(--sidebar-width); 
+      height: 100vh; 
+      position: fixed; 
+      left: 0; 
+      top: 0; 
+      background: white; 
+      border-right: 1px solid #edf2f7; 
+      z-index: 500; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      padding-top: 3.5rem;
+      box-shadow: 15px 0 40px rgba(0,0,0,0.02);
+    }
+
+    .nav-icon { 
+      width: 66px; 
+      height: 66px; 
+      margin-bottom: 2.2rem; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      border-radius: 24px; 
+      cursor: pointer; 
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+      font-size: 28px; 
+      text-decoration: none;
+      color: #cbd5e1;
+      position: relative;
+    }
+
+    .nav-icon:hover { 
+      background: #f1f5f9; 
+      color: var(--titan-blue);
+      transform: scale(1.1) translateX(5px);
+    }
+
+    .nav-icon.active { 
+      background: var(--titan-blue); 
+      color: white; 
+      box-shadow: 0 20px 40px rgba(37, 99, 235, 0.35); 
+    }
+
+    .nav-icon.active::after {
+      content: '';
+      position: absolute;
+      right: -10px;
+      width: 4px;
+      height: 20px;
+      background: var(--titan-blue);
+      border-radius: 10px;
+    }
+
+    /* --- MAIN CONTENT WRAPPER --- */
+    .main-content { 
+      margin-left: var(--sidebar-width); 
+      padding: 6rem; 
+      max-width: 1800px;
+      min-height: 100vh;
+    }
+
+    /* --- TITAN COMPONENT SYSTEM --- */
     .titan-card { 
       background: white; 
-      border-radius: 2.5rem; 
+      border-radius: 4rem; 
       border: 1px solid #edf2f7; 
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.02), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+      box-shadow: 0 25px 70px rgba(0,0,0,0.03);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s ease;
     }
 
-    .titan-input { 
-      background: #f1f5f9; 
-      border: 2px solid transparent; 
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-    }
-    .titan-input:focus { 
-      background: white; 
-      border-color: var(--titan-blue); 
-      outline: none; 
-      box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.08); 
+    .titan-input {
+      background: #f8fafc;
+      border: 2px solid transparent;
+      border-radius: 1.8rem;
+      padding: 1.5rem 2rem;
+      font-weight: 800;
+      font-size: 15px;
+      outline: none;
+      width: 100%;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #1e293b;
     }
 
+    .titan-input:focus {
+      border-color: var(--titan-blue);
+      background: white;
+      box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.07);
+    }
+
+    /* --- DYNAMIC DATA PULSE --- */
     .att-btn { 
-      width: 48px; 
-      height: 48px; 
-      border-radius: 16px; 
-      font-weight: 800; 
-      font-size: 13px; 
-      transition: all 0.2s ease;
-      border: 1px solid #e2e8f0;
+      width: 56px; 
+      height: 56px; 
+      border-radius: 20px; 
+      font-weight: 900; 
+      font-size: 15px; 
+      transition: all 0.3s ease;
+      border: 2px solid #f1f5f9;
       color: #94a3b8;
+      background: white;
     }
-    .btn-p:hover, .active-p { background: var(--titan-emerald); color: white; border-color: transparent; box-shadow: 0 8px 15px rgba(16, 185, 129, 0.2); }
-    .btn-a:hover, .active-a { background: #ef4444; color: white; border-color: transparent; box-shadow: 0 8px 15px rgba(239, 68, 68, 0.2); }
 
-    .student-row { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .student-row:hover { transform: translateY(-2px); }
+    .btn-p:hover, .active-p { 
+      background: var(--titan-emerald); 
+      color: white !important; 
+      border-color: transparent; 
+      box-shadow: 0 12px 25px rgba(16, 185, 129, 0.3); 
+      transform: translateY(-3px);
+    }
 
-    /* Side Panel Animation */
+    .btn-a:hover, .active-a { 
+      background: #ef4444; 
+      color: white !important; 
+      border-color: transparent; 
+      box-shadow: 0 12px 25px rgba(239, 68, 68, 0.3); 
+      transform: translateY(-3px);
+    }
+
+    /* --- ANALYTICS SIDEBAR (OVERLAY) --- */
     #sidePanel { 
-      transform: translateX(100%); 
-      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
-      box-shadow: -20px 0 50px rgba(0,0,0,0.1);
+      position: fixed;
+      right: 0;
+      top: 0;
+      height: 100vh;
+      width: 550px;
+      background: white;
+      z-index: 1000;
+      transform: translateX(100%);
+      transition: transform 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+      box-shadow: -40px 0 90px rgba(15, 23, 42, 0.15);
+      padding: 5rem;
     }
+
     #sidePanel.open { transform: translateX(0); }
+
     .overlay { 
       display: none; 
       position: fixed; 
       inset: 0; 
-      background: rgba(15, 23, 42, 0.3); 
-      backdrop-filter: blur(4px); 
-      z-index: 40; 
+      background: rgba(15, 23, 42, 0.25); 
+      backdrop-filter: blur(12px); 
+      z-index: 900; 
     }
+
+    /* --- DATA TABLE REFINEMENT --- */
+    .erp-table th { 
+      padding: 3rem; 
+      text-transform: uppercase; 
+      font-size: 11px; 
+      letter-spacing: 0.4em; 
+      color: #94a3b8; 
+      font-weight: 900;
+      border-bottom: 2px solid #f8fafc;
+      background: #fcfdfe;
+    }
+
+    .erp-table td { padding: 3rem; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
+    .erp-row { transition: all 0.3s ease; }
+    .erp-row:hover { background: #fbfcfe; transform: scale(1.005); z-index: 10; }
+
+    /* --- GLOW EFFECTS --- */
+    .glow-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 12px; }
+    .glow-blue { background: var(--titan-blue); box-shadow: 0 0 15px var(--titan-blue); }
+    .glow-emerald { background: var(--titan-emerald); box-shadow: 0 0 15px var(--titan-emerald); }
+
+    /* --- ANIMATIONS --- */
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-titan { animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
   </style>
 </head>
-<body class="min-h-screen">
+<body>
 
   <div id="overlay" class="overlay" onclick="closePanel()"></div>
 
-  <aside class="fixed left-0 top-0 h-full w-24 hidden lg:flex flex-col items-center py-12 bg-white border-r border-slate-100 z-50">
-    <div class="text-3xl font-black text-blue-600 mb-20 italic tracking-tighter">T.</div>
-    <nav class="space-y-12 flex-1">
-      <a href="index.html" class="p-5 text-slate-300 hover:text-blue-600 block text-2xl transition-all">📊</a>
-      <a href="classes.html" class="p-5 bg-blue-600 text-white rounded-[1.5rem] block shadow-2xl shadow-blue-500/40 text-2xl">🏫</a>
-      <a href="teachers.html" class="p-5 text-slate-300 hover:text-blue-600 block text-2xl transition-all">👨‍🏫</a>
+  <aside class="sidebar">
+    <div class="text-blue-600 font-black text-5xl italic mb-20 tracking-tighter">T.</div>
+    <nav class="flex-1">
+      <a href="index.html" class="nav-icon" title="Dashboard">📊</a>
+      <a href="classes.html" class="nav-icon active" title="Timeline">📅</a>
+      <a href="teachers.html" class="nav-icon" title="Registry">👨‍🏫</a>
+      <a href="#" class="nav-icon" title="Settings">⚙️</a>
     </nav>
-    <button onclick="logout()" class="p-5 text-slate-300 hover:text-red-500 text-xl transition-all">📂</button>
+    <div class="mb-12" onclick="logout()">
+      <div class="nav-icon !mb-0 text-slate-300 hover:text-red-500 transition-all">📂</div>
+    </div>
   </aside>
 
-  <div id="sidePanel" class="fixed right-0 top-0 h-full w-full max-w-md bg-white z-[60] p-10 overflow-y-auto">
-    <div class="flex justify-between items-center mb-10">
+  <div id="sidePanel">
+    <div class="flex justify-between items-center mb-16">
       <div>
-        <h2 id="panelName" class="text-3xl font-black italic text-slate-900 tracking-tighter">Student</h2>
-        <p class="text-[10px] font-black uppercase text-blue-600 tracking-widest mt-1">Timeline Analytics</p>
+        <h2 id="panelName" class="text-6xl font-black italic text-slate-900 tracking-tighter uppercase">Node_Data</h2>
+        <p class="text-[11px] font-black uppercase text-blue-600 tracking-[0.5em] mt-3 italic">Biometric_Timeline_Sync</p>
       </div>
-      <button onclick="closePanel()" class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all">✕</button>
+      <button onclick="closePanel()" class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center font-bold text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all shadow-sm">✕</button>
     </div>
-    <div id="panelContent" class="space-y-6"></div>
+    <div id="panelContent" class="space-y-8">
+      </div>
   </div>
 
-  <main class="lg:ml-24 p-8 md:p-16 max-w-[1500px] mx-auto">
+  <main class="main-content animate-titan">
     
-    <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8 mb-16">
-      <div>
-        <h1 class="text-6xl font-black tracking-tighter uppercase italic text-slate-900 leading-none">
+    <header class="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-24 gap-12">
+      <div class="space-y-4">
+        <div class="flex items-center gap-4">
+          <span class="glow-dot glow-blue animate-pulse"></span>
+          <p class="text-[12px] font-black text-blue-600 uppercase tracking-[0.6em] italic">System_Active // Node_V4</p>
+        </div>
+        <h1 class="text-9xl font-black italic tracking-tighter uppercase text-slate-900 leading-[0.75]">
           Daily <span class="text-blue-600">Timeline</span>
         </h1>
-        <div class="mt-6 flex flex-wrap items-center gap-4">
-          <div class="bg-white border border-slate-200 px-6 py-3 rounded-full shadow-sm flex items-center gap-4">
-            <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Session Date</span>
-            <input type="date" id="logDate" onchange="loadRoster()" class="font-bold text-sm outline-none bg-transparent cursor-pointer">
-          </div>
-          <span class="h-8 w-[1px] bg-slate-200"></span>
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em]">Node: Academic_Command_V4</p>
-        </div>
       </div>
 
-      <div class="flex flex-wrap gap-3 bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm">
-        <select id="selLevel" onchange="loadRoster()" class="p-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase outline-none cursor-pointer hover:bg-slate-100 transition-all">
-          <optgroup label="Primary">
-            <option value="Primary 1">Primary 1</option><option value="Primary 2">Primary 2</option>
-            <option value="Primary 3">Primary 3</option><option value="Primary 4">Primary 4</option>
-            <option value="Primary 5">Primary 5</option><option value="Primary 6">Primary 6</option>
-          </optgroup>
-          <optgroup label="Preparatory">
-            <option value="Prep 1" selected>Prep 1</option><option value="Prep 2">Prep 2</option><option value="Prep 3">Prep 3</option>
-          </optgroup>
-        </select>
-        <select id="selGroup" onchange="loadRoster()" class="p-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase outline-none cursor-pointer hover:bg-slate-100 transition-all">
-          <option value="Both">All Groups</option>
-          <option value="Group A">Group A</option>
-          <option value="Group B">Group B</option>
-        </select>
-        <select id="selLang" onchange="loadRoster()" class="p-4 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase outline-none cursor-pointer hover:bg-blue-100 transition-all">
-          <option value="Both">All Languages</option>
-          <option value="English">English</option>
-          <option value="Arabic">Arabic</option>
-        </select>
+      <div class="bg-white/80 backdrop-blur-2xl p-6 rounded-[3rem] flex items-center gap-10 shadow-2xl border border-white">
+        <div class="pl-8 border-r border-slate-100 pr-10">
+          <p class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Temporal Node</p>
+          <input type="date" id="logDate" class="font-black italic text-xl outline-none cursor-pointer bg-transparent text-slate-900">
+        </div>
+        <div class="pr-6">
+           <select id="selLevel" onchange="loadRoster()" class="bg-transparent font-black text-xs uppercase outline-none cursor-pointer text-blue-600 tracking-widest">
+              <option value="Prep 1">Preparatory 1</option>
+              <option value="Prep 2">Preparatory 2</option>
+              <option value="Primary 5">Primary 5</option>
+           </select>
+        </div>
+        <button onclick="saveAll()" class="bg-slate-900 text-white px-12 py-6 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.3em] hover:bg-blue-600 transition-all shadow-2xl">
+          Mass Sync +
+        </button>
       </div>
     </header>
 
-    <section class="titan-card p-8 mb-12 grid grid-cols-1 xl:grid-cols-2 gap-10 items-center bg-white/80 backdrop-blur-md">
-      <div class="flex gap-4">
-        <input id="fastName" type="text" placeholder="Enroll student to this grade..." class="titan-input p-5 rounded-2xl w-full font-bold text-sm">
-        <button onclick="fastEnroll()" class="bg-blue-600 text-white px-10 rounded-2xl font-black text-[11px] uppercase hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all active:scale-95">Add +</button>
-      </div>
-      <div class="flex gap-4 xl:border-l xl:pl-10 border-slate-100">
-        <input id="globalSub" type="text" placeholder="Set Active Subject (e.g. Arabic)..." class="titan-input p-5 rounded-2xl w-full font-bold text-sm border-emerald-50">
-        <button onclick="applySubject()" class="bg-slate-900 text-white px-10 rounded-2xl font-black text-[11px] uppercase hover:bg-blue-600 transition-all active:scale-95">Apply All</button>
-      </div>
+    <section class="grid grid-cols-1 xl:grid-cols-2 gap-10 mb-20">
+        <div class="titan-card p-10 bg-white group">
+            <h4 class="text-[10px] font-black uppercase text-slate-400 mb-6 tracking-[0.3em]">Node Enrollment</h4>
+            <div class="flex gap-4">
+                <input id="fastName" type="text" placeholder="Entry Identity..." class="titan-input">
+                <button onclick="fastEnroll()" class="bg-blue-600 text-white px-10 rounded-[1.8rem] font-black text-[11px] uppercase hover:bg-slate-900 transition-all shadow-lg shadow-blue-100">Add</button>
+            </div>
+        </div>
+        <div class="titan-card p-10 bg-blue-600 group">
+            <h4 class="text-[10px] font-black uppercase text-white/50 mb-6 tracking-[0.3em]">Global Subject Injector</h4>
+            <div class="flex gap-4">
+                <input id="globalSub" type="text" placeholder="Set Active Subject..." class="titan-input !bg-white/10 !text-white !placeholder-white/30 !border-white/10">
+                <button onclick="applySubject()" class="bg-white text-blue-600 px-10 rounded-[1.8rem] font-black text-[11px] uppercase hover:bg-slate-900 hover:text-white transition-all">Inject</button>
+            </div>
+        </div>
     </section>
 
-    <div class="titan-card overflow-hidden">
-      <div class="p-10 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center bg-slate-50/20 gap-6">
-        <div class="flex items-center gap-4">
-          <div class="w-3 h-3 bg-blue-600 rounded-full animate-pulse shadow-[0_0_15px_rgba(37,99,235,0.5)]"></div>
-          <h3 class="text-[12px] font-black uppercase tracking-[0.3em] text-slate-400">Class Synchronization Log</h3>
-        </div>
-        <button onclick="saveAll()" class="bg-[#10b981] text-white px-12 py-5 rounded-[1.5rem] font-black text-xs uppercase hover:opacity-90 shadow-2xl shadow-emerald-500/30 transition-all active:scale-95">Save Entire Class Data</button>
+    <div class="titan-card">
+      <div class="p-12 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+         <div class="flex items-center gap-4">
+            <span class="glow-dot glow-emerald"></span>
+            <h3 class="text-xs font-black uppercase tracking-[0.5em] text-slate-500 italic">Live_Registry_Synchronization_Enabled</h3>
+         </div>
+         <div class="flex gap-4 no-print">
+             <button onclick="window.print()" class="text-[10px] font-black uppercase text-slate-400 hover:text-blue-600">Print Report</button>
+         </div>
       </div>
-
-      <div class="overflow-x-auto p-6">
-        <table class="w-full text-left border-separate border-spacing-y-5">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left erp-table">
           <thead>
-            <tr class="text-[11px] font-black text-slate-300 uppercase tracking-widest">
-              <th class="px-10 py-2">Student Profile (Click name)</th>
-              <th class="px-10 py-2 text-center">Status</th>
-              <th class="px-10 py-2">Financials (EGP)</th>
-              <th class="px-10 py-2">Academic Result</th>
-              <th class="px-10 py-2 text-right">Control</th>
+            <tr>
+              <th class="w-[35%]">Master Node Identity</th>
+              <th class="text-center">Temporal Pulse</th>
+              <th>Financial Input</th>
+              <th>Subject Node</th>
+              <th class="text-right">Operation</th>
             </tr>
           </thead>
-          <tbody id="rosterBody"></tbody>
+          <tbody id="rosterBody">
+              </tbody>
         </table>
       </div>
     </div>
+
+    <footer class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div class="bg-white p-10 rounded-[3rem] border border-slate-100">
+            <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Total Nodes</p>
+            <p id="nodeCount" class="text-5xl font-black italic text-slate-900 tracking-tighter">00</p>
+        </div>
+        <div class="bg-white p-10 rounded-[3rem] border border-slate-100">
+            <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Real-Time Revenue</p>
+            <p id="totalRev" class="text-5xl font-black italic text-emerald-500 tracking-tighter">0.00 <span class="text-xs uppercase opacity-30">EGP</span></p>
+        </div>
+        <div class="bg-white p-10 rounded-[3rem] border border-slate-100">
+            <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Cloud Status</p>
+            <p class="text-5xl font-black italic text-blue-600 tracking-tighter uppercase">Syncing</p>
+        </div>
+    </footer>
+
   </main>
 
   <script>
@@ -178,70 +327,59 @@
     const user = localStorage.getItem("user");
 
     window.onload = () => {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('logDate').value = today;
+      document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
       if(!user) { window.location.href="login.html"; return; }
       loadRoster();
     };
 
     async function loadRoster() {
       const level = document.getElementById('selLevel').value;
-      const group = document.getElementById('selGroup').value;
-      const lang = document.getElementById('selLang').value;
       const tbody = document.getElementById("rosterBody");
-      
-      tbody.innerHTML = `<tr><td colspan="5" class="p-32 text-center text-slate-200 font-black uppercase tracking-[0.6em] animate-pulse text-xs">Pinging Data Node...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="p-40 text-center font-black italic text-slate-100 text-6xl animate-pulse">INITIALIZING_NODE_LINK...</td></tr>`;
 
       try {
-        let url = `${API}?admin=${user}&level=${encodeURIComponent(level)}`;
-        if(group !== "Both") url += `&className=${encodeURIComponent(group)}`;
-        if(lang !== "Both") url += `&language=${encodeURIComponent(lang)}`;
-        
-        const res = await fetch(url);
-        let data = await res.json();
-
+        const res = await fetch(`${API}?admin=${user}&level=${encodeURIComponent(level)}`);
+        const data = await res.json();
         tbody.innerHTML = "";
-        if(data.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 font-black uppercase text-xs tracking-widest">No Records Found</td></tr>`;
-          return;
-        }
+        document.getElementById('nodeCount').innerText = data.length.toString().padStart(2, '0');
 
         data.forEach(s => {
           tbody.innerHTML += `
-            <tr class="bg-white group student-row shadow-sm hover:shadow-md transition-all duration-300">
-              <td class="px-10 py-8 rounded-l-[2rem] border-y border-l border-slate-50">
-                <button onclick="openHistory('${s._id}', '${s.name}')" class="text-2xl font-black text-slate-800 tracking-tighter hover:text-blue-600 text-left transition-colors">${s.name}</button>
-                <div class="flex items-center gap-2 mt-2">
-                  <span class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${s.className === 'Group A' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}">
-                    ${s.className}
-                  </span>
-                  <span class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-slate-100 text-slate-500">${s.language || 'English'}</span>
+            <tr class="erp-row">
+              <td>
+                <div class="flex items-center gap-8">
+                    <div class="w-16 h-16 bg-slate-900 rounded-[1.5rem] flex items-center justify-center font-black text-white text-3xl italic shadow-2xl">${s.name.charAt(0)}</div>
+                    <div>
+                        <button onclick="openHistory('${s._id}', '${s.name}')" class="text-4xl font-black text-slate-900 tracking-tighter hover:text-blue-600 transition-all text-left leading-none uppercase italic">${s.name}</button>
+                        <p class="text-[10px] font-black text-slate-300 uppercase mt-3 tracking-[0.4em]">Node_UID: ${s._id.slice(-10).toUpperCase()}</p>
+                    </div>
                 </div>
               </td>
-              <td class="px-10 py-8 border-y border-slate-50">
-                <div class="flex justify-center gap-3">
+              <td>
+                <div class="flex justify-center gap-4">
                   <button id="p-${s._id}" onclick="markAtt('${s._id}', 'p')" class="att-btn btn-p">P</button>
                   <button id="a-${s._id}" onclick="markAtt('${s._id}', 'a')" class="att-btn btn-a">A</button>
                 </div>
               </td>
-              <td class="px-10 py-8 border-y border-slate-50">
-                <div class="relative">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300">£</span>
-                  <input type="number" id="pay-${s._id}" placeholder="000" class="titan-input p-4 pl-8 rounded-2xl w-32 text-sm font-black text-emerald-600">
+              <td>
+                <div class="relative group">
+                    <span class="absolute left-6 top-1/2 -translate-y-1/2 font-black text-slate-300 text-[10px]">EGP</span>
+                    <input type="number" id="pay-${s._id}" oninput="calcRev()" placeholder="0.00" class="titan-input !pl-16 !bg-emerald-50/40 text-emerald-600 text-xl">
                 </div>
               </td>
-              <td class="px-10 py-8 border-y border-slate-50">
-                <div class="flex gap-3">
-                  <input type="text" id="sub-${s._id}" placeholder="Subject" class="titan-input subj-box p-4 rounded-2xl w-40 text-[10px] font-black uppercase tracking-wider">
-                  <input type="number" id="grd-${s._id}" placeholder="00" class="titan-input p-4 rounded-2xl w-20 text-sm font-black text-center text-blue-600">
+              <td>
+                <div class="flex gap-4">
+                  <input type="text" id="sub-${s._id}" placeholder="SUBJECT" class="titan-input !text-[11px] uppercase subj-box !w-44 !rounded-2xl">
+                  <input type="number" id="grd-${s._id}" placeholder="00" class="titan-input !w-24 text-center text-blue-600 !rounded-2xl">
                 </div>
               </td>
-              <td class="px-10 py-8 rounded-r-[2rem] border-y border-r border-slate-50 text-right">
-                <button onclick="saveRow('${s._id}')" class="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase hover:bg-blue-600 transition-all shadow-lg active:scale-95">Sync Log</button>
+              <td class="text-right">
+                <button onclick="saveRow('${s._id}')" class="px-10 py-5 bg-slate-900 text-white rounded-[1.5rem] font-black text-[10px] uppercase hover:bg-blue-600 transition-all shadow-xl active:scale-95">Sync Node</button>
               </td>
             </tr>`;
         });
-      } catch (e) { console.error(e); }
+        calcRev();
+      } catch (e) { console.error("Database Link Failure", e); }
     }
 
     function markAtt(id, type) {
@@ -251,36 +389,38 @@
     }
 
     async function openHistory(id, name) {
-      document.getElementById('panelName').innerText = name;
-      const content = document.getElementById('panelContent');
-      content.innerHTML = `<div class="p-10 text-center animate-pulse font-black text-slate-200">Retrieving Logs...</div>`;
-      
+      document.getElementById('panelName').innerText = name.split(' ')[0];
       document.getElementById('overlay').style.display = 'block';
       document.getElementById('sidePanel').classList.add('open');
-
+      const content = document.getElementById('panelContent');
+      content.innerHTML = `<p class="p-20 text-center font-black italic text-slate-100 text-3xl animate-pulse">DECRYPTING_LOGS...</p>`;
+      
       try {
         const res = await fetch(`${API}/history?admin=${user}&name=${encodeURIComponent(name)}`);
         const data = await res.json();
-        
-        if(!data.history || data.history.length === 0) {
-          content.innerHTML = `<div class="p-10 bg-slate-50 rounded-3xl text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest">No timeline logs found.</div>`;
-          return;
-        }
-
         content.innerHTML = data.history.map(l => `
-          <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex justify-between items-center group hover:bg-white hover:shadow-xl transition-all duration-300">
-            <div>
-              <p class="font-black text-slate-900 text-sm">${l.date}</p>
-              <p class="text-[9px] font-black uppercase text-blue-600 tracking-widest mt-1">${l.subject}</p>
-              <span class="mt-2 inline-block text-[8px] font-black px-2 py-0.5 rounded ${l.status === 'present' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'} uppercase">${l.status}</span>
+          <div class="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:bg-white transition-all duration-500">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <p class="font-black text-slate-900 text-2xl italic tracking-tight uppercase">${l.date}</p>
+                    <p class="text-[11px] font-black uppercase text-blue-600 tracking-[0.3em] mt-2 italic">${l.subject}</p>
+                </div>
+                <span class="text-[10px] font-black px-6 py-3 rounded-2xl ${l.status === 'present' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'} uppercase tracking-widest">${l.status}</span>
             </div>
-            <div class="text-right">
-              <p class="text-lg font-black text-emerald-500 tracking-tighter">+${l.payment} <span class="text-[8px] uppercase">EGP</span></p>
-              <p class="text-xs font-black text-blue-600 mt-1">${l.grade}% Result</p>
+            <div class="flex justify-between items-end border-t border-slate-200 pt-6 mt-2">
+              <p class="text-4xl font-black text-emerald-500 tracking-tighter">+${l.payment} <span class="text-xs uppercase opacity-40 italic">EGP</span></p>
+              <p class="text-lg font-black text-slate-900 uppercase italic">${l.grade}% Result</p>
             </div>
-          </div>
-        `).join('');
-      } catch (e) { content.innerHTML = "Error loading history."; }
+          </div>`).join('');
+      } catch (e) { content.innerHTML = "SYSTEM ERROR: DATA_ACCESS_DENIED"; }
+    }
+
+    function calcRev() {
+        let total = 0;
+        document.querySelectorAll('[id^="pay-"]').forEach(input => {
+            total += Number(input.value) || 0;
+        });
+        document.getElementById('totalRev').innerText = total.toFixed(2);
     }
 
     function closePanel() {
@@ -290,28 +430,7 @@
 
     function applySubject() {
       const val = document.getElementById('globalSub').value;
-      if(!val) return;
       document.querySelectorAll('.subj-box').forEach(i => i.value = val);
-    }
-
-    async function fastEnroll() {
-      const name = document.getElementById('fastName').value;
-      const level = document.getElementById('selLevel').value;
-      const group = document.getElementById('selGroup').value;
-      const lang = document.getElementById('selLang').value;
-      
-      const className = (group === "Both") ? "Group A" : group; 
-      const language = (lang === "Both") ? "English" : lang;
-
-      if(!name) return;
-
-      await fetch(API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, level, className, owner: user, language: language })
-      });
-      document.getElementById('fastName').value = "";
-      loadRoster();
     }
 
     async function saveRow(id) {
@@ -321,33 +440,23 @@
       const pay = document.getElementById(`pay-${id}`).value;
       const isAbsent = document.getElementById(`a-${id}`).classList.contains('active-a');
       
-      const payload = { 
-        studentId: id, 
-        date, 
-        subject: sub.toLowerCase().trim(), 
-        grade: Number(grd), 
-        payment: Number(pay),
-        status: isAbsent ? 'absent' : 'present',
-        admin: user 
-      };
-      
       const res = await fetch(`${API}/daily-log`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ studentId: id, date, subject: sub.toLowerCase(), grade: Number(grd), payment: Number(pay), status: isAbsent ? 'absent' : 'present', admin: user })
       });
-      return res.ok;
+      if(res.ok) { 
+          const btn = event.target;
+          btn.innerText = "SYNCED ✓";
+          btn.classList.replace('bg-slate-900', 'bg-emerald-500');
+          setTimeout(() => { btn.innerText = "Sync Node"; btn.classList.replace('bg-emerald-500', 'bg-slate-900'); }, 2000);
+      }
     }
 
     async function saveAll() {
       const rows = document.querySelectorAll('[id^="pay-"]');
-      const total = rows.length;
-      let count = 0;
-      for (let r of rows) {
-        const success = await saveRow(r.id.split('-')[1]);
-        if(success) count++;
-      }
-      alert(`Timeline Updated: ${count}/${total} Students Synced.`);
+      for (let r of rows) { await saveRow(r.id.split('-')[1]); }
+      alert("MASS UPLINK COMPLETED // SYSTEM STABLE");
       loadRoster();
     }
 
