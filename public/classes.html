@@ -3,334 +3,171 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Titan ERP | Master Timeline V16</title>
+  <title>Titan ERP | Daily Registry</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     
     :root { 
-      --titan-blue: #2563eb; 
-      --titan-emerald: #10b981; 
-      --titan-slate: #f8fafc; 
-      --sidebar-width: 120px;
-      --glass-bg: rgba(255, 255, 255, 0.7);
+      --titan-blue: #1e293b; 
+      --accent-blue: #3b82f6;
+      --titan-emerald: #10b981;
+      --titan-slate: #fcfdfe; 
+      --sidebar-width: 100px;
     }
 
-    /* --- BASE ARCHITECTURE --- */
     body { 
       font-family: 'Plus Jakarta Sans', sans-serif; 
       background-color: var(--titan-slate); 
-      color: #0f172a; 
+      color: #334155; 
       margin: 0;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-      cursor: default;
     }
 
-    /* --- ADVANCED SIDEBAR (GLASS-TECH) --- */
+    /* --- SIDEBAR --- */
     .sidebar { 
       width: var(--sidebar-width); 
       height: 100vh; 
       position: fixed; 
-      left: 0; 
-      top: 0; 
+      left: 0; top: 0; 
       background: white; 
-      border-right: 1px solid #edf2f7; 
+      border-right: 1px solid #f1f5f9; 
       z-index: 500; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      padding-top: 3.5rem;
-      box-shadow: 15px 0 40px rgba(0,0,0,0.02);
+      display: flex; flex-direction: column; align-items: center; padding-top: 2.5rem;
     }
 
     .nav-icon { 
-      width: 66px; 
-      height: 66px; 
-      margin-bottom: 2.2rem; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      border-radius: 24px; 
-      cursor: pointer; 
-      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-      font-size: 28px; 
-      text-decoration: none;
-      color: #cbd5e1;
-      position: relative;
+      width: 54px; height: 54px; margin-bottom: 1.5rem; 
+      display: flex; align-items: center; justify-content: center; 
+      border-radius: 16px; cursor: pointer; transition: all 0.3s ease; 
+      font-size: 22px; text-decoration: none; color: #94a3b8;
     }
 
-    .nav-icon:hover { 
-      background: #f1f5f9; 
-      color: var(--titan-blue);
-      transform: scale(1.1) translateX(5px);
-    }
+    .nav-icon:hover { background: #f8fafc; color: var(--accent-blue); }
+    .nav-icon.active { background: #f1f5f9; color: var(--titan-blue); }
 
-    .nav-icon.active { 
-      background: var(--titan-blue); 
-      color: white; 
-      box-shadow: 0 20px 40px rgba(37, 99, 235, 0.35); 
-    }
+    .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1700px; }
 
-    .nav-icon.active::after {
-      content: '';
-      position: absolute;
-      right: -10px;
-      width: 4px;
-      height: 20px;
-      background: var(--titan-blue);
-      border-radius: 10px;
-    }
+    /* --- LUXURY CARDS & TABLES --- */
+    .titan-card { background: white; border-radius: 2rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 20px rgba(0,0,0,0.01); }
 
-    /* --- MAIN CONTENT WRAPPER --- */
-    .main-content { 
-      margin-left: var(--sidebar-width); 
-      padding: 6rem; 
-      max-width: 1800px;
-      min-height: 100vh;
-    }
-
-    /* --- TITAN COMPONENT SYSTEM --- */
-    .titan-card { 
-      background: white; 
-      border-radius: 4rem; 
-      border: 1px solid #edf2f7; 
-      box-shadow: 0 25px 70px rgba(0,0,0,0.03);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.4s ease;
-    }
-
-    .titan-input {
-      background: #f8fafc;
-      border: 2px solid transparent;
-      border-radius: 1.8rem;
-      padding: 1.5rem 2rem;
-      font-weight: 800;
-      font-size: 15px;
-      outline: none;
-      width: 100%;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      color: #1e293b;
-    }
-
-    .titan-input:focus {
-      border-color: var(--titan-blue);
-      background: white;
-      box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.07);
-    }
-
-    /* --- DYNAMIC DATA PULSE --- */
-    .att-btn { 
-      width: 56px; 
-      height: 56px; 
-      border-radius: 20px; 
-      font-weight: 900; 
-      font-size: 15px; 
-      transition: all 0.3s ease;
-      border: 2px solid #f1f5f9;
-      color: #94a3b8;
-      background: white;
-    }
-
-    .btn-p:hover, .active-p { 
-      background: var(--titan-emerald); 
-      color: white !important; 
-      border-color: transparent; 
-      box-shadow: 0 12px 25px rgba(16, 185, 129, 0.3); 
-      transform: translateY(-3px);
-    }
-
-    .btn-a:hover, .active-a { 
-      background: #ef4444; 
-      color: white !important; 
-      border-color: transparent; 
-      box-shadow: 0 12px 25px rgba(239, 68, 68, 0.3); 
-      transform: translateY(-3px);
-    }
-
-    /* --- ANALYTICS SIDEBAR (OVERLAY) --- */
-    #sidePanel { 
-      position: fixed;
-      right: 0;
-      top: 0;
-      height: 100vh;
-      width: 550px;
-      background: white;
-      z-index: 1000;
-      transform: translateX(100%);
-      transition: transform 0.7s cubic-bezier(0.19, 1, 0.22, 1);
-      box-shadow: -40px 0 90px rgba(15, 23, 42, 0.15);
-      padding: 5rem;
-    }
-
-    #sidePanel.open { transform: translateX(0); }
-
-    .overlay { 
-      display: none; 
-      position: fixed; 
-      inset: 0; 
-      background: rgba(15, 23, 42, 0.25); 
-      backdrop-filter: blur(12px); 
-      z-index: 900; 
-    }
-
-    /* --- DATA TABLE REFINEMENT --- */
     .erp-table th { 
-      padding: 3rem; 
-      text-transform: uppercase; 
-      font-size: 11px; 
-      letter-spacing: 0.4em; 
-      color: #94a3b8; 
-      font-weight: 900;
-      border-bottom: 2px solid #f8fafc;
-      background: #fcfdfe;
+      background: #fafbfd; text-transform: uppercase; font-size: 10px; letter-spacing: 0.15em; 
+      padding: 1.5rem 2rem; color: #94a3b8; font-weight: 700; border-bottom: 1px solid #f1f5f9;
     }
 
-    .erp-table td { padding: 3rem; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
-    .erp-row { transition: all 0.3s ease; }
-    .erp-row:hover { background: #fbfcfe; transform: scale(1.005); z-index: 10; }
+    .erp-table td { padding: 1.5rem 2rem; border-bottom: 1px solid #f8fafc; }
 
-    /* --- GLOW EFFECTS --- */
-    .glow-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 12px; }
-    .glow-blue { background: var(--titan-blue); box-shadow: 0 0 15px var(--titan-blue); }
-    .glow-emerald { background: var(--titan-emerald); box-shadow: 0 0 15px var(--titan-emerald); }
+    /* --- INPUTS --- */
+    .titan-input {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem;
+      padding: 0.8rem 1.2rem; font-weight: 600; font-size: 13px; outline: none; transition: all 0.2s ease;
+    }
+    .titan-input:focus { border-color: var(--accent-blue); background: white; }
 
-    /* --- ANIMATIONS --- */
-    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-titan { animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    /* --- ATTENDANCE BUTTONS --- */
+    .att-btn { 
+      width: 44px; height: 44px; border-radius: 12px; font-weight: 800; font-size: 12px; 
+      transition: all 0.2s ease; border: 1px solid #f1f5f9; color: #cbd5e1; background: white;
+    }
+    .active-p { background: var(--titan-emerald) !important; color: white !important; border-color: transparent; }
+    .active-a { background: #ef4444 !important; color: white !important; border-color: transparent; }
+
+    /* --- SIDE PANEL --- */
+    #sidePanel { 
+      position: fixed; right: 0; top: 0; height: 100vh; width: 450px;
+      background: white; z-index: 1000; transform: translateX(100%);
+      transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+      box-shadow: -20px 0 60px rgba(0,0,0,0.05); padding: 3rem;
+    }
+    #sidePanel.open { transform: translateX(0); }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.1); backdrop-filter: blur(4px); z-index: 900; }
+
+    @media print { .sidebar, .no-print { display: none !important; } .main-content { margin-left: 0 !important; } }
   </style>
 </head>
 <body>
 
   <div id="overlay" class="overlay" onclick="closePanel()"></div>
 
-  <aside class="sidebar">
-    <div class="text-blue-600 font-black text-5xl italic mb-20 tracking-tighter">T.</div>
-    <nav class="flex-1">
-      <a href="index.html" class="nav-icon" title="Dashboard">📊</a>
-      <a href="tables.html" class="nav-icon" title="Schedule Grid">📅</a>
-      <a href="teachers.html" class="nav-icon" title="Registry">👨‍🏫</a>
-      <a href="#" class="nav-icon" title="Settings">⚙️</a>
+  <aside class="sidebar no-print">
+    <div class="text-slate-900 font-bold text-3xl mb-16 tracking-tighter">T<span class="text-blue-500">.</span></div>
+    <nav>
+      <a href="index.html" class="nav-icon" title="Students">👥</a>
+      <a href="tables.html" class="nav-icon" title="Schedules">📅</a>
+      <a href="classes.html" class="nav-icon active" title="Attendance">🏫</a>
+      <a href="teachers.html" class="nav-icon" title="Faculty">👨‍🏫</a>
     </nav>
-    <div class="mb-12" onclick="logout()">
-      <div class="nav-icon !mb-0 text-slate-300 hover:text-red-500 transition-all">📂</div>
+    <div class="mt-auto mb-10 text-slate-300 hover:text-red-500 cursor-pointer" onclick="logout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
     </div>
   </aside>
 
   <div id="sidePanel">
-    <div class="flex justify-between items-center mb-16">
+    <div class="flex justify-between items-center mb-10">
       <div>
-        <h2 id="panelName" class="text-6xl font-black italic text-slate-900 tracking-tighter uppercase">Node_Data</h2>
-        <p class="text-[11px] font-black uppercase text-blue-600 tracking-[0.5em] mt-3 italic">Biometric_Timeline_Sync</p>
+        <h2 id="panelName" class="text-3xl font-extrabold text-slate-900 tracking-tight">Student History</h2>
+        <p class="text-[10px] font-bold uppercase text-blue-500 tracking-widest mt-1">Academic Log Records</p>
       </div>
-      <button onclick="closePanel()" class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center font-bold text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all shadow-sm">✕</button>
+      <button onclick="closePanel()" class="text-slate-300 hover:text-red-500 font-bold">✕</button>
     </div>
-    <div id="panelContent" class="space-y-8">
-      </div>
+    <div id="panelContent" class="space-y-4"></div>
   </div>
 
-  <main class="main-content animate-titan">
+  <main class="main-content">
     
-<header class="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-24 gap-12">
+    <header class="flex flex-col xl:flex-row justify-between items-end mb-16 gap-8">
       <div>
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-14 h-[3px] bg-blue-600"></div>
-          <p class="text-[12px] font-black text-blue-600 uppercase tracking-[0.6em] italic">System_Active // Node_V4</p>
+        <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Registry Logs</p>
         </div>
-        <h1 class="text-9xl font-black italic tracking-tighter uppercase text-slate-900 leading-[0.75]">
-          Daily <span class="text-blue-600">Timeline</span>
-        </h1>
+        <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">Daily <span class="text-slate-400 font-light">Timeline</span></h1>
       </div>
 
-      <div class="bg-white p-6 rounded-[3.5rem] flex items-center gap-10 shadow-2xl border border-slate-100">
-        <div class="pl-8 border-r border-slate-100 pr-10">
-          <p class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Active Date</p>
-          <input type="date" id="logDate" class="font-black italic text-xl outline-none cursor-pointer text-slate-900">
-        </div>
-        <div class="pr-6">
-           <p class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Master Node</p>
-           <select id="selLevel" onchange="loadRoster()" class="bg-transparent font-black text-xs uppercase outline-none cursor-pointer text-blue-600 tracking-widest">
-              <optgroup label="Primary Nodes">
-                <option value="Primary 1">Primary 1</option>
-                <option value="Primary 2">Primary 2</option>
-                <option value="Primary 3">Primary 3</option>
-                <option value="Primary 4">Primary 4</option>
-                <option value="Primary 5">Primary 5</option>
-                <option value="Primary 6">Primary 6</option>
-              </optgroup>
-              <optgroup label="Preparatory Nodes">
-                <option value="Prep 1" selected>Preparatory 1</option>
-                <option value="Prep 2">Preparatory 2</option>
-                <option value="Prep 3">Preparatory 3</option>
-              </optgroup>
-           </select>
-        </div>
-        <button onclick="saveAll()" class="bg-slate-900 text-white px-12 py-6 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.3em] hover:bg-blue-600 transition-all shadow-2xl">
-          Mass Sync +
-        </button>
+      <div class="no-print flex items-center gap-4 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+        <input type="date" id="logDate" class="bg-slate-50 px-4 py-2 rounded-xl text-[11px] font-bold uppercase outline-none text-slate-600">
+        <select id="selLevel" onchange="loadRoster()" class="bg-slate-50 px-4 py-2 rounded-xl text-[11px] font-bold uppercase outline-none text-slate-600">
+            <option>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
+        </select>
+        <button onclick="saveAll()" class="bg-slate-900 text-white px-8 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all">Mass Sync</button>
       </div>
     </header>
 
-    <section class="grid grid-cols-1 xl:grid-cols-2 gap-10 mb-20">
-        <div class="titan-card p-10 bg-white group">
-            <h4 class="text-[10px] font-black uppercase text-slate-400 mb-6 tracking-[0.3em]">Node Enrollment</h4>
-            <div class="flex gap-4">
-                <input id="fastName" type="text" placeholder="Entry Identity..." class="titan-input">
-                <button onclick="fastEnroll()" class="bg-blue-600 text-white px-10 rounded-[1.8rem] font-black text-[11px] uppercase hover:bg-slate-900 transition-all shadow-lg shadow-blue-100">Add</button>
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div class="titan-card p-8 bg-slate-900 text-white">
+            <h4 class="text-[9px] font-bold uppercase text-slate-500 mb-4 tracking-widest">Global Subject Update</h4>
+            <div class="flex gap-3">
+                <input id="globalSub" type="text" placeholder="Enter Subject Name..." class="titan-input flex-1 !bg-white/10 !border-white/5 !text-white">
+                <button onclick="applySubject()" class="bg-white text-slate-900 px-6 py-2 rounded-xl font-bold text-[10px] uppercase">Inject</button>
             </div>
         </div>
-        <div class="titan-card p-10 bg-blue-600 group">
-            <h4 class="text-[10px] font-black uppercase text-white/50 mb-6 tracking-[0.3em]">Global Subject Injector</h4>
-            <div class="flex gap-4">
-                <input id="globalSub" type="text" placeholder="Set Active Subject..." class="titan-input !bg-white/10 !text-white !placeholder-white/30 !border-white/10">
-                <button onclick="applySubject()" class="bg-white text-blue-600 px-10 rounded-[1.8rem] font-black text-[11px] uppercase hover:bg-slate-900 hover:text-white transition-all">Inject</button>
+        <div class="titan-card p-8 flex items-center justify-between">
+            <div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Active Enrollment</p>
+                <p id="nodeCount" class="text-4xl font-extrabold text-slate-900 tracking-tighter">00</p>
+            </div>
+            <div class="text-right">
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Expected Revenue</p>
+                <p id="totalRev" class="text-4xl font-extrabold text-emerald-500 tracking-tighter">0.00 <span class="text-xs text-slate-300">EGP</span></p>
             </div>
         </div>
     </section>
 
-    <div class="titan-card">
-      <div class="p-12 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-         <div class="flex items-center gap-4">
-            <span class="glow-dot glow-emerald"></span>
-            <h3 class="text-xs font-black uppercase tracking-[0.5em] text-slate-500 italic">Live_Registry_Synchronization_Enabled</h3>
-         </div>
-         <div class="flex gap-4 no-print">
-             <button onclick="window.print()" class="text-[10px] font-black uppercase text-slate-400 hover:text-blue-600">Print Report</button>
-         </div>
-      </div>
-      <div class="overflow-x-auto">
+    <div class="titan-card overflow-hidden">
         <table class="w-full text-left erp-table">
           <thead>
             <tr>
-              <th class="w-[35%]">Master Node Identity</th>
-              <th class="text-center">Temporal Pulse</th>
-              <th>Financial Input</th>
-              <th>Subject Node</th>
-              <th class="text-right">Operation</th>
+              <th class="w-[30%]">Student Information</th>
+              <th class="text-center">Attendance</th>
+              <th>Financial (EGP)</th>
+              <th>Course & Grade</th>
+              <th class="text-right">Actions</th>
             </tr>
           </thead>
-          <tbody id="rosterBody">
-              </tbody>
+          <tbody id="rosterBody"></tbody>
         </table>
-      </div>
     </div>
-
-    <footer class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-10">
-        <div class="bg-white p-10 rounded-[3rem] border border-slate-100">
-            <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Total Nodes</p>
-            <p id="nodeCount" class="text-5xl font-black italic text-slate-900 tracking-tighter">00</p>
-        </div>
-        <div class="bg-white p-10 rounded-[3rem] border border-slate-100">
-            <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Real-Time Revenue</p>
-            <p id="totalRev" class="text-5xl font-black italic text-emerald-500 tracking-tighter">0.00 <span class="text-xs uppercase opacity-30">EGP</span></p>
-        </div>
-        <div class="bg-white p-10 rounded-[3rem] border border-slate-100">
-            <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Cloud Status</p>
-            <p class="text-5xl font-black italic text-blue-600 tracking-tighter uppercase">Syncing</p>
-        </div>
-    </footer>
-
   </main>
 
   <script>
@@ -346,7 +183,7 @@
     async function loadRoster() {
       const level = document.getElementById('selLevel').value;
       const tbody = document.getElementById("rosterBody");
-      tbody.innerHTML = `<tr><td colspan="5" class="p-40 text-center font-black italic text-slate-100 text-6xl animate-pulse">INITIALIZING_NODE_LINK...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 animate-pulse font-bold text-sm uppercase tracking-widest">Establishing Secure Uplink...</td></tr>`;
 
       try {
         const res = await fetch(`${API}?admin=${user}&level=${encodeURIComponent(level)}`);
@@ -356,36 +193,33 @@
 
         data.forEach(s => {
           tbody.innerHTML += `
-            <tr class="erp-row">
+            <tr class="hover:bg-slate-50/50">
               <td>
-                <div class="flex items-center gap-8">
-                    <div class="w-16 h-16 bg-slate-900 rounded-[1.5rem] flex items-center justify-center font-black text-white text-3xl italic shadow-2xl">${s.name.charAt(0)}</div>
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 text-xs">${s.name.charAt(0)}</div>
                     <div>
-                        <button onclick="openHistory('${s._id}', '${s.name}')" class="text-4xl font-black text-slate-900 tracking-tighter hover:text-blue-600 transition-all text-left leading-none uppercase italic">${s.name}</button>
-                        <p class="text-[10px] font-black text-slate-300 uppercase mt-3 tracking-[0.4em]">Node_UID: ${s._id.slice(-10).toUpperCase()}</p>
+                        <button onclick="openHistory('${s._id}', '${s.name}')" class="text-sm font-extrabold text-slate-800 hover:text-blue-500 transition-all">${s.name}</button>
+                        <p class="text-[9px] font-bold text-slate-300 uppercase tracking-tighter">ID: ${s._id.slice(-6).toUpperCase()}</p>
                     </div>
                 </div>
               </td>
               <td>
-                <div class="flex justify-center gap-4">
-                  <button id="p-${s._id}" onclick="markAtt('${s._id}', 'p')" class="att-btn btn-p">P</button>
-                  <button id="a-${s._id}" onclick="markAtt('${s._id}', 'a')" class="att-btn btn-a">A</button>
+                <div class="flex justify-center gap-2">
+                  <button id="p-${s._id}" onclick="markAtt('${s._id}', 'p')" class="att-btn">P</button>
+                  <button id="a-${s._id}" onclick="markAtt('${s._id}', 'a')" class="att-btn">A</button>
                 </div>
               </td>
               <td>
-                <div class="relative group">
-                    <span class="absolute left-6 top-1/2 -translate-y-1/2 font-black text-slate-300 text-[10px]">EGP</span>
-                    <input type="number" id="pay-${s._id}" oninput="calcRev()" placeholder="0.00" class="titan-input !pl-16 !bg-emerald-50/40 text-emerald-600 text-xl">
-                </div>
+                <input type="number" id="pay-${s._id}" oninput="calcRev()" placeholder="0.00" class="titan-input !w-28 !bg-emerald-50/30 text-emerald-600 font-bold">
               </td>
               <td>
-                <div class="flex gap-4">
-                  <input type="text" id="sub-${s._id}" placeholder="SUBJECT" class="titan-input !text-[11px] uppercase subj-box !w-44 !rounded-2xl">
-                  <input type="number" id="grd-${s._id}" placeholder="00" class="titan-input !w-24 text-center text-blue-600 !rounded-2xl">
+                <div class="flex gap-2">
+                  <input type="text" id="sub-${s._id}" placeholder="Subject" class="titan-input subj-box !w-32 uppercase text-[10px]">
+                  <input type="number" id="grd-${s._id}" placeholder="%" class="titan-input !w-16 text-center text-blue-500">
                 </div>
               </td>
               <td class="text-right">
-                <button onclick="saveRow('${s._id}')" class="px-10 py-5 bg-slate-900 text-white rounded-[1.5rem] font-black text-[10px] uppercase hover:bg-blue-600 transition-all shadow-xl active:scale-95">Sync Node</button>
+                <button onclick="saveRow('${s._id}', this)" class="px-5 py-2 bg-slate-100 text-slate-500 rounded-lg font-bold text-[9px] uppercase hover:bg-slate-900 hover:text-white transition-all">Sync</button>
               </td>
             </tr>`;
         });
@@ -394,43 +228,38 @@
     }
 
     function markAtt(id, type) {
-      document.getElementById(`p-${id}`).className = "att-btn btn-p";
-      document.getElementById(`a-${id}`).className = "att-btn btn-a";
+      document.getElementById(`p-${id}`).className = "att-btn";
+      document.getElementById(`a-${id}`).className = "att-btn";
       document.getElementById(`${type}-${id}`).classList.add(type === 'p' ? 'active-p' : 'active-a');
     }
 
     async function openHistory(id, name) {
-      document.getElementById('panelName').innerText = name.split(' ')[0];
+      document.getElementById('panelName').innerText = name;
       document.getElementById('overlay').style.display = 'block';
       document.getElementById('sidePanel').classList.add('open');
       const content = document.getElementById('panelContent');
-      content.innerHTML = `<p class="p-20 text-center font-black italic text-slate-100 text-3xl animate-pulse">DECRYPTING_LOGS...</p>`;
+      content.innerHTML = `<p class="p-10 text-center text-slate-300 font-bold text-[10px] uppercase animate-pulse">Fetching records...</p>`;
       
       try {
         const res = await fetch(`${API}/history?admin=${user}&name=${encodeURIComponent(name)}`);
         const data = await res.json();
         content.innerHTML = data.history.map(l => `
-          <div class="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:bg-white transition-all duration-500">
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <p class="font-black text-slate-900 text-2xl italic tracking-tight uppercase">${l.date}</p>
-                    <p class="text-[11px] font-black uppercase text-blue-600 tracking-[0.3em] mt-2 italic">${l.subject}</p>
-                </div>
-                <span class="text-[10px] font-black px-6 py-3 rounded-2xl ${l.status === 'present' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'} uppercase tracking-widest">${l.status}</span>
+          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="flex justify-between items-start mb-4">
+                <p class="font-bold text-slate-900 text-sm">${l.date}</p>
+                <span class="text-[9px] font-bold px-3 py-1 rounded-lg ${l.status === 'present' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'} uppercase">${l.status}</span>
             </div>
-            <div class="flex justify-between items-end border-t border-slate-200 pt-6 mt-2">
-              <p class="text-4xl font-black text-emerald-500 tracking-tighter">+${l.payment} <span class="text-xs uppercase opacity-40 italic">EGP</span></p>
-              <p class="text-lg font-black text-slate-900 uppercase italic">${l.grade}% Result</p>
+            <div class="flex justify-between items-end border-t border-slate-200 pt-4">
+              <p class="text-sm font-bold text-emerald-500">£${l.payment}</p>
+              <p class="text-[10px] font-bold text-slate-400 uppercase">${l.subject} / ${l.grade}%</p>
             </div>
           </div>`).join('');
-      } catch (e) { content.innerHTML = "SYSTEM ERROR: DATA_ACCESS_DENIED"; }
+      } catch (e) { content.innerHTML = "Error fetching history."; }
     }
 
     function calcRev() {
         let total = 0;
-        document.querySelectorAll('[id^="pay-"]').forEach(input => {
-            total += Number(input.value) || 0;
-        });
+        document.querySelectorAll('[id^="pay-"]').forEach(input => { total += Number(input.value) || 0; });
         document.getElementById('totalRev').innerText = total.toFixed(2);
     }
 
@@ -444,7 +273,7 @@
       document.querySelectorAll('.subj-box').forEach(i => i.value = val);
     }
 
-    async function saveRow(id) {
+    async function saveRow(id, btn) {
       const date = document.getElementById('logDate').value;
       const sub = document.getElementById(`sub-${id}`).value;
       const grd = document.getElementById(`grd-${id}`).value;
@@ -457,18 +286,16 @@
         body: JSON.stringify({ studentId: id, date, subject: sub.toLowerCase(), grade: Number(grd), payment: Number(pay), status: isAbsent ? 'absent' : 'present', admin: user })
       });
       if(res.ok) { 
-          const btn = event.target;
-          btn.innerText = "SYNCED ✓";
-          btn.classList.replace('bg-slate-900', 'bg-emerald-500');
-          setTimeout(() => { btn.innerText = "Sync Node"; btn.classList.replace('bg-emerald-500', 'bg-slate-900'); }, 2000);
+          btn.innerText = "DONE";
+          btn.classList.add('bg-emerald-500', 'text-white');
+          setTimeout(() => { btn.innerText = "Sync"; btn.classList.remove('bg-emerald-500', 'text-white'); }, 2000);
       }
     }
 
     async function saveAll() {
       const rows = document.querySelectorAll('[id^="pay-"]');
-      for (let r of rows) { await saveRow(r.id.split('-')[1]); }
-      alert("MASS UPLINK COMPLETED // SYSTEM STABLE");
-      loadRoster();
+      for (let r of rows) { await saveRow(r.id.split('-')[1], r.closest('tr').querySelector('button[onclick^="saveRow"]')); }
+      alert("All records synchronized successfully.");
     }
 
     function logout() { localStorage.clear(); window.location.href="login.html"; }
