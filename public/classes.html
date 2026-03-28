@@ -15,9 +15,9 @@
       background-color: var(--titan-slate); 
       color: #0f172a; 
       letter-spacing: -0.01em;
+      overflow-x: hidden;
     }
 
-    /* Modern Glass Cards */
     .titan-card { 
       background: white; 
       border-radius: 2.5rem; 
@@ -25,7 +25,6 @@
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.02), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
     }
 
-    /* Input Focus States */
     .titan-input { 
       background: #f1f5f9; 
       border: 2px solid transparent; 
@@ -38,7 +37,6 @@
       box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.08); 
     }
 
-    /* Attendance Button Logic */
     .att-btn { 
       width: 48px; 
       height: 48px; 
@@ -52,16 +50,29 @@
     .btn-p:hover, .active-p { background: var(--titan-emerald); color: white; border-color: transparent; box-shadow: 0 8px 15px rgba(16, 185, 129, 0.2); }
     .btn-a:hover, .active-a { background: #ef4444; color: white; border-color: transparent; box-shadow: 0 8px 15px rgba(239, 68, 68, 0.2); }
 
-    /* Floating Table Rows */
     .student-row { transition: transform 0.2s ease, box-shadow 0.2s ease; }
     .student-row:hover { transform: translateY(-2px); }
 
-    /* Hide Default Date Icon for Modern Look */
-    input[type="date"]::-webkit-inner-spin-button,
-    input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
+    /* Side Panel Animation */
+    #sidePanel { 
+      transform: translateX(100%); 
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-shadow: -20px 0 50px rgba(0,0,0,0.1);
+    }
+    #sidePanel.open { transform: translateX(0); }
+    .overlay { 
+      display: none; 
+      position: fixed; 
+      inset: 0; 
+      background: rgba(15, 23, 42, 0.3); 
+      backdrop-filter: blur(4px); 
+      z-index: 40; 
+    }
   </style>
 </head>
 <body class="min-h-screen">
+
+  <div id="overlay" class="overlay" onclick="closePanel()"></div>
 
   <aside class="fixed left-0 top-0 h-full w-24 hidden lg:flex flex-col items-center py-12 bg-white border-r border-slate-100 z-50">
     <div class="text-3xl font-black text-blue-600 mb-20 italic tracking-tighter">T.</div>
@@ -72,6 +83,18 @@
     </nav>
     <button onclick="logout()" class="p-5 text-slate-300 hover:text-red-500 text-xl transition-all">📂</button>
   </aside>
+
+  <div id="sidePanel" class="fixed right-0 top-0 h-full w-full max-w-md bg-white z-[60] p-10 overflow-y-auto">
+    <div class="flex justify-between items-center mb-10">
+      <div>
+        <h2 id="panelName" class="text-3xl font-black italic text-slate-900 tracking-tighter">Student</h2>
+        <p class="text-[10px] font-black uppercase text-blue-600 tracking-widest mt-1">Timeline Analytics</p>
+      </div>
+      <button onclick="closePanel()" class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all">✕</button>
+    </div>
+    <div id="panelContent" class="space-y-6">
+      </div>
+  </div>
 
   <main class="lg:ml-24 p-8 md:p-16 max-w-[1500px] mx-auto">
     
@@ -133,15 +156,14 @@
         <table class="w-full text-left border-separate border-spacing-y-5">
           <thead>
             <tr class="text-[11px] font-black text-slate-300 uppercase tracking-widest">
-              <th class="px-10 py-2">Student Profile</th>
+              <th class="px-10 py-2">Student Profile (Click name)</th>
               <th class="px-10 py-2 text-center">Status</th>
               <th class="px-10 py-2">Financials (EGP)</th>
               <th class="px-10 py-2">Academic Result</th>
               <th class="px-10 py-2 text-right">Control</th>
             </tr>
           </thead>
-          <tbody id="rosterBody">
-            </tbody>
+          <tbody id="rosterBody"></tbody>
         </table>
       </div>
     </div>
@@ -151,7 +173,6 @@
     const API = "/api/students";
     const user = localStorage.getItem("user");
 
-    // Initialize Page
     window.onload = () => {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('logDate').value = today;
@@ -172,13 +193,11 @@
         
         const res = await fetch(url);
         let data = await res.json();
-        
-        // Strict Group Filter
         const filtered = (group === "Both") ? data : data.filter(s => s.className === group);
 
         tbody.innerHTML = "";
         if(filtered.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 font-black uppercase text-xs tracking-widest">No Records Found for this Selection</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 font-black uppercase text-xs tracking-widest">No Records Found</td></tr>`;
           return;
         }
 
@@ -186,7 +205,7 @@
           tbody.innerHTML += `
             <tr class="bg-white group student-row shadow-sm hover:shadow-md transition-all duration-300">
               <td class="px-10 py-8 rounded-l-[2rem] border-y border-l border-slate-50">
-                <p class="text-2xl font-black text-slate-800 tracking-tighter">${s.name}</p>
+                <button onclick="openHistory('${s._id}', '${s.name}')" class="text-2xl font-black text-slate-800 tracking-tighter hover:text-blue-600 text-left transition-colors">${s.name}</button>
                 <div class="flex items-center gap-2 mt-2">
                   <span class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${s.className === 'Group A' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}">
                     ${s.className}
@@ -196,8 +215,8 @@
               </td>
               <td class="px-10 py-8 border-y border-slate-50">
                 <div class="flex justify-center gap-3">
-                  <button onclick="markAtt(this, 'p')" class="att-btn btn-p">P</button>
-                  <button onclick="markAtt(this, 'a')" class="att-btn btn-a">A</button>
+                  <button id="p-${s._id}" onclick="markAtt('${s._id}', 'p')" class="att-btn btn-p">P</button>
+                  <button id="a-${s._id}" onclick="markAtt('${s._id}', 'a')" class="att-btn btn-a">A</button>
                 </div>
               </td>
               <td class="px-10 py-8 border-y border-slate-50">
@@ -220,9 +239,48 @@
       } catch (e) { console.error(e); }
     }
 
-    function markAtt(btn, type) {
-      btn.parentElement.querySelectorAll('button').forEach(b => b.className = "att-btn");
-      btn.classList.add(type === 'p' ? 'active-p' : 'active-a');
+    function markAtt(id, type) {
+      document.getElementById(`p-${id}`).className = "att-btn btn-p";
+      document.getElementById(`a-${id}`).className = "att-btn btn-a";
+      document.getElementById(`${type}-${id}`).classList.add(type === 'p' ? 'active-p' : 'active-a');
+    }
+
+    async function openHistory(id, name) {
+      document.getElementById('panelName').innerText = name;
+      const content = document.getElementById('panelContent');
+      content.innerHTML = `<div class="p-10 text-center animate-pulse font-black text-slate-200">Retrieving Logs...</div>`;
+      
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('sidePanel').classList.add('open');
+
+      try {
+        const res = await fetch(`${API}/history?admin=${user}&name=${encodeURIComponent(name)}`);
+        const data = await res.json();
+        
+        if(!data.history || data.history.length === 0) {
+          content.innerHTML = `<div class="p-10 bg-slate-50 rounded-3xl text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest">No timeline logs found.</div>`;
+          return;
+        }
+
+        content.innerHTML = data.history.map(l => `
+          <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex justify-between items-center group hover:bg-white hover:shadow-xl transition-all duration-300">
+            <div>
+              <p class="font-black text-slate-900 text-sm">${l.date}</p>
+              <p class="text-[9px] font-black uppercase text-blue-600 tracking-widest mt-1">${l.subject}</p>
+              <span class="mt-2 inline-block text-[8px] font-black px-2 py-0.5 rounded ${l.status === 'present' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'} uppercase">${l.status}</span>
+            </div>
+            <div class="text-right">
+              <p class="text-lg font-black text-emerald-500 tracking-tighter">+${l.payment} <span class="text-[8px] uppercase">EGP</span></p>
+              <p class="text-xs font-black text-blue-600 mt-1">${l.grade}% Result</p>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) { content.innerHTML = "Error loading history."; }
+    }
+
+    function closePanel() {
+      document.getElementById('sidePanel').classList.remove('open');
+      document.getElementById('overlay').style.display = 'none';
     }
 
     function applySubject() {
@@ -252,8 +310,17 @@
       const sub = document.getElementById(`sub-${id}`).value;
       const grd = document.getElementById(`grd-${id}`).value;
       const pay = document.getElementById(`pay-${id}`).value;
+      const isAbsent = document.getElementById(`a-${id}`).classList.contains('active-a');
       
-      const payload = { studentId: id, date, subject: sub.toLowerCase().trim(), grade: Number(grd), payment: Number(pay) };
+      const payload = { 
+        studentId: id, 
+        date, 
+        subject: sub.toLowerCase().trim(), 
+        grade: Number(grd), 
+        payment: Number(pay),
+        status: isAbsent ? 'absent' : 'present',
+        admin: user 
+      };
       
       const res = await fetch(`${API}/daily-log`, {
         method: "POST",

@@ -6,16 +6,18 @@ const Student = require("../MODELS/student");
 const getMonth = () => new Date().toISOString().slice(0, 7);
 
 // --- 1. GLOBAL LIST & FILTER ---
+// Restored all filters: level, language, and className
 router.get("/", async (req, res) => {
   try {
-    const { admin, level, className, month } = req.query;
+    const { admin, level, language, className, month } = req.query;
     const targetMonth = month || getMonth();
 
     if (!admin) return res.status(400).json({ error: "Admin identifier required" });
 
     let query = { owner: admin };
     if (level) query.level = level;
-    if (className) query.className = className;
+    if (language) query.language = language;
+    if (className && className !== "Both") query.className = className;
 
     const students = await Student.find(query).sort({ name: 1 });
 
@@ -29,11 +31,15 @@ router.get("/", async (req, res) => {
         name: s.name,
         level: s.level,
         className: s.className,
-        language: s.language,
-        payments: rec.payments,
-        attendance: rec.attendance,
-        absences: rec.absences,
-        grades: rec.grades || {}
+        language: s.language || "English",
+        // Monthly stats for index.html
+        monthlyPayments: rec.payments,
+        monthlyAttendance: rec.attendance,
+        monthlyAbsences: rec.absences,
+        // Top-level Academic Vault data
+        totalPayments: s.payments,
+        academicVault: s.grades,
+        lastSeen: s.lastSeen
       };
     });
 
@@ -54,6 +60,10 @@ router.post("/", async (req, res) => {
       language: language || "English",
       className: className || "Group A",
       owner,
+      // Initialize with empty vault and first record
+      payments: 0,
+      attendance: 0,
+      absences: 0,
       records: [{ 
         month: getMonth(), 
         payments: 0, attendance: 0, absences: 0, grades: {} 
@@ -67,17 +77,16 @@ router.post("/", async (req, res) => {
   }
 });
 
-// --- 3. DAILY TIMELINE ENGINE (The "Big" Change) ---
-// This handles: "Ahmed absent for English, paid 600, got 50 grade"
+// --- 3. THE MASTER DAILY SYNC (Timeline + Vault + Finance) ---
 router.post("/daily-log", async (req, res) => {
-  const { studentId, date, subject, status, grade, payment } = req.body;
-  const targetMonth = date.slice(0, 7); // Extracts "2026-03" from "2026-03-28"
+  const { studentId, date, subject, status, grade, payment, admin } = req.body;
+  const targetMonth = date.slice(0, 7);
 
   try {
-    const student = await Student.findById(studentId);
+    const student = await Student.findOne({ _id: studentId, owner: admin });
     if (!student) return res.status(404).json({ error: "Student not found" });
 
-    // A. Add/Update the Daily Log
+    // A. Update the Timeline Logs (Memory)
     const logIndex = student.logs.findIndex(l => l.date === date && l.subject.toLowerCase() === subject.toLowerCase());
     const logEntry = { date, subject, status: status || 'present', grade: Number(grade) || 0, payment: Number(payment) || 0 };
 
@@ -87,7 +96,18 @@ router.post("/daily-log", async (req, res) => {
       student.logs.push(logEntry);
     }
 
-    // B. Sync with Monthly Records for Stats Dashboard
+    // B. Update Top-Level Academic Vault & Finance Tracker
+    if (payment) student.payments += Number(payment);
+    if (status === 'present') student.attendance += 1;
+    if (status === 'absent') student.absences += 1;
+    
+    // Map subject string to the specific schema field (e.g., "Math" -> grades.math)
+    const subKey = subject.toLowerCase().trim();
+    if (student.grades[subKey] !== undefined) {
+      student.grades[subKey] = Number(grade);
+    }
+
+    // C. Sync with Monthly Records for Dashboard Stats
     let rec = student.records.find(r => r.month === targetMonth);
     if (!rec) {
       rec = { month: targetMonth, payments: 0, attendance: 0, absences: 0, grades: {} };
@@ -95,20 +115,20 @@ router.post("/daily-log", async (req, res) => {
       rec = student.records[student.records.length - 1];
     }
 
-    // Update monthly totals (This is a simple sync, can be made more complex if needed)
     if (payment) rec.payments += Number(payment);
     if (status === 'present') rec.attendance += 1;
     if (status === 'absent') rec.absences += 1;
-    if (grade && subject) rec.grades[subject.toLowerCase()] = Number(grade);
+    if (grade && subject) rec.grades[subKey] = Number(grade);
 
+    student.lastSeen = new Date();
     await student.save();
-    res.json({ message: "Timeline Logged Successfully", student });
+    res.json({ message: "Student Data Fully Synced", student });
   } catch (err) {
     res.status(500).json({ error: "Timeline sync failed" });
   }
 });
 
-// --- 4. INDIVIDUAL HISTORY (For the Intelligence Page) ---
+// --- 4. INDIVIDUAL HISTORY (For Side-Panel/Intelligence) ---
 router.get("/history", async (req, res) => {
   const { admin, name } = req.query;
   try {
@@ -117,13 +137,16 @@ router.get("/history", async (req, res) => {
       name: { $regex: new RegExp("^" + name + "$", "i") } 
     });
     if (!student) return res.status(404).json({ error: "Student not found" });
-    res.json(student);
+    
+    // Send back logs sorted by date (newest first)
+    const history = student.logs.sort((a,b) => new Date(b.date) - new Date(a.date));
+    res.json({ name: student.name, history, vault: student.grades });
   } catch (err) {
     res.status(500).json({ error: "History retrieval failed" });
   }
 });
 
-// --- 5. STATS ENGINE ---
+// --- 5. STATS ENGINE (Restored) ---
 router.get("/stats/all", async (req, res) => {
   try {
     const { admin, month } = req.query;
