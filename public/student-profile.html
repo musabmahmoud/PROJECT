@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Titan ERP | Student Intelligence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+    .titan-card { background: white; border-radius: 2.5rem; border: 1px solid #edf2f7; box-shadow: 0 15px 30px rgba(0,0,0,0.02); }
+    .timeline-dot { position: relative; }
+    .timeline-dot::before { content: ''; position: absolute; left: -20px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #2563eb; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <aside class="fixed left-0 top-0 h-full w-24 hidden lg:flex flex-col items-center py-12 bg-white border-r border-slate-100 z-50">
+    <div class="text-3xl font-black text-blue-600 mb-20 italic">T.</div>
+    <nav class="space-y-12">
+      <a href="index.html" class="p-5 text-slate-300 hover:text-blue-600 block text-2xl">📊</a>
+      <a href="classes.html" class="p-5 text-slate-300 hover:text-blue-600 block text-2xl">🏫</a>
+      <a href="student-profile.html" class="p-5 bg-blue-600 text-white rounded-[1.5rem] block shadow-xl shadow-blue-500/30 text-2xl">👤</a>
+    </nav>
+  </aside>
+
+  <main class="lg:ml-24 p-8 md:p-16 max-w-[1200px] mx-auto">
+    
+    <header class="mb-12">
+      <h1 class="text-5xl font-black tracking-tighter uppercase italic text-slate-900">Student <span class="text-blue-600">Intelligence</span></h1>
+      <div class="mt-8 flex gap-4">
+        <input id="searchName" type="text" placeholder="Search Student Name (e.g. Ahmed)..." class="bg-white border border-slate-200 p-5 rounded-2xl w-full font-bold text-sm shadow-sm outline-none focus:border-blue-500">
+        <button onclick="fetchStudentHistory()" class="bg-slate-900 text-white px-10 rounded-2xl font-black text-xs uppercase hover:bg-blue-600 transition-all">Analyze</button>
+      </div>
+    </header>
+
+    <div id="summarySection" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 hidden">
+        <div class="titan-card p-8 border-l-4 border-l-emerald-500">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Paid</p>
+            <h2 id="totalPaid" class="text-3xl font-black text-slate-800 mt-2">0 EGP</h2>
+        </div>
+        <div class="titan-card p-8 border-l-4 border-l-blue-500">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avg Grade</p>
+            <h2 id="avgGrade" class="text-3xl font-black text-slate-800 mt-2">0%</h2>
+        </div>
+        <div class="titan-card p-8 border-l-4 border-l-red-500">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Absences</p>
+            <h2 id="totalAbsence" class="text-3xl font-black text-slate-800 mt-2">0 Days</h2>
+        </div>
+    </div>
+
+    <div class="titan-card overflow-hidden">
+        <div class="p-8 border-b border-slate-50 bg-slate-50/20">
+            <h3 class="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">Activity Timeline History</h3>
+        </div>
+        <div class="p-8 overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-[10px] font-black text-slate-300 uppercase tracking-widest border-b border-slate-50">
+                        <th class="py-4">Date</th>
+                        <th class="py-4">Subject</th>
+                        <th class="py-4">Status</th>
+                        <th class="py-4">Grade</th>
+                        <th class="py-4">Payment</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody" class="divide-y divide-slate-50">
+                    <tr><td colspan="5" class="py-20 text-center text-slate-300 font-bold uppercase text-[10px]">Enter a name to view history</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+  </main>
+
+  <script>
+    const API = "/api/students";
+    const admin = localStorage.getItem("user");
+
+    async function fetchStudentHistory() {
+        const name = document.getElementById('searchName').value;
+        if(!name) return alert("Enter student name");
+
+        // We call the API to get all logs for this specific student
+        try {
+            const res = await fetch(`${API}/history?admin=${admin}&name=${encodeURIComponent(name)}`);
+            const data = await res.json(); // Data should be the student object with the logs array
+
+            if(!data || !data.logs) return alert("Student not found or no history yet");
+
+            document.getElementById('summarySection').classList.remove('hidden');
+            
+            // Calculate Stats
+            let totalMoney = 0;
+            let totalGrd = 0;
+            let absences = 0;
+            
+            const tbody = document.getElementById('historyBody');
+            tbody.innerHTML = "";
+
+            data.logs.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(log => {
+                totalMoney += (log.payment || 0);
+                totalGrd += (log.grade || 0);
+                if(log.status === 'absent') absences++;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-all">
+                        <td class="py-6 font-bold text-slate-600">${log.date}</td>
+                        <td class="py-6"><span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase">${log.subject}</span></td>
+                        <td class="py-6">
+                            <span class="font-black text-[10px] uppercase ${log.status === 'absent' ? 'text-red-500' : 'text-emerald-500'}">
+                                ${log.status || 'Present'}
+                            </span>
+                        </td>
+                        <td class="py-6 font-black text-slate-800">${log.grade || 0}%</td>
+                        <td class="py-6 font-black text-emerald-600">+${log.payment || 0} EGP</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('totalPaid').innerText = totalMoney + " EGP";
+            document.getElementById('avgGrade').innerText = Math.round(totalGrd / data.logs.length) + "%";
+            document.getElementById('totalAbsence').innerText = absences + " Days";
+
+        } catch (e) { console.error(e); }
+    }
+  </script>
+</body>
+</html>

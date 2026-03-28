@@ -8,14 +8,14 @@ const getMonth = () => new Date().toISOString().slice(0, 7);
 // --- 1. GLOBAL LIST & FILTER ---
 router.get("/", async (req, res) => {
   try {
-    const { admin, level, language, month } = req.query;
+    const { admin, level, className, month } = req.query;
     const targetMonth = month || getMonth();
 
     if (!admin) return res.status(400).json({ error: "Admin identifier required" });
 
     let query = { owner: admin };
     if (level) query.level = level;
-    if (language) query.language = language;
+    if (className) query.className = className;
 
     const students = await Student.find(query).sort({ name: 1 });
 
@@ -28,12 +28,12 @@ router.get("/", async (req, res) => {
         _id: s._id,
         name: s.name,
         level: s.level,
-        language: s.language || "English",
-        className: s.className || "A",
+        className: s.className,
+        language: s.language,
         payments: rec.payments,
         attendance: rec.attendance,
         absences: rec.absences,
-        grades: rec.grades || {} 
+        grades: rec.grades || {}
       };
     });
 
@@ -50,16 +50,13 @@ router.post("/", async (req, res) => {
 
     const student = new Student({ 
       name, 
-      level: level || "Sec 2",
+      level,
       language: language || "English",
-      className: className || "A",
+      className: className || "Group A",
       owner,
       records: [{ 
         month: getMonth(), 
-        payments: 0, 
-        attendance: 0, 
-        absences: 0, 
-        grades: {} 
+        payments: 0, attendance: 0, absences: 0, grades: {} 
       }] 
     });
 
@@ -70,67 +67,59 @@ router.post("/", async (req, res) => {
   }
 });
 
-// --- 3. ADVANCED VALUE UPDATE (Grades, Payments) ---
-router.post("/:id/update-value", async (req, res) => {
-  const { id } = req.params;
-  const { field, value, month, admin } = req.body; 
-  const targetMonth = month || getMonth();
+// --- 3. DAILY TIMELINE ENGINE (The "Big" Change) ---
+// This handles: "Ahmed absent for English, paid 600, got 50 grade"
+router.post("/daily-log", async (req, res) => {
+  const { studentId, date, subject, status, grade, payment } = req.body;
+  const targetMonth = date.slice(0, 7); // Extracts "2026-03" from "2026-03-28"
 
   try {
-    // Dynamic pathing for nested grades vs top-level payments
-    // If field is "math", updatePath becomes "records.$.grades.math"
-    const isGrade = !['payments', 'attendance', 'absences'].includes(field);
-    const updatePath = isGrade ? `records.$.grades.${field}` : `records.$.${field}`;
+    const student = await Student.findById(studentId);
+    if (!student) return res.status(404).json({ error: "Student not found" });
 
-    let student = await Student.findOneAndUpdate(
-      { _id: id, owner: admin, "records.month": targetMonth },
-      { $set: { [updatePath]: value } },
-      { new: true }
-    );
+    // A. Add/Update the Daily Log
+    const logIndex = student.logs.findIndex(l => l.date === date && l.subject.toLowerCase() === subject.toLowerCase());
+    const logEntry = { date, subject, status: status || 'present', grade: Number(grade) || 0, payment: Number(payment) || 0 };
 
-    // If month record doesn't exist, create it
-    if (!student) {
-      const initialRecord = {
-        month: targetMonth,
-        payments: 0, attendance: 0, absences: 0,
-        grades: isGrade ? { [field]: value } : {}
-      };
-      if (!isGrade) initialRecord[field] = value;
-
-      student = await Student.findByIdAndUpdate(id, 
-        { $push: { records: initialRecord } }, 
-        { new: true }
-      );
+    if (logIndex > -1) {
+      student.logs[logIndex] = logEntry;
+    } else {
+      student.logs.push(logEntry);
     }
-    res.json(student);
-  } catch (err) { 
-    res.status(500).json({ error: "Update operation failed" }); 
+
+    // B. Sync with Monthly Records for Stats Dashboard
+    let rec = student.records.find(r => r.month === targetMonth);
+    if (!rec) {
+      rec = { month: targetMonth, payments: 0, attendance: 0, absences: 0, grades: {} };
+      student.records.push(rec);
+      rec = student.records[student.records.length - 1];
+    }
+
+    // Update monthly totals (This is a simple sync, can be made more complex if needed)
+    if (payment) rec.payments += Number(payment);
+    if (status === 'present') rec.attendance += 1;
+    if (status === 'absent') rec.absences += 1;
+    if (grade && subject) rec.grades[subject.toLowerCase()] = Number(grade);
+
+    await student.save();
+    res.json({ message: "Timeline Logged Successfully", student });
+  } catch (err) {
+    res.status(500).json({ error: "Timeline sync failed" });
   }
 });
 
-// --- 4. ATTENDANCE ENGINE ---
-router.post("/:id/attendance/:type", async (req, res) => {
-  const { id, type } = req.params;
-  const { month, admin } = req.body;
-  const targetMonth = month || getMonth();
-  const field = type === "present" ? "attendance" : "absences";
-
+// --- 4. INDIVIDUAL HISTORY (For the Intelligence Page) ---
+router.get("/history", async (req, res) => {
+  const { admin, name } = req.query;
   try {
-    let student = await Student.findOneAndUpdate(
-      { _id: id, owner: admin, "records.month": targetMonth },
-      { $inc: { [`records.$.${field}`]: 1 } },
-      { new: true }
-    );
-
-    if (!student) {
-      student = await Student.findByIdAndUpdate(id, 
-        { $push: { records: { month: targetMonth, [field]: 1, payments: 0, attendance: 0, absences: 0, grades: {} } } }, 
-        { new: true }
-      );
-    }
+    const student = await Student.findOne({ 
+      owner: admin, 
+      name: { $regex: new RegExp("^" + name + "$", "i") } 
+    });
+    if (!student) return res.status(404).json({ error: "Student not found" });
     res.json(student);
-  } catch (err) { 
-    res.status(500).json({ error: "Attendance sync failed" }); 
+  } catch (err) {
+    res.status(500).json({ error: "History retrieval failed" });
   }
 });
 
@@ -174,5 +163,6 @@ router.delete("/:id", async (req, res) => {
   } catch (err) { 
     res.status(500).json({ error: "Delete failed" }); 
   }
-}); 
+});
+
 module.exports = router;
