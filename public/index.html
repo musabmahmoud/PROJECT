@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Titan ERP | Class Online Academy</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -21,9 +21,13 @@
       background-color: var(--titan-slate); 
       color: #334155; 
       margin: 0; 
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px; /* Space for Mobile Nav */
     }
 
-    /* --- NAVIGATION SIDEBAR --- */
+    @media (min-width: 768px) { body { padding-bottom: 0; } }
+
+    /* --- NAVIGATION SIDEBAR (Desktop) --- */
     .sidebar { 
       width: var(--sidebar-width); 
       height: 100vh; 
@@ -31,8 +35,16 @@
       left: 0; top: 0; 
       background: white; 
       border-right: 1px solid #f1f5f9; 
-      z-index: 100; 
+      z-index: 500; 
       display: flex; flex-direction: column; align-items: center; padding-top: 2.5rem; 
+    }
+
+    /* --- BOTTOM NAV (Mobile) --- */
+    .mobile-nav {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        background: white; border-top: 1px solid #f1f5f9;
+        display: flex; justify-content: space-around; padding: 1rem;
+        z-index: 500;
     }
 
     .nav-icon { 
@@ -42,10 +54,12 @@
       font-size: 22px; color: #94a3b8; text-decoration: none; 
     }
 
-    /* Active state styling for the current page */
+    .nav-icon:hover { background: #f8fafc; color: var(--accent-blue); }
     .nav-icon.active { background: #f1f5f9; color: var(--titan-blue); }
 
-    .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1500px; }
+    /* Main Content Responsiveness */
+    .main-content { margin-left: 0; padding: 2rem 1.2rem; max-width: 100%; }
+    @media (min-width: 768px) { .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1700px; } }
 
     /* --- LUXURY UI CARDS --- */
     .titan-card { 
@@ -55,18 +69,22 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.01); 
     }
 
+    /* Table Swiping for Mobile */
+    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .erp-table { min-width: 800px; }
+
     /* --- TITAN INPUT FIELD SYSTEM --- */
     .titan-input { 
       background: #f8fafc; 
       border: 1px solid #e2e8f0; 
       border-radius: 1rem; 
       padding: 1rem 1.2rem; 
-      font-weight: 500; 
+      font-weight: 600; 
       font-size: 13px; 
       outline: none; 
       width: 100%; 
       color: #1e293b; 
-      transition: all 0.2s; 
+      transition: all 0.2s ease; 
     }
     .titan-input:focus { border-color: var(--accent-blue); background: white; }
 
@@ -74,15 +92,16 @@
     .btn-primary { 
       background: var(--titan-blue); 
       color: white; 
-      padding: 0.8rem 2rem; 
+      padding: 1rem 2rem; 
       border-radius: 1rem; 
-      font-weight: 700; 
+      font-weight: 800; 
       font-size: 11px; 
       text-transform: uppercase; 
-      letter-spacing: 0.1em; 
+      letter-spacing: 0.15em; 
       transition: all 0.3s ease; 
+      box-shadow: 0 4px 12px rgba(30, 41, 59, 0.15);
     }
-    .btn-primary:hover { background: var(--accent-blue); transform: translateY(-2px); }
+    .btn-primary:hover { background: var(--accent-blue); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3); }
 
     /* --- ERP DATA TABLE DESIGN --- */
     .erp-table th { 
@@ -96,11 +115,13 @@
       border-bottom: 1px solid #f1f5f9; 
     }
     .erp-table td { padding: 1.8rem 2.5rem; border-bottom: 1px solid #f8fafc; }
+
+    @media print { .sidebar, .mobile-nav, .no-print { display: none !important; } .main-content { margin-left: 0 !important; } }
   </style>
 </head>
 <body>
 
-  <aside class="sidebar">
+  <aside class="sidebar hidden md:flex no-print">
     <div class="text-slate-900 font-bold text-3xl mb-16 tracking-tighter">T<span class="text-blue-500">.</span></div>
     <nav>
       <a href="index.html" class="nav-icon active">👥</a>
@@ -108,69 +129,91 @@
       <a href="classes.html" class="nav-icon">🏫</a>
       <a href="teachers.html" class="nav-icon">👨‍🏫</a>
     </nav>
-    <div class="mt-auto mb-10 text-slate-300 hover:text-red-500 cursor-pointer" onclick="logout()">
+    <div class="mt-auto mb-10 text-slate-300 hover:text-red-500 cursor-pointer transition-colors" onclick="logout()">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
     </div>
   </aside>
 
+  <nav class="mobile-nav md:hidden no-print">
+    <a href="index.html" class="text-2xl opacity-100 border-b-2 border-blue-500 pb-1">👥</a>
+    <a href="tables.html" class="text-2xl">📅</a>
+    <a href="classes.html" class="text-2xl">🏫</a>
+    <a href="teachers.html" class="text-2xl">👨‍🏫</a>
+    <div onclick="logout()" class="text-2xl">🚪</div>
+  </nav>
+
   <main class="main-content">
     <header class="mb-16">
-      <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">Class <span class="text-slate-400 font-light">Online Academy</span></h1>
+      <div class="flex items-center gap-2 mb-3">
+          <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Student Registry</p>
+      </div>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">Class <span class="text-slate-400 font-light">Online Academy</span></h1>
     </header>
 
-    <section class="titan-card p-8 mb-10 border-l-4 border-l-blue-500">
+    <section class="titan-card p-8 mb-10 border-l-4 border-l-blue-500 no-print">
+        <h4 class="text-[9px] font-bold uppercase text-slate-400 mb-6 tracking-widest">Enrollment Portal</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
             <input id="sName" type="text" placeholder="Full Legal Name" class="titan-input">
+            
             <select id="sLevel" class="titan-input">
-                <option>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
-                <option>Primary 1</option><option>Primary 2</option><option>Primary 3</option>
-                <option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
+                <optgroup label="Secondary Stage">
+                    <option value="Sec 1">1st Secondary</option>
+                    <option value="Sec 2" selected>2nd Secondary</option>
+                    <option value="Sec 3">3rd Secondary</option>
+                </optgroup>
+                <optgroup label="Preparatory Stage">
+                    <option>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
+                </optgroup>
+                <optgroup label="Primary Stage">
+                    <option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
+                </optgroup>
             </select>
+
             <select id="sClass" class="titan-input">
                 <option>Group A</option><option>Group B</option><option>Group C</option>
             </select>
+            
             <select id="sLang" class="titan-input">
-                <option>English</option><option>Arabic</option><option>German</option>
+                <option>English Track</option><option>Arabic Track</option><option>German Track</option>
             </select>
+
             <button id="enrollBtn" onclick="enrollStudent()" class="btn-primary">Enroll Student</button>
         </div>
     </section>
 
     <div class="titan-card overflow-hidden">
-        <table class="w-full text-left erp-table">
-            <thead>
-                <tr>
-                    <th class="w-1/3">Student</th>
-                    <th>Level</th>
-                    <th>Class / Track</th>
-                    <th class="text-right">Action</th>
-                </tr>
-            </thead>
-            <tbody id="studentBody"></tbody>
-        </table>
+        <div class="table-container">
+            <table class="w-full text-left erp-table">
+                <thead>
+                    <tr>
+                        <th class="w-[35%]">Student Profile</th>
+                        <th>Grade / Level</th>
+                        <th>Class & Track</th>
+                        <th class="text-right">Manage</th>
+                    </tr>
+                </thead>
+                <tbody id="studentBody"></tbody>
+            </table>
+        </div>
     </div>
 
-    <footer class="mt-10 flex items-center justify-between">
-        <div class="bg-white px-6 py-4 rounded-2xl border border-slate-100">
-            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Total Enrollment</p>
-            <p id="totalCount" class="text-xl font-bold text-slate-900">00</p>
+    <footer class="mt-10 flex items-center justify-between no-print">
+        <div class="bg-white px-8 py-5 rounded-3xl border border-slate-100 shadow-sm">
+            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1 tracking-widest">Total Active Enrollment</p>
+            <p id="totalCount" class="text-3xl font-extrabold text-slate-900 tracking-tighter">00</p>
         </div>
+        <button onclick="window.print()" class="bg-slate-100 text-slate-500 px-6 py-3 rounded-2xl font-bold text-[10px] uppercase hover:bg-slate-900 hover:text-white transition-all">Generate Report</button>
     </footer>
   </main>
 
   <script>
+    /* --- CONFIGURATION & SECURITY --- */
+    const token = localStorage.getItem("titan_token"); 
     const API = "/api/students";
-    
-    /**
-     * AUTHENTICATION SYNC:
-     * Grabs the 'user' ID from localStorage to ensure we only load data 
-     * belonging to the logged-in administrator.
-     */
-    let user = localStorage.getItem("user"); 
 
     window.onload = () => { 
-        if (!user) {
-            // If no user identity is found, kick back to login screen.
+        if (!token) {
             window.location.href = "login.html"; 
         } else {
             loadData(); 
@@ -178,46 +221,58 @@
     };
 
     /**
-     * LOAD DATA: Fetches the student registry from Titan Cloud.
-     * Note: ?admin=${user} is critical for data separation.
+     * LOAD DATA: 
+     * Fetches only the students owned by the logged-in administrator.
+     * Token is passed in headers for authentication.
      */
     async function loadData() {
         const tbody = document.getElementById("studentBody");
-        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center italic text-slate-300">Syncing Titan Cloud...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-300 font-bold uppercase tracking-widest animate-pulse">Syncing Titan Cloud...</td></tr>`;
         
         try {
-            // Call the GET route in your student.js API
-            const res = await fetch(`${API}?admin=${user}`);
+            const res = await fetch(API, {
+                headers: { 'Authorization': token }
+            });
+
+            if (!res.ok) throw new Error("Unauthorized");
+
             const data = await res.json();
             
             tbody.innerHTML = "";
             document.getElementById('totalCount').innerText = data.length.toString().padStart(2, '0');
             
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-400 font-medium">No students found in your registry.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-400 italic">Your student registry is currently empty.</td></tr>`;
                 return;
             }
 
-            // Populate the table with dynamic rows
             data.forEach(s => {
                 tbody.innerHTML += `
-                    <tr>
-                        <td class="text-sm font-bold text-slate-800">${s.name}</td>
-                        <td class="text-xs font-bold text-slate-700">${s.level}</td>
-                        <td class="text-[9px] font-bold text-blue-400 uppercase">${s.className} | ${s.language}</td>
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-extrabold text-slate-400 text-xs">${s.name.charAt(0)}</div>
+                                <div>
+                                    <p class="text-sm font-extrabold text-slate-800">${s.name}</p>
+                                    <p class="text-[9px] font-bold text-slate-300 uppercase">ID: ${s._id.slice(-6).toUpperCase()}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-xs font-bold text-slate-600">${s.level}</td>
+                        <td class="text-[9px] font-bold text-blue-500 uppercase tracking-tighter">${s.className} • ${s.language}</td>
                         <td class="text-right">
-                            <button onclick="deleteStudent('${s._id}')" class="text-red-400 hover:text-red-600 font-bold">✕</button>
+                            <button onclick="deleteStudent('${s._id}')" class="w-8 h-8 rounded-lg hover:bg-red-50 text-red-300 hover:text-red-500 font-bold transition-all">✕</button>
                         </td>
                     </tr>`;
             });
         } catch (e) { 
-            tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-red-400">Sync Error: Server Unreachable</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-red-400 font-bold">SECURITY BREACH: Server Link Failed</td></tr>`;
         }
     }
 
     /**
-     * ENROLL STUDENT: Sends a POST request to create a new student entry.
-     * It includes the 'owner' field so the student is linked to YOUR account.
+     * ENROLL STUDENT: 
+     * Creates a student record linked to the specific admin account.
      */
     async function enrollStudent() {
         const btn = document.getElementById("enrollBtn");
@@ -226,41 +281,68 @@
         const className = document.getElementById("sClass").value;
         const language = document.getElementById("sLang").value;
 
-        if(!name) return alert("Enter Student Name");
-        btn.innerText = "SAVING...";
+        if(!name) {
+            alert("Please enter the student's full name.");
+            return;
+        }
+
+        btn.innerText = "Processing...";
+        btn.disabled = true;
 
         try {
             const res = await fetch(API, { 
                 method: "POST", 
-                headers: { "Content-Type": "application/json" }, 
-                // We send 'owner' and 'admin' as the current logged-in user identity.
-                body: JSON.stringify({ name, level, className, language, owner: user, admin: user }) 
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": token
+                }, 
+                body: JSON.stringify({ name, level, className, language }) 
             });
 
             if (res.ok) {
                 document.getElementById("sName").value = "";
-                btn.innerText = "SUCCESS ✓";
-                // Delay reload slightly so the user sees the success state.
-                setTimeout(() => { btn.innerText = "Enroll Student"; loadData(); }, 1500);
+                btn.innerText = "ENROLLED ✓";
+                btn.classList.replace('bg-slate-900', 'bg-emerald-500');
+                
+                setTimeout(() => { 
+                    btn.innerText = "Enroll Student"; 
+                    btn.disabled = false;
+                    btn.classList.replace('bg-emerald-500', 'bg-slate-900');
+                    loadData(); 
+                }, 1500);
             } else {
-                alert("Server rejected the entry.");
+                alert("Enrollment failed. Please check your connection.");
                 btn.innerText = "Enroll Student";
+                btn.disabled = false;
             }
-        } catch (e) { btn.innerText = "Enroll Student"; }
+        } catch (e) { 
+            btn.innerText = "Enroll Student"; 
+            btn.disabled = false;
+        }
     }
 
     /**
-     * TERMINATE ENTRY: Permanently removes a student record using their unique MongoDB ID.
+     * TERMINATE ENTRY: 
+     * Permanently removes a student record.
      */
     async function deleteStudent(id) { 
-        if(confirm("Delete this student permanently?")) { 
-            await fetch(`${API}/${id}?admin=${user}`, { method: "DELETE" }); 
-            loadData(); 
+        if(confirm("Are you sure you want to remove this student permanently? This action cannot be undone.")) { 
+            try {
+                const res = await fetch(`${API}/${id}`, { 
+                    method: "DELETE",
+                    headers: { 'Authorization': token }
+                });
+                if(res.ok) loadData();
+            } catch (e) {
+                alert("Could not complete deletion.");
+            }
         } 
     }
 
-    // Logout Function: Clears session and redirects to security gate.
-    function logout() { localStorage.clear(); window.location.href="login.html"; }
+    function logout() { 
+        localStorage.clear(); 
+        window.location.href="login.html"; 
+    }
   </script>
 </body>
 </html>

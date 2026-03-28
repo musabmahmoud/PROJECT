@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Titan ERP | Daily Registry</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -23,11 +23,15 @@
       color: #334155; 
       margin: 0;
       -webkit-font-smoothing: antialiased;
+      /* Padding bottom ensures mobile nav doesn't cover content */
+      padding-bottom: 80px;
     }
 
-    /* --- SIDEBAR NAVIGATION --- 
-       Uses a fixed position to stay on screen while the table scrolls.
-    */
+    @media (min-width: 768px) {
+      body { padding-bottom: 0; }
+    }
+
+    /* --- SIDEBAR NAVIGATION (Desktop Only) --- */
     .sidebar { 
       width: var(--sidebar-width); 
       height: 100vh; 
@@ -49,10 +53,36 @@
     .nav-icon:hover { background: #f8fafc; color: var(--accent-blue); }
     .nav-icon.active { background: #f1f5f9; color: var(--titan-blue); }
 
-    .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1700px; }
+    /* Main Content Responsiveness */
+    .main-content { 
+        margin-left: 0; 
+        padding: 2rem 1.2rem; 
+        max-width: 100%; 
+    }
+
+    @media (min-width: 768px) {
+        .main-content { 
+            margin-left: var(--sidebar-width); 
+            padding: 4rem 6rem; 
+            max-width: 1700px; 
+        }
+    }
 
     /* --- LUXURY UI COMPONENTS --- */
-    .titan-card { background: white; border-radius: 2rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 20px rgba(0,0,0,0.01); }
+    .titan-card { 
+        background: white; 
+        border-radius: 2rem; 
+        border: 1px solid #f1f5f9; 
+        box-shadow: 0 4px 20px rgba(0,0,0,0.01); 
+    }
+
+    /* Horizontal Scroll for Table on Mobile */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .erp-table { min-width: 850px; } /* Ensures table stays readable on mobile */
 
     .erp-table th { 
       background: #fafbfd; text-transform: uppercase; font-size: 10px; letter-spacing: 0.15em; 
@@ -73,32 +103,38 @@
       width: 44px; height: 44px; border-radius: 12px; font-weight: 800; font-size: 12px; 
       transition: all 0.2s ease; border: 1px solid #f1f5f9; color: #cbd5e1; background: white;
     }
-    .active-p { background: var(--titan-emerald) !important; color: white !important; border-color: transparent; }
-    .active-a { background: #ef4444 !important; color: white !important; border-color: transparent; }
+    .active-p { background: var(--titan-emerald) !important; color: white !important; border-color: transparent; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+    .active-a { background: #ef4444 !important; color: white !important; border-color: transparent; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
 
-    /* --- SLIDE-OUT HISTORY PANEL --- 
-       Uses hardware-accelerated transforms for smooth 60fps movement.
-    */
+    /* --- SLIDE-OUT HISTORY PANEL --- */
     #sidePanel { 
-      position: fixed; right: 0; top: 0; height: 100vh; width: 450px;
+      position: fixed; right: 0; top: 0; height: 100vh; 
+      width: 100%; /* Full width on mobile */
+      max-width: 450px; /* Capped on Desktop */
       background: white; z-index: 1000; transform: translateX(100%);
       transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-      box-shadow: -20px 0 60px rgba(0,0,0,0.05); padding: 3rem;
+      box-shadow: -20px 0 60px rgba(0,0,0,0.05); padding: 2.5rem;
     }
     #sidePanel.open { transform: translateX(0); }
     
-    /* Background blur when panel is open */
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.1); backdrop-filter: blur(4px); z-index: 900; }
 
-    /* Print utility: Hides nav and sidebars when printing a report */
-    @media print { .sidebar, .no-print { display: none !important; } .main-content { margin-left: 0 !important; } }
+    /* Navigation for Mobile (Bottom Bar) */
+    .mobile-nav {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        background: white; border-top: 1px solid #f1f5f9;
+        display: flex; justify-content: space-around; padding: 1rem;
+        z-index: 500;
+    }
+
+    @media print { .sidebar, .no-print, .mobile-nav { display: none !important; } .main-content { margin-left: 0 !important; } }
   </style>
 </head>
 <body>
 
   <div id="overlay" class="overlay" onclick="closePanel()"></div>
 
-  <aside class="sidebar no-print">
+  <aside class="sidebar hidden md:flex no-print">
     <div class="text-slate-900 font-bold text-3xl mb-16 tracking-tighter">T<span class="text-blue-500">.</span></div>
     <nav>
       <a href="index.html" class="nav-icon" title="Students">👥</a>
@@ -106,53 +142,59 @@
       <a href="classes.html" class="nav-icon active" title="Attendance">🏫</a>
       <a href="teachers.html" class="nav-icon" title="Faculty">👨‍🏫</a>
     </nav>
-    <div class="mt-auto mb-10 text-slate-300 hover:text-red-500 cursor-pointer" onclick="logout()">
+    <div class="mt-auto mb-10 text-slate-300 hover:text-red-500 cursor-pointer transition-colors" onclick="logout()">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
     </div>
   </aside>
 
+  <nav class="mobile-nav md:hidden no-print">
+      <a href="index.html" class="text-2xl">👥</a>
+      <a href="tables.html" class="text-2xl">📅</a>
+      <a href="classes.html" class="text-2xl opacity-100 border-b-2 border-blue-500 pb-1">🏫</a>
+      <a href="teachers.html" class="text-2xl">👨‍🏫</a>
+      <div onclick="logout()" class="text-2xl">🚪</div>
+  </nav>
+
   <div id="sidePanel">
     <div class="flex justify-between items-center mb-10">
       <div>
-        <h2 id="panelName" class="text-3xl font-extrabold text-slate-900 tracking-tight">Student History</h2>
+        <h2 id="panelName" class="text-2xl font-extrabold text-slate-900 tracking-tight">Student History</h2>
         <p class="text-[10px] font-bold uppercase text-blue-500 tracking-widest mt-1">Academic Log Records</p>
       </div>
-      <button onclick="closePanel()" class="text-slate-300 hover:text-red-500 font-bold">✕</button>
+      <button onclick="closePanel()" class="text-slate-300 hover:text-red-500 font-bold text-xl">✕</button>
     </div>
-    <div id="panelContent" class="space-y-4"></div>
+    <div id="panelContent" class="space-y-4 overflow-y-auto h-[80vh]"></div>
   </div>
 
   <main class="main-content">
     
-    <header class="flex flex-col xl:flex-row justify-between items-end mb-16 gap-8">
+    <header class="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 gap-8">
       <div>
         <div class="flex items-center gap-2 mb-3">
             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Registry Logs</p>
         </div>
-        <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">Class  <span class="text-slate-400 font-light">Online Academy</span></h1>
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">Class <span class="text-slate-400 font-light">Online Academy</span></h1>
       </div>
 
-      <div class="no-print flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
-        <input type="date" id="logDate" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none text-slate-600">
+      <div class="no-print flex flex-wrap items-center gap-3 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm w-full lg:w-auto">
+        <input type="date" id="logDate" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none text-slate-600 w-full md:w-auto">
         
-        <select id="selLevel" onchange="loadRoster()" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none text-slate-600">
-            <optgroup label="Primary Stage">
-                <option>Primary 1</option><option>Primary 2</option><option>Primary 3</option>
-                <option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
+        <select id="selLevel" onchange="loadRoster()" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none text-slate-600 flex-1 md:flex-none">
+            <optgroup label="Secondary Stage">
+                <option value="Sec 1">1st Secondary</option>
+                <option value="Sec 2" selected>2nd Secondary</option>
+                <option value="Sec 3">3rd Secondary</option>
             </optgroup>
             <optgroup label="Preparatory Stage">
-                <option selected>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
+                <option>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
             </optgroup>
         </select>
-        <select id="selGroup" onchange="loadRoster()" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none text-slate-600">
+        <select id="selGroup" onchange="loadRoster()" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none text-slate-600 flex-1 md:flex-none">
             <option>Group A</option><option>Group B</option>
         </select>
-        <select id="selTrack" onchange="loadRoster()" class="bg-slate-50 px-4 py-2 rounded-xl text-[10px] font-bold uppercase outline-none text-slate-600">
-            <option>English Track</option><option>Arabic Track</option>
-        </select>
 
-        <button onclick="saveAll()" class="bg-slate-900 text-white px-8 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all">Mass Sync</button>
+        <button onclick="saveAll()" class="w-full lg:w-auto bg-slate-900 text-white px-8 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all">Mass Sync</button>
       </div>
     </header>
 
@@ -160,7 +202,7 @@
         <div class="titan-card p-8 bg-slate-900 text-white">
             <h4 class="text-[9px] font-bold uppercase text-slate-500 mb-4 tracking-widest">Global Subject Update</h4>
             <div class="flex gap-3">
-                <input id="globalSub" type="text" placeholder="Enter Subject Name..." class="titan-input flex-1 !bg-white/10 !border-white/5 !text-white">
+                <input id="globalSub" type="text" placeholder="Enter Subject..." class="titan-input flex-1 !bg-white/10 !border-white/5 !text-white">
                 <button onclick="applySubject()" class="bg-white text-slate-900 px-6 py-2 rounded-xl font-bold text-[10px] uppercase">Inject</button>
             </div>
         </div>
@@ -171,69 +213,72 @@
             </div>
             <div class="text-right">
                 <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Expected Revenue</p>
-                <p id="totalRev" class="text-4xl font-extrabold text-emerald-500 tracking-tighter">0.00 <span class="text-xs text-slate-300">EGP</span></p>
+                <p id="totalRev" class="text-4xl font-extrabold text-emerald-500 tracking-tighter">0.00 <span class="text-xs text-slate-300 uppercase">EGP</span></p>
             </div>
         </div>
     </section>
 
     <div class="titan-card overflow-hidden">
-        <table class="w-full text-left erp-table">
-          <thead>
-            <tr>
-              <th class="w-[30%]">Student Information</th>
-              <th class="text-center">Attendance</th>
-              <th>Financial (EGP)</th>
-              <th>Course & Grade</th>
-              <th class="text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="rosterBody"></tbody>
-        </table>
+        <div class="table-container">
+            <table class="w-full text-left erp-table">
+              <thead>
+                <tr>
+                  <th class="w-[30%]">Student Information</th>
+                  <th class="text-center">Attendance</th>
+                  <th>Financial (EGP)</th>
+                  <th>Course & Grade</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="rosterBody"></tbody>
+            </table>
+        </div>
     </div>
   </main>
 
   <script>
+    /* --- CONFIGURATION & SECURITY --- */
+    const token = localStorage.getItem("titan_token");
     const API = "/api/students";
-    const user = localStorage.getItem("user");
 
-    // INITIALIZATION: Check for identity and set today's date
     window.onload = () => {
+      if(!token) { window.location.href="login.html"; return; }
       document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
-      if(!user) { window.location.href="login.html"; return; }
       loadRoster();
     };
 
     /**
-     * FETCH ROSTER: Pulls students based on selected Level, Group, and Track.
-     * Includes full identity sync (?admin=${user}).
+     * LOAD ROSTER: Fetches students filtered by Level and Group.
      */
     async function loadRoster() {
       const level = document.getElementById('selLevel').value;
       const group = document.getElementById('selGroup').value;
-      const track = document.getElementById('selTrack').value;
       const tbody = document.getElementById("rosterBody");
       
-      tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 animate-pulse font-bold text-sm uppercase tracking-widest">Establishing Secure Uplink...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 font-bold uppercase animate-pulse">Establishing Uplink...</td></tr>`;
 
       try {
-        // Updated API call to include group and track for proper filtering
-        const res = await fetch(`${API}?admin=${user}&level=${encodeURIComponent(level)}&group=${encodeURIComponent(group)}&track=${encodeURIComponent(track)}`);
+        const res = await fetch(`${API}?level=${encodeURIComponent(level)}&group=${encodeURIComponent(group)}`, {
+            headers: { 'Authorization': token }
+        });
+
+        if(!res.ok) throw new Error("Unauthorized");
+
         const data = await res.json();
         tbody.innerHTML = "";
         document.getElementById('nodeCount').innerText = data.length.toString().padStart(2, '0');
 
         if(data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 font-medium italic">No students found for this selection.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 italic font-medium">No records found.</td></tr>`;
             return;
         }
 
-        // DYNAMIC ROW GENERATION
         data.forEach(s => {
           tbody.innerHTML += `
-            <tr class="hover:bg-slate-50/50">
+            <tr class="hover:bg-slate-50/50 transition-colors">
               <td>
                 <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 text-xs">${s.name.charAt(0)}</div>
+                    <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-extrabold text-slate-400 text-xs">${s.name.charAt(0)}</div>
                     <div>
                         <button onclick="openHistory('${s._id}', '${s.name}')" class="text-sm font-extrabold text-slate-800 hover:text-blue-500 transition-all">${s.name}</button>
                         <p class="text-[9px] font-bold text-slate-300 uppercase tracking-tighter">ID: ${s._id.slice(-6).toUpperCase()}</p>
@@ -260,11 +305,14 @@
               </td>
             </tr>`;
         });
-        calcRev(); // Recalculate revenue on load
-      } catch (e) { console.error("Database Link Failure", e); }
+        calcRev();
+      } catch (e) { 
+          console.error(e);
+          window.location.href="login.html"; 
+      }
     }
 
-    // Toggle Attendance UI states locally before syncing
+    // Toggle Attendance UI locally
     function markAtt(id, type) {
       document.getElementById(`p-${id}`).className = "att-btn";
       document.getElementById(`a-${id}`).className = "att-btn";
@@ -272,53 +320,7 @@
     }
 
     /**
-     * SIDE PANEL HISTORY: Fetches full academic history for a specific student.
-     */
-    async function openHistory(id, name) {
-      document.getElementById('panelName').innerText = name;
-      document.getElementById('overlay').style.display = 'block';
-      document.getElementById('sidePanel').classList.add('open');
-      const content = document.getElementById('panelContent');
-      content.innerHTML = `<p class="p-10 text-center text-slate-300 font-bold text-[10px] uppercase animate-pulse">Fetching records...</p>`;
-      
-      try {
-        const res = await fetch(`${API}/history?admin=${user}&name=${encodeURIComponent(name)}`);
-        const data = await res.json();
-        // Maps through the logs array from the database
-        content.innerHTML = data.history.map(l => `
-          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <div class="flex justify-between items-start mb-4">
-                <p class="font-bold text-slate-900 text-sm">${l.date}</p>
-                <span class="text-[9px] font-bold px-3 py-1 rounded-lg ${l.status === 'present' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'} uppercase">${l.status}</span>
-            </div>
-            <div class="flex justify-between items-end border-t border-slate-200 pt-4">
-              <p class="text-sm font-bold text-emerald-500">£${l.payment}</p>
-              <p class="text-[10px] font-bold text-slate-400 uppercase">${l.subject} / ${l.grade}%</p>
-            </div>
-          </div>`).join('');
-      } catch (e) { content.innerHTML = "Error fetching history."; }
-    }
-
-    // Dynamic Revenue Calculator (Local)
-    function calcRev() {
-        let total = 0;
-        document.querySelectorAll('[id^="pay-"]').forEach(input => { total += Number(input.value) || 0; });
-        document.getElementById('totalRev').innerText = total.toFixed(2);
-    }
-
-    function closePanel() {
-      document.getElementById('sidePanel').classList.remove('open');
-      document.getElementById('overlay').style.display = 'none';
-    }
-
-    // Injector: Copies the global subject input to all student rows
-    function applySubject() {
-      const val = document.getElementById('globalSub').value;
-      document.querySelectorAll('.subj-box').forEach(i => i.value = val);
-    }
-
-    /**
-     * INDIVIDUAL SYNC: Sends one student's daily data to the Master Log API.
+     * INDIVIDUAL SYNC: Saves one student's entry.
      */
     async function saveRow(id, btn) {
       const date = document.getElementById('logDate').value;
@@ -329,35 +331,79 @@
       
       const res = await fetch(`${API}/daily-log`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+            "Content-Type": "application/json",
+            "Authorization": token
+        },
         body: JSON.stringify({ 
-            studentId: id, 
-            date, 
-            subject: sub.toLowerCase(), 
-            grade: Number(grd), 
-            payment: Number(pay), 
-            status: isAbsent ? 'absent' : 'present', 
-            admin: user 
+            studentId: id, date, subject: sub, 
+            grade: Number(grd), payment: Number(pay), 
+            status: isAbsent ? 'absent' : 'present'
         })
       });
 
-      // Visual feedback on success
       if(res.ok) { 
           btn.innerText = "DONE";
           btn.classList.add('bg-emerald-500', 'text-white');
-          setTimeout(() => { btn.innerText = "Sync"; btn.classList.remove('bg-emerald-500', 'text-white'); }, 2000);
+          setTimeout(() => { 
+              btn.innerText = "Sync"; 
+              btn.classList.remove('bg-emerald-500', 'text-white'); 
+          }, 2000);
       }
     }
 
     /**
-     * MASS SYNC: Loops through every visible row and triggers saveRow.
+     * SIDE PANEL HISTORY: Fetches academic records.
      */
+    async function openHistory(id, name) {
+      document.getElementById('panelName').innerText = name;
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('sidePanel').classList.add('open');
+      const content = document.getElementById('panelContent');
+      content.innerHTML = `<p class="p-10 text-center text-slate-300 font-bold text-[10px] uppercase animate-pulse">Retrieving Logs...</p>`;
+      
+      try {
+        const res = await fetch(`${API}/history/${id}`, {
+            headers: { 'Authorization': token }
+        });
+        const data = await res.json();
+        
+        content.innerHTML = data.history.map(l => `
+          <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 mb-4 shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+                <p class="font-bold text-slate-900 text-sm">${l.date}</p>
+                <span class="text-[9px] font-bold px-3 py-1 rounded-lg ${l.status === 'present' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'} uppercase">${l.status}</span>
+            </div>
+            <div class="flex justify-between items-end pt-4 border-t border-slate-200/50">
+              <p class="text-sm font-bold text-emerald-500">£${l.payment}</p>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${l.subject} / ${l.grade}%</p>
+            </div>
+          </div>`).join('');
+      } catch (e) { content.innerHTML = "Access Denied."; }
+    }
+
+    function calcRev() {
+        let total = 0;
+        document.querySelectorAll('[id^="pay-"]').forEach(input => { total += Number(input.value) || 0; });
+        document.getElementById('totalRev').innerText = total.toFixed(2);
+    }
+
+    function applySubject() {
+      const val = document.getElementById('globalSub').value;
+      document.querySelectorAll('.subj-box').forEach(i => i.value = val);
+    }
+
     async function saveAll() {
       const rows = document.querySelectorAll('[id^="pay-"]');
       for (let r of rows) { 
           await saveRow(r.id.split('-')[1], r.closest('tr').querySelector('button[onclick^="saveRow"]')); 
       }
-      alert("All records synchronized successfully.");
+      alert("Mass Sync Complete.");
+    }
+
+    function closePanel() {
+      document.getElementById('sidePanel').classList.remove('open');
+      document.getElementById('overlay').style.display = 'none';
     }
 
     function logout() { localStorage.clear(); window.location.href="login.html"; }

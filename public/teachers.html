@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Titan ERP | Faculty Management</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Importing Plus Jakarta Sans - a modern typeface used in high-end SaaS applications */
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     
+    /* --- TITAN BRAND TOKENS --- */
     :root { 
       --titan-blue: #1e293b; 
       --accent-blue: #3b82f6;
@@ -21,52 +21,44 @@
       background-color: var(--titan-slate); 
       color: #334155; 
       margin: 0;
-      /* Smoothing fonts for a "premium" feel on high-resolution screens */
       -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px; /* Space for Mobile Nav */
     }
 
-    /* --- SIDEBAR NAVIGATION --- 
-       Fixed to the left to provide consistent navigation regardless of scroll position
-    */
+    @media (min-width: 768px) { body { padding-bottom: 0; } }
+
+    /* --- NAVIGATION SIDEBAR (Desktop) --- */
     .sidebar { 
       width: var(--sidebar-width); 
       height: 100vh; 
       position: fixed; 
-      left: 0; 
-      top: 0; 
+      left: 0; top: 0; 
       background: white; 
       border-right: 1px solid #f1f5f9; 
-      z-index: 100; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      padding-top: 2.5rem;
+      z-index: 500; 
+      display: flex; flex-direction: column; align-items: center; padding-top: 2.5rem;
+    }
+
+    /* --- BOTTOM NAV (Mobile) --- */
+    .mobile-nav {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        background: white; border-top: 1px solid #f1f5f9;
+        display: flex; justify-content: space-around; padding: 1rem;
+        z-index: 500;
     }
 
     .nav-icon { 
-      width: 54px; 
-      height: 54px; 
-      margin-bottom: 1.5rem; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      border-radius: 16px; 
-      cursor: pointer; 
-      transition: all 0.3s ease; 
-      font-size: 22px; 
-      text-decoration: none;
-      color: #94a3b8;
+      width: 54px; height: 54px; margin-bottom: 1.5rem; 
+      display: flex; align-items: center; justify-content: center; 
+      border-radius: 16px; cursor: pointer; transition: all 0.3s ease; 
+      font-size: 22px; text-decoration: none; color: #94a3b8;
     }
-
-    /* Hover and Active states to help the user know exactly which module they are in */
     .nav-icon:hover { background: #f8fafc; color: var(--accent-blue); }
     .nav-icon.active { background: #f1f5f9; color: var(--titan-blue); }
 
-    .main-content { 
-      margin-left: var(--sidebar-width); 
-      padding: 4rem 6rem; 
-      max-width: 1500px;
-    }
+    /* Main Content Responsiveness */
+    .main-content { margin-left: 0; padding: 2rem 1.2rem; max-width: 100%; }
+    @media (min-width: 768px) { .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1700px; } }
 
     /* --- COMPONENT STYLING --- */
     .titan-card { 
@@ -76,15 +68,14 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.01);
     }
 
-    /* PAYROLL CARD: Designed to stand out as a financial summary widget */
+    /* PAYROLL CARD: Luxury Dark Theme for Financial Summaries */
     .payroll-card {
-      background: #1e293b; /* Dark theme for "Finance" importance */
-      border-radius: 2rem;
+      background: #1e293b; 
+      border-radius: 2.5rem;
       position: relative;
       overflow: hidden;
     }
 
-    /* Decorative pseudo-element for subtle abstract design in the card corner */
     .payroll-card::after {
         content: '';
         position: absolute;
@@ -92,22 +83,21 @@
         right: -10%;
         width: 300px;
         height: 300px;
-        background: rgba(59, 130, 246, 0.05);
+        background: rgba(59, 130, 246, 0.08);
         border-radius: 50%;
     }
 
-    /* --- INPUT FIELDS --- 
-       "Luxury" style focus: adds a glow (box-shadow) when the admin is typing
-    */
+    /* --- INPUT FIELDS --- */
     .input-luxury {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      border-radius: 1rem;
-      padding: 1rem 1.2rem;
-      font-weight: 500;
+      border-radius: 1.2rem;
+      padding: 1.2rem;
+      font-weight: 600;
       font-size: 13px;
       outline: none;
       transition: all 0.2s ease;
+      width: 100%;
     }
 
     .input-luxury:focus {
@@ -116,37 +106,44 @@
       box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05);
     }
 
-    /* Action Buttons with subtle lift effect (translateY) on hover */
     .btn-dark {
       background: #1e293b;
       color: white;
-      padding: 1rem 2rem;
-      border-radius: 1rem;
-      font-weight: 700;
+      padding: 1rem 2.5rem;
+      border-radius: 1.2rem;
+      font-weight: 800;
       font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.15em;
       transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(30, 41, 59, 0.15);
     }
 
-    .btn-dark:hover { background: #000; transform: translateY(-1px); }
+    .btn-dark:hover { background: var(--accent-blue); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3); }
 
-    /* Custom Table Headers: Small, bold, uppercase for that "Admin Dashboard" aesthetic */
+    /* Table Swiping for Mobile */
+    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .teacher-table { min-width: 900px; }
+
     .teacher-table th { 
       background: #fafbfd; 
       text-transform: uppercase; 
       font-size: 10px; 
       letter-spacing: 0.15em; 
-      padding: 1.5rem 2rem; 
+      padding: 1.5rem 2.5rem; 
       color: #94a3b8; 
       font-weight: 700; 
       border-bottom: 1px solid #f1f5f9;
     }
+
+    .teacher-table td { padding: 1.8rem 2.5rem; border-bottom: 1px solid #f8fafc; }
+
+    @media print { .sidebar, .mobile-nav, .no-print { display: none !important; } .main-content { margin-left: 0 !important; } }
   </style>
 </head>
 <body class="min-h-screen">
 
-  <aside class="sidebar no-print">
+  <aside class="sidebar hidden md:flex no-print">
     <div class="text-slate-900 font-bold text-3xl mb-16 tracking-tighter">T<span class="text-blue-500">.</span></div>
     <nav>
       <a href="index.html" class="nav-icon" title="Registry">👥</a>
@@ -159,65 +156,78 @@
     </div>
   </aside>
 
+  <nav class="mobile-nav md:hidden no-print">
+    <a href="index.html" class="text-2xl">👥</a>
+    <a href="tables.html" class="text-2xl">📅</a>
+    <a href="classes.html" class="text-2xl">🏫</a>
+    <a href="teachers.html" class="text-2xl border-b-2 border-blue-500 pb-1">👨‍🏫</a>
+    <div onclick="logout()" class="text-2xl">🚪</div>
+  </nav>
+
   <main class="main-content">
     
-    <header class="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16 items-center">
+    <header class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16 items-center">
       <div class="lg:col-span-2">
         <div class="flex items-center gap-2 mb-3">
             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Staffing & Operations</p>
         </div>
-        <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">
           Class <span class="text-slate-400 font-light">Online Academy</span>
         </h1>
       </div>
 
-      <div class="payroll-card p-10 text-white shadow-xl shadow-slate-200">
-        <span class="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Monthly Expenditure</span>
+      <div class="payroll-card p-10 text-white shadow-2xl shadow-slate-200">
+        <span class="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Total Monthly Expenditure</span>
         <div class="flex items-baseline gap-2 mt-2">
-          <h2 id="totalPayroll" class="text-4xl font-extrabold tracking-tighter">0</h2>
-          <span class="text-xs font-bold text-slate-500 uppercase">EGP</span>
+          <h2 id="totalPayroll" class="text-4xl font-extrabold tracking-tighter tracking-tight">0</h2>
+          <span class="text-xs font-bold text-blue-400 uppercase">EGP</span>
         </div>
         <div class="mt-4 flex items-center gap-2 text-[10px] text-emerald-400 font-bold">
             <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            BUDGET ACTIVE
+            BUDGET RECONCILED
         </div>
       </div>
     </header>
 
-    <section class="titan-card p-8 mb-12 bg-white">
-      <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-6">Faculty Appointment</h3>
-      <div class="flex flex-col xl:flex-row gap-4">
-        <input id="tName" type="text" placeholder="Full Legal Name" class="input-luxury flex-1">
-        <input id="tSubject" type="text" placeholder="Department (e.g. Physics)" class="input-luxury xl:w-64">
-        <input id="tSalary" type="number" placeholder="Contract Salary" class="input-luxury xl:w-48">
+    <section class="titan-card p-8 mb-12 bg-white no-print">
+      <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-8 border-b border-slate-50 pb-4">Faculty Appointment Portal</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <input id="tName" type="text" placeholder="Full Legal Name" class="input-luxury">
+        <input id="tSubject" type="text" placeholder="Department (e.g. Physics)" class="input-luxury">
+        <input id="tSalary" type="number" placeholder="Contract Salary (EGP)" class="input-luxury">
         <button onclick="addTeacher()" class="btn-dark">Authorize Hire</button>
       </div>
     </section>
 
     <div class="titan-card overflow-hidden">
-        <table class="w-full text-left teacher-table">
-          <thead>
-            <tr>
-              <th class="w-1/3">Instructor Information</th>
-              <th>Academic Department</th>
-              <th>Monthly Compensation</th>
-              <th class="text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="teacherBody">
-              </tbody>
-        </table>
+        <div class="table-container">
+            <table class="w-full text-left teacher-table">
+              <thead>
+                <tr>
+                  <th class="w-[35%]">Instructor Information</th>
+                  <th>Academic Department</th>
+                  <th>Monthly Compensation</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="teacherBody"></tbody>
+            </table>
+        </div>
     </div>
+
+    <footer class="mt-12 flex justify-between items-center no-print">
+        <p class="text-[10px] text-slate-300 font-bold uppercase tracking-widest">Titan Cloud Systems • Faculty Node • v4.2.0</p>
+        <button onclick="window.print()" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-blue-500 transition-colors">Generate Payroll Report</button>
+    </footer>
   </main>
 
   <script>
-    /* Initialize user session and retrieve teacher data from LocalStorage */
+    /* --- DATA MANAGEMENT --- */
     const user = localStorage.getItem("user");
-    // Keys are scoped to the user (e.g., teachers_admin) to prevent data mixing
+    // Securely scope data to the specific admin session
     let teachers = JSON.parse(localStorage.getItem(`teachers_${user}`)) || [];
 
-    /* On page load, check for valid session and draw the roster */
     window.onload = () => {
       if(!user) { window.location.href="login.html"; return; }
       renderTeachers();
@@ -225,8 +235,7 @@
 
     /**
      * RENDER ENGINE:
-     * Clears the current table and re-builds it based on the 'teachers' array.
-     * Also calculates the total payroll sum.
+     * Rebuilds the faculty roster and calculates total payroll.
      */
     function renderTeachers() {
       const tbody = document.getElementById("teacherBody");
@@ -234,68 +243,67 @@
       tbody.innerHTML = "";
       let total = 0;
 
-      // Handle empty state gracefully
       if(teachers.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-300 font-medium italic text-sm">No faculty records found.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="4" class="p-24 text-center text-slate-300 font-bold italic text-xs uppercase tracking-widest animate-pulse">Empty Faculty Registry</td></tr>`;
           totalDisplay.innerText = "0";
           return;
       }
 
       teachers.forEach((t, index) => {
-        // Sum up the salaries (ensuring it's treated as a Number)
         total += Number(t.salary);
 
-        // UI Logic: Generate user initials for the avatar (e.g., "Ahmed Ali" -> "AA")
-        const initials = t.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+        // UI Logic: Initials Avatar
+        const initials = t.name.trim().split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
 
         tbody.innerHTML += `
-          <tr class="hover:bg-slate-50/50 transition-colors">
-            <td class="px-8 py-6">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 text-xs">
+          <tr class="hover:bg-slate-50/50 transition-all duration-200">
+            <td>
+              <div class="flex items-center gap-5">
+                <div class="w-11 h-11 bg-slate-100 rounded-2xl flex items-center justify-center font-extrabold text-slate-400 text-xs">
                     ${initials}
                 </div>
                 <div>
-                    <p class="text-sm font-bold text-slate-800">${t.name}</p>
-                    <p class="text-[9px] font-medium text-slate-400 uppercase tracking-tighter">Staff ID #STF-0${index + 101}</p>
+                    <p class="text-sm font-extrabold text-slate-800">${t.name}</p>
+                    <p class="text-[9px] font-bold text-slate-300 uppercase tracking-tighter">Staff ID • #STF-${(index + 101).toString().padStart(3, '0')}</p>
                 </div>
               </div>
             </td>
-            <td class="px-8 py-6">
-              <span class="px-3 py-1 rounded-lg bg-blue-50 text-blue-600 text-[9px] font-bold uppercase tracking-wider">
+            <td>
+              <span class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-500 text-[9px] font-extrabold uppercase tracking-wider">
                 ${t.subject}
               </span>
             </td>
-            <td class="px-8 py-6">
-              <p class="text-sm font-bold text-slate-700">£${Number(t.salary).toLocaleString()}</p>
+            <td>
+              <p class="text-sm font-extrabold text-slate-700 tracking-tight">£${Number(t.salary).toLocaleString()}</p>
             </td>
-            <td class="px-8 py-6 text-right">
-              <button onclick="removeTeacher(${index})" class="text-slate-300 hover:text-red-500 font-bold text-[9px] uppercase tracking-widest transition-colors">Resolve Contract</button>
+            <td class="text-right">
+              <button onclick="removeTeacher(${index})" class="w-10 h-10 rounded-xl hover:bg-red-50 text-red-200 hover:text-red-500 font-bold transition-all">✕</button>
             </td>
           </tr>
         `;
       });
 
-      // Update the main header widget with the total sum
       totalDisplay.innerText = total.toLocaleString();
     }
 
     /**
      * ADD TEACHER:
-     * Validates inputs, pushes to array, and triggers storage save.
+     * Validates and authorizes a new hire.
      */
     function addTeacher() {
       const name = document.getElementById("tName").value;
       const subject = document.getElementById("tSubject").value;
       const salary = document.getElementById("tSalary").value;
 
-      // Basic validation: Name and Salary are required
-      if(!name || !salary) return;
+      if(!name || !salary) {
+          alert("Please provide the full legal name and contract salary.");
+          return;
+      }
 
       teachers.push({ name, subject, salary });
       saveAndRender();
       
-      // Clear inputs for the next entry
+      // Reset inputs
       document.getElementById("tName").value = "";
       document.getElementById("tSubject").value = "";
       document.getElementById("tSalary").value = "";
@@ -303,29 +311,24 @@
 
     /**
      * REMOVE TEACHER:
-     * Uses confirm() dialog to prevent accidental deletion.
+     * Contract resolution logic.
      */
     function removeTeacher(index) {
-      if(confirm("Are you sure you want to resolve this faculty contract?")) {
+      if(confirm("Are you sure you want to resolve this faculty contract permanently?")) {
         teachers.splice(index, 1);
         saveAndRender();
       }
     }
 
-    /**
-     * PERSISTENCE LAYER:
-     * Saves the current teacher array to the browser and refreshes the UI.
-     */
     function saveAndRender() {
       localStorage.setItem(`teachers_${user}`, JSON.stringify(teachers));
       renderTeachers();
     }
 
-    /**
-     * LOGOUT:
-     * Clears all session data and redirects to the login screen.
-     */
-    function logout() { localStorage.clear(); window.location.href="login.html"; }
+    function logout() { 
+        localStorage.clear(); 
+        window.location.href="login.html"; 
+    }
   </script>
 </body>
 </html>
