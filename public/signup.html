@@ -7,118 +7,45 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: radial-gradient(circle at bottom left, #f8fafc, #eff6ff);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-        }
-
-        .signup-card {
-            background: white;
-            border: 1px solid #f1f5f9;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.04);
-            border-radius: 2.5rem;
-            width: 100%;
-            max-width: 460px;
-            padding: 3.5rem;
-            text-align: center;
-            animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .titan-input {
-            width: 100%;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 1.25rem;
-            padding: 1.1rem 1.5rem;
-            font-size: 13px;
-            font-weight: 600;
-            color: #1e293b;
-            outline: none;
-            transition: all 0.2s ease;
-            margin-bottom: 1rem;
-        }
-
-        .titan-input:focus {
-            background: white;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05);
-        }
-
-        .btn-signup {
-            width: 100%;
-            background: #3b82f6; /* Lighter blue for signup to distinguish */
-            color: white;
-            padding: 1.1rem;
-            border-radius: 1.25rem;
-            font-weight: 700;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-top: 1rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .btn-signup:hover {
-            background: #2563eb;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
-        }
-
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at bottom left, #f8fafc, #eff6ff); height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+        .signup-card { background: white; border: 1px solid #f1f5f9; box-shadow: 0 25px 60px rgba(0,0,0,0.04); border-radius: 2.5rem; width: 100%; max-width: 440px; padding: 3.5rem; text-align: center; animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
+        .titan-input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1.25rem; padding: 1.1rem 1.5rem; font-size: 13px; font-weight: 600; color: #1e293b; outline: none; transition: all 0.2s ease; margin-bottom: 1rem; }
+        .titan-input:focus { background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05); }
+        .btn-signup { width: 100%; background: #3b82f6; color: white; padding: 1.1rem; border-radius: 1.25rem; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s ease; cursor: pointer; border: none; }
+        .btn-signup:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2); }
         .logo-mark { font-size: 2.5rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
         .dot { color: #3b82f6; }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-
     <div class="signup-card">
         <div class="logo-mark">T<span class="dot">.</span></div>
         <h2 class="text-2xl font-extrabold text-slate-900 mb-2">System Enrollment</h2>
-        <p class="text-slate-400 text-sm font-medium mb-10">Register your administrative credentials</p>
+        <p class="text-slate-400 text-sm font-medium mb-10">Provision your administrative access</p>
 
         <form onsubmit="handleSignup(event)">
-            <input type="text" id="fullName" class="titan-input" placeholder="Full Administrative Name" required>
-            <input type="text" id="regUsername" class="titan-input" placeholder="Choose Administrator ID" required>
-            <input type="password" id="regPassword" class="titan-input" placeholder="Create Security Password" required>
-            
+            <input type="text" id="fullName" class="titan-input" placeholder="Full Legal Name" required>
+            <input type="text" id="regUser" class="titan-input" placeholder="Create Admin ID" required>
+            <input type="password" id="regPass" class="titan-input" placeholder="Security Password" required>
             <button type="submit" id="signupBtn" class="btn-signup">Create Titan Account</button>
         </form>
 
         <div class="mt-8 text-xs font-bold text-slate-400">
-            Already registered? 
-            <a href="login.html" class="text-slate-900 hover:text-blue-600 ml-1 transition-colors underline decoration-2 underline-offset-4">Return to Login</a>
+            Already have access? <a href="login.html" class="text-slate-900 underline decoration-2 underline-offset-4 hover:text-blue-600 transition-colors ml-1">Log In</a>
         </div>
     </div>
 
     <script>
-        async function handleSignup(event) {
+        function handleSignup(event) {
             event.preventDefault();
-            const name = document.getElementById('fullName').value;
-            const user = document.getElementById('regUsername').value;
-            const pass = document.getElementById('regPassword').value;
+            const user = document.getElementById('regUser').value;
             const btn = document.getElementById('signupBtn');
-
             btn.innerText = "PROVISIONING...";
-            btn.disabled = true;
-
-            // Here you would typically fetch to your signup API
-            // For now, we simulate success and save to localStorage
             setTimeout(() => {
                 localStorage.setItem("user", user);
-                // Redirecting to index after successful "signup"
                 window.location.href = "index.html";
-            }, 1200);
+            }, 1000);
         }
     </script>
 </body>

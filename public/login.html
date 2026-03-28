@@ -7,144 +7,48 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: radial-gradient(circle at top right, #f8fafc, #f1f5f9);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-            overflow: hidden;
-        }
-
-        .login-card {
-            background: white;
-            border: 1px solid #f1f5f9;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.03);
-            border-radius: 2.5rem;
-            width: 100%;
-            max-width: 420px;
-            padding: 3.5rem;
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-
-        .input-group {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-
-        .titan-input {
-            width: 100%;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 1.25rem;
-            padding: 1.1rem 1.5rem;
-            font-size: 14px;
-            font-weight: 600;
-            color: #1e293b;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-
-        .titan-input:focus {
-            background: white;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05);
-        }
-
-        .btn-login {
-            width: 100%;
-            background: #1e293b;
-            color: white;
-            padding: 1.1rem;
-            border-radius: 1.25rem;
-            font-weight: 700;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-top: 1rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .btn-login:hover {
-            background: #000;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-
-        .logo-mark {
-            font-size: 3rem;
-            font-weight: 800;
-            letter-spacing: -0.05em;
-            color: #1e293b;
-            margin-bottom: 0.5rem;
-            display: inline-block;
-        }
-
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at top right, #f8fafc, #f1f5f9); height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; overflow: hidden; }
+        .login-card { background: white; border: 1px solid #f1f5f9; box-shadow: 0 20px 50px rgba(0,0,0,0.03); border-radius: 2.5rem; width: 100%; max-width: 420px; padding: 3.5rem; text-align: center; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .titan-input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1.25rem; padding: 1.1rem 1.5rem; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all 0.2s ease; margin-bottom: 1.25rem; }
+        .titan-input:focus { background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05); }
+        .btn-login { width: 100%; background: #1e293b; color: white; padding: 1.1rem; border-radius: 1.25rem; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s ease; cursor: pointer; border: none; }
+        .btn-login:hover { background: #000; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .logo-mark { font-size: 3rem; font-weight: 800; letter-spacing: -0.05em; color: #1e293b; margin-bottom: 0.5rem; display: inline-block; }
         .dot { color: #3b82f6; }
-
-        /* Animation for a smooth entrance */
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-login { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-
-    <div class="login-card animate-login">
+    <div class="login-card">
         <div class="logo-mark">T<span class="dot">.</span></div>
         <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Welcome Back</h2>
         <p class="text-slate-400 text-sm font-medium mb-10">Titan Cloud ERP Authentication</p>
 
         <form onsubmit="handleLogin(event)">
-            <div class="input-group">
-                <input type="text" id="username" class="titan-input" placeholder="Administrator ID" required>
-            </div>
-            
-            <div class="input-group">
-                <input type="password" id="password" class="titan-input" placeholder="Security Password" required>
-            </div>
-
+            <input type="text" id="username" class="titan-input" placeholder="Administrator ID" required>
+            <input type="password" id="password" class="titan-input" placeholder="Security Password" required>
             <button type="submit" id="loginBtn" class="btn-login">Sign In to System</button>
         </form>
 
-        <div class="mt-10">
-            <p class="text-[10px] uppercase font-bold text-slate-300 tracking-[0.2em]">Secure Session Encryption Active</p>
+        <div class="mt-8 text-xs font-bold text-slate-400">
+            New Administrator? <a href="signup.html" class="text-blue-500 hover:text-blue-700 transition-colors">Create Account →</a>
+        </div>
+
+        <div class="mt-10 pt-6 border-t border-slate-50">
+            <p class="text-[9px] uppercase font-bold text-slate-300 tracking-[0.2em]">Secure Session Active</p>
         </div>
     </div>
-    <button type="submit" id="loginBtn" class="btn-login">Sign In to System</button>
-<div class="mt-6 text-xs font-bold text-slate-400">
-    New Administrator? 
-    <a href="signup.html" class="text-blue-500 hover:text-blue-600 ml-1 transition-colors">Create Account →</a>
-</div>
+
     <script>
         function handleLogin(event) {
             event.preventDefault();
             const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
             const btn = document.getElementById('loginBtn');
-
-            // Visual feedback
             btn.innerText = "AUTHENTICATING...";
-            btn.style.opacity = "0.7";
-
-            // Basic logic - update this to match your actual login API if needed
-            if (user && pass) {
-                setTimeout(() => {
-                    localStorage.setItem("user", user);
-                    window.location.href = "index.html";
-                }, 800);
-            } else {
-                alert("Please enter valid credentials.");
-                btn.innerText = "Sign In to System";
-                btn.style.opacity = "1";
-            }
+            setTimeout(() => {
+                localStorage.setItem("user", user);
+                window.location.href = "index.html";
+            }, 800);
         }
     </script>
 </body>
