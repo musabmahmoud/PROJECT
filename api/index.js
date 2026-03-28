@@ -1,6 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+
+app.use(cors({
+    origin: "https://4-xi-topaz.vercel.app", // Your Vercel URL
+    methods: ["GET", "POST", "DELETE", "PUT"],
+    credentials: true
+}));
 require('dotenv').config();
 
 const app = express();

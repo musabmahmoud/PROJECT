@@ -190,16 +190,35 @@
     };
 
     // 2. DATABASE SYNC: TIME SLOTS
-    async function loadTimeSlots() {
-      try {
-        const res = await fetch(`${API_BASE}/config/times?adminId=${adminId}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.slots) times = data.slots;
-        }
-      } catch (err) { console.error("Time sync failed:", err); }
+async function loadTimeSlots() {
+  try {
+    const res = await fetch(`${API_BASE}/config/times?adminId=${adminId}`);
+    if (res.ok) {
+      const data = await res.json();
+      // If the DB has custom slots, use them; otherwise, use the defaults
+      if (data && data.slots && data.slots.length > 0) {
+        times = data.slots;
+      }
     }
+    // ALWAYS call renderGrid after trying to load times
+    renderGrid(); 
+  } catch (err) { 
+    console.error("Time sync failed:", err);
+    renderGrid(); 
+  }
+}
 
+async function moveTimeSlot(index, direction) {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= times.length) return;
+
+    // Swap positions in the array
+    [times[index], times[newIndex]] = [times[newIndex], times[index]];
+
+    openTimeManager(); // Refresh the popup
+    await saveTimeSlots(); // Sync to MongoDB
+    renderGrid(); // Re-draw the table with new order
+}
     async function saveTimeSlots() {
       try {
         await fetch(`${API_BASE}/config/times`, {
