@@ -3,226 +3,191 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Titan ERP | Master Grid V6</title>
+  <title>Titan ERP | Master Grid V8</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-    :root { --titan-blue: #2563eb; --titan-slate: #f8fafc; }
+    :root { --titan-blue: #2563eb; --titan-emerald: #10b981; --titan-slate: #f8fafc; }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--titan-slate); color: #0f172a; overflow-x: hidden; }
 
-    .titan-card { background: white; border-radius: 2.5rem; border: 1px solid #edf2f7; }
+    .titan-card { background: white; border-radius: 2.5rem; border: 1px solid #edf2f7; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); }
     
-    /* Subject Colors */
+    /* Subject Colors from Curriculum */
     .sub-math { background: #fefce8; color: #a16207; border: 2px solid #fef08a; }
     .sub-science { background: #f0fdf4; color: #15803d; border: 2px solid #bbf7d0; }
     .sub-english { background: #eff6ff; color: #1d4ed8; border: 2px solid #bfdbfe; }
     .sub-arabic { background: #fff1f2; color: #be123c; border: 2px solid #fecdd3; }
+    .sub-studies { background: #faf5ff; color: #7e22ce; border: 2px solid #e9d5ff; }
     .sub-break { background: #f1f5f9; color: #64748b; border: 2px dashed #cbd5e1; }
     .cell-empty { border: 2px dashed #e2e8f0; background: #f8fafc; color: #cbd5e1; }
 
     .session-item { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; }
     .session-item:hover { transform: translateY(-5px); z-index: 10; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
     
-    /* Swap Mode Visuals */
     .swapping-active { outline: 4px solid var(--titan-blue); outline-offset: 4px; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
     .modal-backdrop { backdrop-filter: blur(12px); display: none; background: rgba(15, 23, 42, 0.4); }
+    
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
   </style>
 </head>
 <body class="min-h-screen pb-20">
 
-  <div id="timeModal" class="fixed inset-0 z-[110] modal-backdrop flex items-center justify-center p-6">
-    <div class="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl">
-      <h3 class="text-2xl font-black italic mb-6">Timeline <span class="text-blue-600">Config</span></h3>
-      <div id="timeList" class="space-y-2 mb-6 max-h-64 overflow-y-auto pr-2"></div>
-      <div class="flex gap-2 mb-4">
-        <input id="newTimeInput" type="text" placeholder="e.g. 13:45" class="flex-1 p-4 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-600">
-        <button onclick="addTimeSlot()" class="bg-blue-600 text-white px-6 rounded-2xl font-black text-xl">+</button>
-      </div>
-      <button onclick="closeTimeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest">Update Timeline</button>
-    </div>
-  </div>
+  <aside class="fixed left-0 top-0 h-full w-24 hidden lg:flex flex-col items-center py-12 bg-white border-r border-slate-100 z-50">
+    <div class="text-3xl font-black text-blue-600 mb-20 italic tracking-tighter">T.</div>
+    <nav class="space-y-10 flex-1">
+      <div class="p-4 text-slate-300 hover:text-blue-600 cursor-pointer text-2xl transition-all">📊</div>
+      <div class="p-4 text-slate-300 hover:text-blue-600 cursor-pointer text-2xl transition-all">🏫</div>
+      <div class="p-4 bg-blue-600 text-white rounded-2xl shadow-xl shadow-blue-500/30 text-2xl transition-all">📅</div>
+      <div class="p-4 text-slate-300 hover:text-blue-600 cursor-pointer text-2xl transition-all">⚙️</div>
+    </nav>
+    <div class="w-10 h-10 rounded-full bg-slate-100 mb-4"></div>
+  </aside>
 
-  <div id="editModal" class="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-6">
-    <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl">
-      <div class="flex justify-between items-start mb-6">
-        <h3 class="text-3xl font-black italic">Edit <span class="text-blue-600">Session</span></h3>
-        <button onclick="startSwap()" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all">Swap Pos ⇄</button>
-      </div>
-      <div class="space-y-4">
-        <input id="editSub" type="text" placeholder="Subject Name" class="w-full p-5 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-600">
-        <input id="editTeach" type="text" placeholder="Teacher Name" class="w-full p-5 bg-slate-50 rounded-2xl font-bold outline-none">
-        <div class="flex gap-3 pt-4">
-          <button onclick="saveSession()" class="flex-1 bg-blue-600 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest">Sync</button>
-          <button onclick="clearCell()" class="px-6 bg-red-50 text-red-500 rounded-2xl font-black uppercase text-[10px]">Clear</button>
+  <div id="duplicateModal" class="fixed inset-0 z-[120] modal-backdrop flex items-center justify-center p-6">
+    <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl border-t-[12px] border-emerald-500">
+      <h3 class="text-3xl font-black italic mb-2">Clone <span class="text-emerald-500">Grid</span></h3>
+      <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8">Copy full schedule to another node</p>
+      
+      <div class="space-y-5">
+        <select id="dupLevel" class="w-full p-5 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-emerald-500">
+          <optgroup label="Primary Track"><option>Primary 1</option><option>Primary 2</option><option>Primary 3</option><option>Primary 4</option><option>Primary 5</option><option>Primary 6</option></optgroup>
+          <optgroup label="Prep Track"><option>Prep 1</option><option>Prep 2</option><option>Prep 3</option></optgroup>
+        </select>
+        <div class="flex gap-3">
+          <select id="dupGroup" class="flex-1 p-5 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-emerald-500"><option>Group A</option><option>Group B</option></select>
+          <select id="dupLang" class="flex-1 p-5 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-emerald-500"><option>English</option><option>Arabic</option></select>
         </div>
+        <button onclick="executeDuplicate()" class="w-full bg-emerald-500 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest mt-4">Execute Clone</button>
+        <button onclick="closeModal()" class="w-full text-slate-400 font-black uppercase text-[10px]">Cancel</button>
       </div>
     </div>
   </div>
 
-  <main class="lg:ml-24 p-8 md:p-16 max-w-[1600px] mx-auto">
-    <header class="flex flex-col xl:flex-row justify-between items-start gap-8 mb-12">
+  <main class="lg:ml-24 p-8 md:p-16 max-w-[1700px] mx-auto">
+    
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div class="titan-card p-8 bg-slate-900 text-white flex justify-between items-center">
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Grades</p>
+          <h4 class="text-3xl font-black italic">09 <span class="text-blue-500">Nodes</span></h4>
+        </div>
+        <div class="text-4xl">🏫</div>
+      </div>
+      <div class="titan-card p-8 flex justify-between items-center border-l-[8px] border-blue-600">
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Sessions</p>
+          <h4 id="sessionCount" class="text-3xl font-black italic">00</h4>
+        </div>
+        <div class="text-4xl text-blue-600">📝</div>
+      </div>
+      <div class="titan-card p-8 flex justify-between items-center border-l-[8px] border-emerald-500">
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Storage Status</p>
+          <h4 class="text-3xl font-black italic text-emerald-500">Synced</h4>
+        </div>
+        <div class="text-4xl">☁️</div>
+      </div>
+    </section>
+
+    <header class="flex flex-col xl:flex-row justify-between items-end gap-8 mb-12">
       <div>
-        <h1 class="text-6xl font-black tracking-tighter uppercase italic text-slate-900 leading-none">Master <span class="text-blue-600">Grid</span></h1>
-        <p id="swapIndicator" class="hidden mt-4 text-[10px] font-black text-blue-600 uppercase bg-blue-50 px-4 py-2 rounded-full inline-block animate-pulse">Select target cell to swap contents...</p>
+        <h1 class="text-7xl font-black tracking-tighter uppercase italic text-slate-900 leading-[0.8]">Titan <span class="text-blue-600">Grid</span></h1>
+        <p id="swapIndicator" class="hidden mt-6 text-[11px] font-black text-white bg-blue-600 px-6 py-2 rounded-full uppercase tracking-widest animate-pulse">Select target cell to complete swap...</p>
       </div>
 
-      <div class="flex flex-wrap gap-3 bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm">
-        <button onclick="openTimeModal()" class="p-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest">Edit Times ⏱</button>
-        <select id="selLevel" onchange="renderGrid()" class="p-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase outline-none">
-            <option value="Primary 5">Primary 5</option><option value="Secondary 2">Secondary 2</option>
+      <div class="flex flex-wrap gap-3 bg-white p-4 rounded-[3rem] shadow-xl border border-slate-100">
+        <button onclick="openDuplicateModal()" class="px-8 py-4 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all">Clone ❐</button>
+        <button onclick="openTimeModal()" class="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all">Timeline ⏱</button>
+        <div class="h-12 w-[1px] bg-slate-100 mx-2"></div>
+        <select id="selLevel" onchange="renderGrid()" class="px-6 py-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase outline-none">
+          <optgroup label="Primary Level">
+            <option>Primary 1</option><option>Primary 2</option><option>Primary 3</option><option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
+          </optgroup>
+          <optgroup label="Preparatory Level">
+            <option>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
+          </optgroup>
         </select>
-        <select id="selGroup" onchange="renderGrid()" class="p-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase outline-none">
-            <option value="Group A">Group A</option><option value="Group B">Group B</option>
-        </select>
-        <select id="selLang" onchange="renderGrid()" class="p-4 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase outline-none">
-            <option value="English">English</option><option value="Arabic">Arabic</option>
-        </select>
+        <select id="selGroup" onchange="renderGrid()" class="px-6 py-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase outline-none"><option>Group A</option><option>Group B</option></select>
+        <select id="selLang" onchange="renderGrid()" class="px-6 py-4 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase outline-none"><option>English</option><option>Arabic</option></select>
       </div>
     </header>
 
-    <div class="titan-card overflow-hidden shadow-2xl shadow-blue-900/5">
+    <div class="titan-card overflow-hidden">
       <div class="overflow-x-auto">
-        <div id="gridContainer" class="grid grid-cols-8 min-w-[1200px]"></div>
+        <div id="gridContainer" class="grid grid-cols-8 min-w-[1300px]"></div>
       </div>
     </div>
   </main>
+
+  <div id="timeModal" class="fixed inset-0 z-[110] modal-backdrop flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl"><h3 class="text-2xl font-black italic mb-6">Timeline</h3><div id="timeList" class="space-y-2 mb-6 max-h-64 overflow-y-auto"></div><div class="flex gap-2 mb-4"><input id="newTimeInput" type="text" placeholder="14:00" class="flex-1 p-4 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-blue-600/0 focus:border-blue-600"><button onclick="addTimeSlot()" class="bg-blue-600 text-white px-6 rounded-2xl font-black text-xl">+</button></div><button onclick="closeTimeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest">Update</button></div></div>
+
+  <div id="editModal" class="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-6"><div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl"><div class="flex justify-between items-start mb-6"><h3 class="text-3xl font-black italic">Session</h3><button onclick="startSwap()" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-[10px] font-black">Swap ⇄</button></div><div class="space-y-4"><input id="editSub" type="text" placeholder="Subject" class="w-full p-5 bg-slate-50 rounded-2xl font-bold outline-none"><input id="editTeach" type="text" placeholder="Teacher" class="w-full p-5 bg-slate-50 rounded-2xl font-bold outline-none"><div class="flex gap-3 pt-4"><button onclick="saveSession()" class="flex-1 bg-blue-600 text-white py-5 rounded-2xl font-black uppercase text-[10px]">Sync</button><button onclick="clearCell()" class="px-6 bg-red-50 text-red-500 rounded-2xl font-black uppercase text-[10px]">X</button></div></div></div></div>
 
   <script>
     const days = ["Timeline", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     let times = JSON.parse(localStorage.getItem('titan_times')) || ["08:00", "08:45", "09:30", "10:30", "11:15", "12:00"];
     let db = JSON.parse(localStorage.getItem('titan_master_schedules')) || {};
-    
-    let activeCellId = null;
-    let swapSourceId = null;
+    let activeCellId = null, swapSourceId = null;
 
     function renderGrid() {
       const container = document.getElementById('gridContainer');
       const configKey = `${document.getElementById('selLevel').value}-${document.getElementById('selGroup').value}-${document.getElementById('selLang').value}`;
       container.innerHTML = "";
+      
+      // Update Session Count Stat
+      let count = Object.keys(db).filter(k => k.startsWith(configKey)).length;
+      document.getElementById('sessionCount').innerText = count.toString().padStart(2, '0');
 
       // Headers
-      days.forEach(day => {
-        container.innerHTML += `<div class="p-6 text-center font-black uppercase text-[10px] tracking-widest border-b border-slate-100 ${day==='Timeline'?'bg-slate-900 text-white':'bg-slate-50/50 text-slate-400'}">${day}</div>`;
-      });
-
+      days.forEach(day => { container.innerHTML += `<div class="p-8 text-center font-black uppercase text-[11px] tracking-[0.2em] border-b border-slate-100 ${day==='Timeline'?'bg-slate-900 text-white':'bg-white text-slate-400'}">${day}</div>`; });
+      
       // Rows
       times.forEach(time => {
-        container.innerHTML += `<div class="p-8 border-r border-b border-slate-50 flex flex-col items-center justify-center bg-white"><span class="text-xl font-black text-slate-900 tracking-tighter">${time}</span></div>`;
-
+        container.innerHTML += `<div class="p-10 border-r border-b border-slate-50 flex flex-col items-center justify-center bg-white"><span class="text-2xl font-black text-slate-900 tracking-tighter">${time}</span><span class="text-[8px] font-black text-blue-600 uppercase mt-1">Period</span></div>`;
         for(let i=1; i<=7; i++) {
           const cellId = `${configKey}-${time}-${days[i]}`;
           const data = db[cellId] || null;
           let colorClass = "cell-empty";
-          
           if(data) {
             const sub = data.sub.toLowerCase();
             if(sub.includes('math')) colorClass = "sub-math";
             else if(sub.includes('science')) colorClass = "sub-science";
             else if(sub.includes('english')) colorClass = "sub-english";
             else if(sub.includes('arabic')) colorClass = "sub-arabic";
+            else if(sub.includes('studies')) colorClass = "sub-studies";
             else if(sub.includes('break')) colorClass = "sub-break";
             else colorClass = "bg-slate-900 text-white";
           }
-
-          container.innerHTML += `
-            <div class="p-2 border-b border-r border-slate-50 bg-white">
-              <div onclick="handleCellClick('${cellId}')" id="${cellId}"
-                   class="rounded-[2rem] p-4 min-h-[110px] flex flex-col items-center justify-center text-center session-item ${colorClass} ${swapSourceId === cellId ? 'swapping-active' : ''}">
-                <span class="text-[11px] font-black uppercase tracking-tighter leading-tight">${data ? data.sub : '+'}</span>
-                ${data ? `<span class="text-[8px] font-bold opacity-50 mt-2 uppercase tracking-widest">${data.teacher}</span>` : ''}
-              </div>
-            </div>`;
+          container.innerHTML += `<div class="p-2 border-b border-r border-slate-50 bg-white"><div onclick="handleCellClick('${cellId}')" class="rounded-[2.5rem] p-6 min-h-[130px] flex flex-col items-center justify-center text-center session-item ${colorClass} ${swapSourceId === cellId ? 'swapping-active' : ''}"><span class="text-[12px] font-black uppercase tracking-tight leading-none">${data ? data.sub : '+'}</span>${data ? `<span class="text-[9px] font-bold opacity-40 mt-3 uppercase tracking-widest">${data.teacher}</span>` : ''}</div></div>`;
         }
       });
     }
 
-    function handleCellClick(id) {
-      if (swapSourceId) {
-        completeSwap(id);
-      } else {
-        openEditor(id);
-      }
+    function handleCellClick(id) { if (swapSourceId) completeSwap(id); else openEditor(id); }
+    function openDuplicateModal() { document.getElementById('duplicateModal').style.display = 'flex'; }
+    function executeDuplicate() {
+      const currentPrefix = `${document.getElementById('selLevel').value}-${document.getElementById('selGroup').value}-${document.getElementById('selLang').value}`;
+      const targetPrefix = `${document.getElementById('dupLevel').value}-${document.getElementById('dupGroup').value}-${document.getElementById('dupLang').value}`;
+      if(currentPrefix === targetPrefix) return alert("Source and Target match!");
+      Object.keys(db).forEach(key => { if(key.startsWith(currentPrefix)) { const newKey = key.replace(currentPrefix, targetPrefix); db[newKey] = JSON.parse(JSON.stringify(db[key])); } });
+      saveDB(); alert("Cloned successfully!");
     }
-
-    // --- Swapping Logic ---
-    function startSwap() {
-      swapSourceId = activeCellId;
-      closeModal();
-      document.getElementById('swapIndicator').classList.remove('hidden');
-      renderGrid();
-    }
-
-    function completeSwap(targetId) {
-      if (swapSourceId !== targetId) {
-        const sourceData = db[swapSourceId];
-        const targetData = db[targetId];
-
-        // Perform the swap in the DB
-        if (sourceData) db[targetId] = sourceData; else delete db[targetId];
-        if (targetData) db[swapSourceId] = targetData; else delete db[swapSourceId];
-
-        saveDB();
-      }
-      swapSourceId = null;
-      document.getElementById('swapIndicator').classList.add('hidden');
-      renderGrid();
-    }
-
-    // --- Timeline Logic ---
-    function openTimeModal() {
-      const list = document.getElementById('timeList');
-      list.innerHTML = times.map((t, i) => `
-        <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100 mb-2">
-          <span class="font-black text-slate-800 tracking-tighter">${t}</span>
-          <button onclick="removeTime(${i})" class="text-red-400 font-bold hover:text-red-600">✕</button>
-        </div>`).join("");
-      document.getElementById('timeModal').style.display = 'flex';
-    }
-
-    function addTimeSlot() {
-      const val = document.getElementById('newTimeInput').value;
-      if(val) { times.push(val); times.sort(); document.getElementById('newTimeInput').value = ""; openTimeModal(); }
-    }
-
+    function startSwap() { swapSourceId = activeCellId; closeModal(); document.getElementById('swapIndicator').classList.remove('hidden'); renderGrid(); }
+    function completeSwap(tId) { if (swapSourceId !== tId) { const sD = db[swapSourceId], tD = db[tId]; if (sD) db[tId] = sD; else delete db[tId]; if (tD) db[swapSourceId] = tD; else delete db[swapSourceId]; saveDB(); } swapSourceId = null; document.getElementById('swapIndicator').classList.add('hidden'); renderGrid(); }
+    function openTimeModal() { const list = document.getElementById('timeList'); list.innerHTML = times.map((t, i) => `<div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl mb-2"><span class="font-black">${t}</span><button onclick="removeTime(${i})" class="text-red-400 px-2">✕</button></div>`).join(""); document.getElementById('timeModal').style.display = 'flex'; }
+    function addTimeSlot() { const val = document.getElementById('newTimeInput').value; if(val) { times.push(val); times.sort(); document.getElementById('newTimeInput').value = ""; openTimeModal(); } }
     function removeTime(i) { times.splice(i, 1); openTimeModal(); }
-    
-    function closeTimeModal() {
-      localStorage.setItem('titan_times', JSON.stringify(times));
-      document.getElementById('timeModal').style.display = 'none';
-      renderGrid();
-    }
-
-    // --- Editor Logic ---
-    function openEditor(id) {
-      activeCellId = id;
-      const data = db[id] || { sub: '', teacher: '' };
-      document.getElementById('editSub').value = data.sub;
-      document.getElementById('editTeach').value = data.teacher;
-      document.getElementById('editModal').style.display = 'flex';
-    }
-
-    function saveSession() {
-      const sub = document.getElementById('editSub').value;
-      const teacher = document.getElementById('editTeach').value;
-      if(sub) db[activeCellId] = { sub, teacher };
-      else delete db[activeCellId];
-      saveDB();
-    }
-
+    function closeTimeModal() { localStorage.setItem('titan_times', JSON.stringify(times)); document.getElementById('timeModal').style.display = 'none'; renderGrid(); }
+    function openEditor(id) { activeCellId = id; const data = db[id] || { sub: '', teacher: '' }; document.getElementById('editSub').value = data.sub; document.getElementById('editTeach').value = data.teacher; document.getElementById('editModal').style.display = 'flex'; }
+    function saveSession() { const sub = document.getElementById('editSub').value, teach = document.getElementById('editTeach').value; if(sub) db[activeCellId] = { sub, teacher: teach }; else delete db[activeCellId]; saveDB(); }
     function clearCell() { delete db[activeCellId]; saveDB(); }
-
-    function saveDB() {
-      localStorage.setItem('titan_master_schedules', JSON.stringify(db));
-      closeModal();
-      renderGrid();
-    }
-
-    function closeModal() { 
-      document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); 
-    }
-
+    function saveDB() { localStorage.setItem('titan_master_schedules', JSON.stringify(db)); closeModal(); renderGrid(); }
+    function closeModal() { document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); }
     window.onload = renderGrid;
   </script>
 </body>
