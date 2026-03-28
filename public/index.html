@@ -134,24 +134,27 @@
         const btn = document.getElementById("enrollBtn");
         const name = document.getElementById("newStudentName").value;
         const level = document.getElementById("newStudentLevel").value;
-        const group = document.getElementById("newStudentClass").value;
-        const track = document.getElementById("newStudentLang").value;
+        const groupInput = document.getElementById("newStudentClass").value;
+        const langInput = document.getElementById("newStudentLang").value;
 
-        if(!name) return alert("Validation: Name is required");
+        if(!name) return alert("Student name is required.");
         
-        btn.innerText = "PROCESSING...";
+        btn.innerText = "SAVING...";
+        btn.disabled = true;
 
-        // CLEANING THE DATA:
-        // Your server likely wants "English" instead of "English Track"
-        const cleanLanguage = track.split(' ')[0]; 
+        // --- DATA CLEANING FOR DATABASE SCHEMA ---
+        // Converts "English Track" -> "English"
+        // Converts "Group A" -> "A" (or keeps "Group A" if your server prefers)
+        const cleanLang = langInput.split(' ')[0]; 
+        const cleanClass = groupInput.replace('Group ', ''); 
 
         const payload = { 
             name: name, 
             level: level, 
-            className: group,  
-            language: cleanLanguage, // Changed "English Track" -> "English"
-            admin: user,
-            owner: user // Adding owner as a backup identifier
+            className: groupInput, // Try sending the full string first
+            language: cleanLang,   // Send the cleaned language name
+            admin: user,           // Identity key 1
+            owner: user            // Identity key 2 (Critical for some servers)
         };
 
         try {
@@ -166,25 +169,28 @@
             if(res.ok) {
                 document.getElementById("newStudentName").value = "";
                 btn.innerText = "SUCCESS ✓";
-                btn.style.backgroundColor = "#10b981";
+                btn.style.backgroundColor = "#10b981"; // Turn Green
                 
                 setTimeout(() => {
                     btn.innerText = "Confirm Enrollment";
-                    btn.style.backgroundColor = "";
-                    loadData();
+                    btn.style.backgroundColor = ""; 
+                    btn.disabled = false;
+                    loadData(); // Reload the table
                 }, 1500);
             } else {
-                // This will tell us EXACTLY what the server didn't like
-                console.error("Server Detail:", result);
-                alert("Server Error: " + (result.error || "Check Console"));
+                // This logs the EXACT reason from the server in the F12 console
+                console.error("Server Response:", result);
+                alert("Server Error: " + (result.error || "Check Logic"));
                 btn.innerText = "Confirm Enrollment";
+                btn.disabled = false;
             }
         } catch (err) { 
-            alert("Connection Error");
+            alert("Connection to Titan Server failed.");
             btn.innerText = "Confirm Enrollment";
+            btn.disabled = false;
         }
     }
-    
+
     async function deleteStudent(id) { 
         if(confirm("Delete record?")) { await fetch(`${API}/${id}?admin=${user}`, { method: "DELETE" }); loadData(); } 
     }
