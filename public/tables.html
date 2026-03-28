@@ -254,7 +254,7 @@ async function moveTimeSlot(index, direction) {
       times.forEach(time => {
         container.innerHTML += `<div class="time-cell"><span class="text-sm font-bold text-slate-900">${time}</span><span class="text-[9px] text-slate-300 font-bold uppercase mt-1">Start</span></div>`;
         for(let i=1; i<=5; i++) {
-          const cellId = `${configKey}-${time}-${days[i]}`;
+          const cellId = `${level}-${group}-${lang}-${time}-${days[i]}`;
           const data = db[cellId] || null;
           let colorClass = data ? getColor(data.sub) : "cell-empty";
           container.innerHTML += `
@@ -348,29 +348,40 @@ async function removeTimeSlot(i) {
       document.getElementById('editModal').style.display = 'flex';
     }
 
-    async function saveSession() {
-      const sub = document.getElementById('editSub').value.trim();
-      const teacher = document.getElementById('editTeach').value.trim();
-      
-      try {
-        const res = await fetch(API_BASE, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            adminId, 
-            cellId: activeCellId, 
-            session: sub ? { sub, teacher } : null 
-          })
-        });
+   async function saveSession() {
+  const sub = document.getElementById('editSub').value.trim();
+  const teacher = document.getElementById('editTeach').value.trim();
+  
+  // Create the package exactly how the Backend Router wants it
+  const payload = { 
+    adminId: adminId, 
+    cellId: activeCellId, 
+    session: sub ? { sub, teacher } : null 
+  };
 
-        if (res.ok) {
-            if(sub) db[activeCellId] = { sub, teacher };
-            else delete db[activeCellId];
-            closeModal();
-            renderGrid();
-        }
-      } catch (err) { alert("Failed to sync session with cloud."); }
+  try {
+    const res = await fetch(API_BASE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+        // Update local memory so the UI changes immediately
+        if(sub) db[activeCellId] = { sub, teacher };
+        else delete db[activeCellId];
+        
+        closeModal();
+        renderGrid();
+    } else {
+        const errorData = await res.json();
+        alert("Cloud rejected the save: " + errorData.message);
     }
+  } catch (err) { 
+      console.error("Network Error:", err);
+      alert("Failed to sync session. Check if Backend is running!"); 
+  }
+}
 
     function closeModal() { document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); }
     

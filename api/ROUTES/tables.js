@@ -15,14 +15,26 @@ router.get('/', async (req, res) => {
 // Save a session
 router.post('/', async (req, res) => {
     const { adminId, cellId, session } = req.body;
+    
     try {
-        await Table.findOneAndUpdate(
+        // If session is null, the user cleared the cell
+        if (!session) {
+            await Table.findOneAndDelete({ owner: adminId, cellId });
+            return res.json({ success: true, message: "Cleared" });
+        }
+
+        // Upsert: Update if exists, Create if it doesn't
+        const updated = await Table.findOneAndUpdate(
             { owner: adminId, cellId },
-            { session },
-            { upsert: true }
+            { session, updatedAt: new Date() },
+            { upsert: true, new: true }
         );
-        res.json({ success: true });
-    } catch (err) { res.status(500).json(err); }
+
+        res.json(updated);
+    } catch (err) {
+        console.error("Save Error:", err);
+        res.status(500).json({ message: "Database Error", error: err.message });
+    }
 });
 
 // Get/Save Time Slots (The flexible part)
