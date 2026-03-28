@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 app.use(cors({
-    origin: "https://4-xi-topaz.vercel.app", // Your Vercel URL
-    methods: ["GET", "POST", "DELETE", "PUT"],
-    credentials: true
+    origin: "*", // Allows any frontend to connect for now
+    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
 require('dotenv').config();
 
