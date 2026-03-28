@@ -7,67 +7,17 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-    
-    :root { 
-      --titan-blue: #1e293b; 
-      --accent-blue: #3b82f6;
-      --titan-slate: #fcfdfe; 
-      --sidebar-width: 100px;
-    }
-
-    body { 
-      font-family: 'Plus Jakarta Sans', sans-serif; 
-      background-color: var(--titan-slate); 
-      color: #334155; 
-      margin: 0;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* --- SIDEBAR --- */
-    .sidebar { 
-      width: var(--sidebar-width); 
-      height: 100vh; 
-      position: fixed; 
-      left: 0; top: 0; 
-      background: white; 
-      border-right: 1px solid #f1f5f9; 
-      z-index: 500; 
-      display: flex; flex-direction: column; align-items: center; padding-top: 2.5rem;
-    }
-
-    .nav-icon { 
-      width: 54px; height: 54px; margin-bottom: 1.5rem; 
-      display: flex; align-items: center; justify-content: center; 
-      border-radius: 16px; cursor: pointer; transition: all 0.3s ease; 
-      font-size: 22px; text-decoration: none; color: #94a3b8;
-    }
-
+    :root { --titan-blue: #1e293b; --accent-blue: #3b82f6; --titan-slate: #fcfdfe; --sidebar-width: 100px; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--titan-slate); color: #334155; margin: 0; -webkit-font-smoothing: antialiased; }
+    .sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; left: 0; top: 0; background: white; border-right: 1px solid #f1f5f9; z-index: 500; display: flex; flex-direction: column; align-items: center; padding-top: 2.5rem; }
+    .nav-icon { width: 54px; height: 54px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 16px; cursor: pointer; transition: all 0.3s ease; font-size: 22px; text-decoration: none; color: #94a3b8; }
     .nav-icon:hover { background: #f8fafc; color: var(--accent-blue); }
     .nav-icon.active { background: #f1f5f9; color: var(--titan-blue); }
-
     .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1600px; }
-
-    /* --- LUXURY COMPONENTS --- */
     .titan-card { background: white; border-radius: 2rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 20px rgba(0,0,0,0.01); }
-    
-    .input-luxury {
-      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem;
-      padding: 0.8rem 1.2rem; font-weight: 600; font-size: 13px; outline: none; transition: all 0.2s ease;
-      color: #1e293b; width: 100%;
-    }
-    .input-luxury:focus { border-color: var(--accent-blue); background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05); }
-
-    .btn-primary {
-      background: #1e293b; color: white; padding: 0.8rem 2rem; border-radius: 1rem;
-      font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
-      transition: all 0.3s ease; height: 100%;
-    }
-    .btn-primary:hover { background: #000; transform: translateY(-1px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-
-    .erp-table th { 
-      background: #fafbfd; text-transform: uppercase; font-size: 10px; letter-spacing: 0.15em; 
-      padding: 1.5rem 2.5rem; color: #94a3b8; font-weight: 700; border-bottom: 1px solid #f1f5f9;
-    }
+    .input-luxury { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 0.8rem 1.2rem; font-weight: 600; font-size: 13px; outline: none; transition: all 0.2s ease; color: #1e293b; width: 100%; }
+    .btn-primary { background: #1e293b; color: white; padding: 0.8rem 2rem; border-radius: 1rem; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s ease; }
+    .erp-table th { background: #fafbfd; text-transform: uppercase; font-size: 10px; letter-spacing: 0.15em; padding: 1.5rem 2.5rem; color: #94a3b8; font-weight: 700; border-bottom: 1px solid #f1f5f9; }
     .erp-table td { padding: 1.5rem 2.5rem; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
   </style>
 </head>
@@ -81,35 +31,23 @@
       <a href="classes.html" class="nav-icon" title="Attendance">🏫</a>
       <a href="teachers.html" class="nav-icon" title="Faculty">👨‍🏫</a>
     </nav>
-    <div class="mt-auto mb-10 text-slate-300 hover:text-red-500 cursor-pointer transition-colors" onclick="logout()">
+    <div class="mt-auto mb-10 text-slate-300 hover:text-red-500 cursor-pointer" onclick="logout()">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
     </div>
   </aside>
 
   <main class="main-content">
-    <header class="flex flex-col md:flex-row justify-between items-end mb-12 gap-8">
-      <div>
-        <div class="flex items-center gap-2 mb-3">
-            <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Institutional Records</p>
-        </div>
-        <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">Student <span class="text-slate-400 font-light">Registry</span></h1>
-      </div>
-      <div class="flex items-center gap-4 bg-white px-5 py-3 rounded-2xl border border-slate-100 shadow-sm">
-          <span class="text-slate-300">🔍</span>
-          <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Filter Records..." class="bg-transparent outline-none font-medium text-sm w-64 text-slate-600">
+    <header class="flex justify-between items-end mb-12">
+      <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">Student <span class="text-slate-400 font-light">Registry</span></h1>
+      <div class="bg-white px-5 py-3 rounded-2xl border border-slate-100 shadow-sm">
+          <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="Filter Records..." class="outline-none font-medium text-sm w-64 text-slate-600">
       </div>
     </header>
 
     <section class="titan-card p-8 mb-12 border-l-4 border-l-blue-500">
-      <div class="flex justify-between items-center mb-6">
-          <h3 class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Secure Enrollment Portal</h3>
-          <span class="text-[10px] text-slate-300 font-bold">Session 2025/26</span>
-      </div>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
-        <input id="sName" type="text" placeholder="Student Legal Name" class="input-luxury">
-        
-        <select id="sLevel" class="input-luxury">
+        <input id="newStudentName" type="text" placeholder="Student Legal Name" class="input-luxury">
+        <select id="newStudentLevel" class="input-luxury">
             <optgroup label="Primary Stage">
                 <option>Primary 1</option><option>Primary 2</option><option>Primary 3</option>
                 <option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
@@ -118,16 +56,13 @@
                 <option selected>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
             </optgroup>
         </select>
-
-        <select id="sGroup" class="input-luxury">
+        <select id="newStudentClass" class="input-luxury">
             <option>Group A</option><option>Group B</option><option>Group C</option>
         </select>
-
-        <select id="sTrack" class="input-luxury">
+        <select id="newStudentLang" class="input-luxury">
             <option>English Track</option><option>Arabic Track</option><option>German Track</option>
         </select>
-
-        <button id="enrollBtn" onclick="enrollStudent()" class="btn-primary">Enroll Student</button>
+        <button id="enrollBtn" onclick="enrollStudent()" class="btn-primary">Confirm Enrollment</button>
       </div>
     </section>
 
@@ -135,24 +70,21 @@
       <table class="w-full text-left erp-table">
         <thead>
           <tr>
-            <th class="w-1/3">Identity Details</th>
+            <th class="w-1/3">Identity</th>
             <th>Academic Placement</th>
-            <th class="text-center">Quick Access</th>
+            <th class="text-center">Attendance</th>
             <th class="text-right">Management</th>
           </tr>
         </thead>
-        <tbody id="studentBody"></tbody>
+        <tbody id="studentsTable"></tbody>
       </table>
     </div>
 
     <footer class="mt-10 flex justify-between items-center text-slate-400">
-        <div class="flex gap-4">
-            <div class="bg-white px-6 py-3 rounded-xl border border-slate-100">
-                <p class="text-[9px] font-bold uppercase mb-1">Total Enrollment</p>
-                <p id="totalCount" class="text-lg font-extrabold text-slate-900">00</p>
-            </div>
+        <div class="bg-white px-6 py-3 rounded-xl border border-slate-100">
+            <p class="text-[9px] font-bold uppercase mb-1">Total Enrollment</p>
+            <p id="totalCount" class="text-lg font-extrabold text-slate-900">00</p>
         </div>
-        <p class="text-[10px] font-bold italic tracking-widest uppercase">Titan Cloud Registry v4.0</p>
     </footer>
   </main>
 
@@ -160,111 +92,85 @@
     const API = "/api/students";
     const user = localStorage.getItem("user");
 
-    window.onload = () => { 
-        if (!user) window.location.href = "login.html"; 
-        loadData(); 
-    };
+    window.onload = () => { if(!user) window.location.href="login.html"; loadData(); };
 
     async function loadData() {
         const tbody = document.getElementById("studentsTable");
-        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center font-medium text-slate-300 italic">Synchronizing Records...</td></tr>`;
-
+        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-200 font-bold text-xs uppercase animate-pulse">Syncing...</td></tr>`;
         try {
             const res = await fetch(`${API}?admin=${user}`);
             const data = await res.json();
             tbody.innerHTML = "";
             document.getElementById('totalCount').innerText = data.length.toString().padStart(2, '0');
-
             data.forEach(s => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50/50 transition-colors">
                         <td>
                             <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-xs italic">${s.name.charAt(0)}</div>
+                                <div class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-xs">${s.name.charAt(0)}</div>
                                 <div>
-                                    <p class="text-sm font-bold text-slate-800 mb-0.5">${s.name}</p>
+                                    <p class="text-sm font-bold text-slate-800">${s.name}</p>
                                     <p class="text-[9px] font-medium text-slate-400">UID: ${s._id.slice(-8).toUpperCase()}</p>
                                 </div>
                             </div>
                         </td>
                         <td>
                             <div class="flex flex-col">
-                                <span class="text-[11px] font-bold text-slate-700">${s.level}</span>
-                                <span class="text-[9px] font-bold text-blue-400 uppercase tracking-widest mt-1">${s.language || 'English'} | ${s.className || 'Group A'}</span>
+                                <span class="text-xs font-bold text-slate-700">${s.level}</span>
+                                <span class="text-[9px] font-bold text-blue-400 uppercase mt-1">${s.language || 'English'} | ${s.className || 'Group A'}</span>
                             </div>
                         </td>
-                        <td class="no-print text-center">
-                            <button onclick="window.location.href='classes.html'" class="text-[10px] font-bold text-slate-400 hover:text-blue-500 uppercase">Attendance →</button>
-                        </td>
+                        <td class="text-center"><button onclick="window.location.href='classes.html'" class="text-[10px] font-bold text-slate-400 hover:text-blue-500 uppercase">Registry →</button></td>
                         <td class="text-right">
-                            <button onclick="deleteStudent('${s._id}')" class="w-9 h-9 inline-flex items-center justify-center bg-red-50 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2-2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
+                            <button onclick="deleteStudent('${s._id}')" class="w-9 h-9 inline-flex items-center justify-center bg-red-50 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all">✕</button>
                         </td>
                     </tr>`;
             });
-        } catch (e) { 
-            tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-red-400 text-xs font-bold">DATABASE DISCONNECTED</td></tr>`; 
-        }
+        } catch (e) { tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-red-400 font-bold">ERROR</td></tr>`; }
     }
 
-    async function addNewStudent() {
-        const btn = document.querySelector('.btn-primary');
+    // FUNCTION NAME FIXED TO MATCH THE BUTTON
+    async function enrollStudent() {
+        const btn = document.getElementById("enrollBtn");
         const name = document.getElementById("newStudentName").value;
         const level = document.getElementById("newStudentLevel").value;
         const group = document.getElementById("newStudentClass").value;
         const track = document.getElementById("newStudentLang").value;
 
-        if(!name) return alert("Please enter a name.");
+        if(!name) return alert("Name required");
+        btn.innerText = "SAVING...";
 
-        btn.innerText = "ENROLLING...";
-        
         try {
             const res = await fetch(API, { 
                 method: "POST", 
                 headers: { "Content-Type": "application/json" }, 
-                // CRITICAL FIX: We send 'className' and 'language' to match your server schema
-                body: JSON.stringify({ 
-                    name: name, 
-                    level: level, 
-                    className: group,  
-                    language: track, 
-                    admin: user 
-                }) 
+                body: JSON.stringify({ name, level, className: group, language: track, admin: user }) 
             });
 
             if(res.ok) {
                 document.getElementById("newStudentName").value = "";
                 btn.innerText = "SUCCESS ✓";
-                btn.style.background = "#10b981"; // Emerald Green
+                btn.classList.add('bg-emerald-500');
                 setTimeout(() => {
                     btn.innerText = "Confirm Enrollment";
-                    btn.style.background = ""; // Back to Navy
+                    btn.classList.remove('bg-emerald-500');
                     loadData();
                 }, 1500);
             } else {
                 const err = await res.json();
-                alert("Error: " + (err.error || "Creation failed"));
+                alert(err.error || "Failed");
                 btn.innerText = "Confirm Enrollment";
             }
-        } catch (err) {
-            alert("Check Server Connection");
-            btn.innerText = "Confirm Enrollment";
-        }
+        } catch (err) { btn.innerText = "Confirm Enrollment"; }
     }
 
     async function deleteStudent(id) { 
-        if(confirm("Permanently archive student record?")) { 
-            await fetch(`${API}/${id}?admin=${user}`, { method: "DELETE" }); 
-            loadData(); 
-        } 
+        if(confirm("Delete record?")) { await fetch(`${API}/${id}?admin=${user}`, { method: "DELETE" }); loadData(); } 
     }
     
     function searchStudents() { 
         const q = document.getElementById("searchInput").value.toLowerCase(); 
-        document.querySelectorAll("#studentsTable tr").forEach(row => { 
-            row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none"; 
-        }); 
+        document.querySelectorAll("#studentsTable tr").forEach(row => { row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none"; }); 
     }
 
     function logout() { localStorage.clear(); window.location.href="login.html"; }
