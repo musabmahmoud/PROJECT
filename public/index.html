@@ -188,69 +188,88 @@
     };
 
     async function loadData() {
-        const desktopContainer = document.getElementById("studentBodyDesktop");
-        const mobileContainer = document.getElementById("studentBodyMobile");
-        const loader = `<div class="p-20 text-center text-slate-300 font-bold uppercase tracking-widest animate-pulse">Syncing Cloud...</div>`;
-        
-        mobileContainer.innerHTML = loader;
-        desktopContainer.innerHTML = `<tr><td colspan="4">${loader}</td></tr>`;
-        
-        try {
-            const res = await fetch(API, { headers: { 'Authorization': token } });
-            if (!res.ok) throw new Error("Unauthorized");
-            const data = await res.json();
-            
-            desktopContainer.innerHTML = "";
-            mobileContainer.innerHTML = "";
-            document.getElementById('totalCount').innerText = data.length.toString().padStart(2, '0');
-            
-            if (data.length === 0) {
-                const emptyMsg = `<div class="p-20 text-center text-slate-400 italic">No records found.</div>`;
-                mobileContainer.innerHTML = emptyMsg;
-                desktopContainer.innerHTML = `<tr><td colspan="4">${emptyMsg}</td></tr>`;
-                return;
-            }
+    const desktopContainer = document.getElementById("studentBodyDesktop");
+    const mobileContainer = document.getElementById("studentBodyMobile");
+    
+    // 1. Get the Admin Identifier (the 'user' key you saved during login)
+    const adminId = localStorage.getItem("user"); 
+    const token = localStorage.getItem("titan_token");
 
-            data.forEach(s => {
-                const initials = s.name.charAt(0).toUpperCase();
-                const shortId = s._id.slice(-6).toUpperCase();
-
-                // Desktop Row
-                desktopContainer.innerHTML += `
-                    <tr class="hover:bg-slate-50/50 transition-colors">
-                        <td class="p-6">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-extrabold text-slate-400 text-xs">${initials}</div>
-                                <div><p class="text-sm font-extrabold text-slate-800">${s.name}</p><p class="text-[9px] font-bold text-slate-300 uppercase">ID: ${shortId}</p></div>
-                            </div>
-                        </td>
-                        <td class="p-6 text-xs font-bold text-slate-600">${s.level}</td>
-                        <td class="p-6 text-[9px] font-bold text-blue-500 uppercase tracking-tighter">${s.className} • ${s.language}</td>
-                        <td class="p-6 text-right"><button onclick="deleteStudent('${s._id}')" class="text-red-300 hover:text-red-500 font-bold">✕</button></td>
-                    </tr>`;
-
-                // Mobile Card
-                mobileContainer.innerHTML += `
-                    <div class="p-6 flex flex-col gap-4">
-                        <div class="flex justify-between items-start">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center font-bold">${initials}</div>
-                                <div><p class="font-extrabold text-slate-800 text-sm">${s.name}</p><p class="text-[9px] font-bold text-slate-300">ID: ${shortId}</p></div>
-                            </div>
-                            <button onclick="deleteStudent('${s._id}')" class="bg-red-50 text-red-500 p-2 rounded-lg text-xs font-bold">Delete</button>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 border-t border-slate-50 pt-4">
-                            <div><span class="mobile-label">Level</span><p class="text-xs font-bold text-slate-600">${s.level}</p></div>
-                            <div><span class="mobile-label">Track</span><p class="text-[10px] font-extrabold text-blue-500 uppercase">${s.className} • ${s.language}</p></div>
-                        </div>
-                    </div>`;
-            });
-        } catch (e) { 
-            const errorMsg = `<div class="p-10 text-center text-red-400 font-bold">Connection Failed</div>`;
-            mobileContainer.innerHTML = errorMsg;
-            desktopContainer.innerHTML = `<tr><td colspan="4">${errorMsg}</td></tr>`;
-        }
+    // 2. Security Check: If no user ID, kick to login
+    if (!adminId || !token) {
+        window.location.href = "login.html";
+        return;
     }
+
+    const loader = `<div class="p-20 text-center text-slate-300 font-bold uppercase tracking-widest animate-pulse">Syncing Cloud...</div>`;
+    mobileContainer.innerHTML = loader;
+    desktopContainer.innerHTML = `<tr><td colspan="4">${loader}</td></tr>`;
+    
+    try {
+        // 3. Add the admin ID to the URL as a "Query Parameter" 
+        // This tells the server: "Hey, I am Admin X, give me MY students."
+        const res = await fetch(`${API}?adminId=${adminId}`, { 
+            headers: { 'Authorization': token } 
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || "Unauthorized");
+        }
+
+        const data = await res.json();
+        
+        desktopContainer.innerHTML = "";
+        mobileContainer.innerHTML = "";
+        document.getElementById('totalCount').innerText = data.length.toString().padStart(2, '0');
+        
+        if (data.length === 0) {
+            const emptyMsg = `<div class="p-20 text-center text-slate-400 italic">No records found.</div>`;
+            mobileContainer.innerHTML = emptyMsg;
+            desktopContainer.innerHTML = `<tr><td colspan="4">${emptyMsg}</td></tr>`;
+            return;
+        }
+
+        data.forEach(s => {
+            const initials = s.name ? s.name.charAt(0).toUpperCase() : "?";
+            const shortId = s._id ? s._id.slice(-6).toUpperCase() : "TEMP";
+
+            // Desktop Row
+            desktopContainer.innerHTML += `
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="p-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-extrabold text-slate-400 text-xs">${initials}</div>
+                            <div><p class="text-sm font-extrabold text-slate-800">${s.name}</p><p class="text-[9px] font-bold text-slate-300 uppercase">ID: ${shortId}</p></div>
+                        </div>
+                    </td>
+                    <td class="p-6 text-xs font-bold text-slate-600">${s.level}</td>
+                    <td class="p-6 text-[9px] font-bold text-blue-500 uppercase tracking-tighter">${s.className} • ${s.language}</td>
+                    <td class="p-6 text-right"><button onclick="deleteStudent('${s._id}')" class="text-red-300 hover:text-red-500 font-bold">✕</button></td>
+                </tr>`;
+
+            // Mobile Card
+            mobileContainer.innerHTML += `
+                <div class="p-6 flex flex-col gap-4">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center font-bold">${initials}</div>
+                            <div><p class="font-extrabold text-slate-800 text-sm">${s.name}</p><p class="text-[9px] font-bold text-slate-300">ID: ${shortId}</p></div>
+                        </div>
+                        <button onclick="deleteStudent('${s._id}')" class="bg-red-50 text-red-500 px-3 py-1 rounded-lg text-[10px] font-bold uppercase">Delete</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 border-t border-slate-50 pt-4">
+                        <div><span class="mobile-label">Level</span><p class="text-xs font-bold text-slate-600">${s.level}</p></div>
+                        <div><span class="mobile-label">Track</span><p class="text-[10px] font-extrabold text-blue-500 uppercase">${s.className} • ${s.language}</p></div>
+                    </div>
+                </div>`;
+        });
+    } catch (e) { 
+        const errorMsg = `<div class="p-10 text-center text-red-400 font-bold">ERROR: ${e.message}</div>`;
+        mobileContainer.innerHTML = errorMsg;
+        desktopContainer.innerHTML = `<tr><td colspan="4">${errorMsg}</td></tr>`;
+    }
+}
 
     async function enrollStudent() {
         const btn = document.getElementById("enrollBtn");
@@ -277,6 +296,20 @@
                 setTimeout(() => { btn.innerText = "Enroll Now"; btn.disabled = false; loadData(); }, 1000);
             }
         } catch (e) { btn.innerText = "Error"; btn.disabled = false; }
+    const res = await fetch(API, { 
+    method: "POST", 
+    headers: { 
+        "Content-Type": "application/json", 
+        "Authorization": token 
+    }, 
+    body: JSON.stringify({ 
+        name, 
+        level, 
+        className, 
+        language,
+        adminId: localStorage.getItem("user")
+    }) 
+});
     }
 
     async function deleteStudent(id) { 
