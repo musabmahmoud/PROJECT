@@ -29,12 +29,14 @@ mongoose.connect(MONGO_URI)
 const studentRoutes = require('./ROUTES/student'); 
 const teacherRoutes = require('./ROUTES/teachers'); 
 const authRoutes = require('./ROUTES/auth');
+const tablesRoutes = require('./ROUTES/tables');
 
 // We map the logic to specific URLs.
 // Example: Any request to "/api/auth" will be handled by auth.js
 app.use('/api/students', studentRoutes); 
 app.use('/api/teachers', teacherRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', tablesRoutes);
 
 // --- 4. SYSTEM HEALTH CHECK ---
 // If you visit the root URL of your backend, you see this luxury status page.
