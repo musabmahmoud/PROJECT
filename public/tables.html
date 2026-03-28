@@ -173,11 +173,55 @@
   </main>
 
   <script>
+    // 1. CONFIGURATION
+    const API_BASE = "http://localhost:5000/api/tables"; // Ensure this matches your server.js
+    const adminId = localStorage.getItem("user");
+
     const days = ["Period", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
-    let times = JSON.parse(localStorage.getItem('titan_times')) || ["08:00", "08:45", "09:30", "10:30", "11:15", "12:00"];
-    let db = JSON.parse(localStorage.getItem('titan_master_schedules')) || {};
+    let times = ["08:00", "08:45", "09:30", "10:30", "11:15", "12:00"];
+    let db = {}; // Global memory for the fetched schedule
     let activeCellId = null;
 
+    // Initialize Page
+    window.onload = async () => {
+      if(!adminId) { window.location.href="login.html"; return; }
+      await loadTimeSlots();
+      await loadFullSchedule();
+    };
+
+    // 2. DATABASE SYNC: TIME SLOTS
+    async function loadTimeSlots() {
+      try {
+        const res = await fetch(`${API_BASE}/config/times?adminId=${adminId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.slots) times = data.slots;
+        }
+      } catch (err) { console.error("Time sync failed:", err); }
+    }
+
+    async function saveTimeSlots() {
+      try {
+        await fetch(`${API_BASE}/config/times`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ adminId, slots: times })
+        });
+      } catch (err) { alert("Failed to save timeline to cloud."); }
+    }
+
+    // 3. DATABASE SYNC: MASTER SCHEDULE
+    async function loadFullSchedule() {
+      try {
+        const res = await fetch(`${API_BASE}?adminId=${adminId}`);
+        if (res.ok) {
+          db = await res.json(); // Expected: { "cell-id": { sub, teacher }, ... }
+          renderGrid();
+        }
+      } catch (err) { console.error("Schedule sync failed:", err); }
+    }
+
+    // 4. UI RENDERING
     function renderGrid() {
       const container = document.getElementById('gridContainer');
       const level = document.getElementById('selLevel').value;
@@ -216,32 +260,65 @@
         return "bg-slate-900 text-white";
     }
 
-    /* --- TIME MANAGER LOGIC --- */
-    function openTimeManager() {
-      const list = document.getElementById('timeList');
-      list.innerHTML = "";
-      times.forEach((t, i) => {
-        list.innerHTML += `
-          <div class="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-            <span class="font-bold text-slate-800 flex-1 ml-2 text-sm">${t}</span>
-            <button onclick="removeTimeSlot(${i})" class="text-red-400 font-bold px-2">✕</button>
-          </div>`;
-      });
-      document.getElementById('timeModal').style.display = 'flex';
-    }
+    /* --- TIME MANAGER --- */
+  /* --- ADVANCED TIME MANAGER --- */
+function openTimeManager() {
+  const list = document.getElementById('timeList');
+  list.innerHTML = "";
+  
+  times.forEach((t, i) => {
+    list.innerHTML += `
+      <div class="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100 group">
+        <span class="font-bold text-slate-800 flex-1 ml-2 text-sm">${t}</span>
+        
+        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onclick="moveTimeSlot(${i}, -1)" class="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-blue-500">↑</button>
+            <button onclick="moveTimeSlot(${i}, 1)" class="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-blue-500">↓</button>
+        </div>
 
-    function addTimeSlot() {
-      const val = document.getElementById('newTimeInput').value;
-      if(val) { times.push(val); times.sort(); document.getElementById('newTimeInput').value = ""; openTimeManager(); }
-    }
+        <div class="w-[1px] h-4 bg-slate-200 mx-1"></div>
+        <button onclick="removeTimeSlot(${i})" class="text-red-400 font-bold px-2 hover:bg-red-50 rounded-lg">✕</button>
+      </div>`;
+  });
+  document.getElementById('timeModal').style.display = 'flex';
+}
 
-    function removeTimeSlot(i) { times.splice(i, 1); openTimeManager(); }
+// The "Flexible" Logic: Swaps array elements
+async function moveTimeSlot(index, direction) {
+    const newIndex = index + direction;
+    
+    // Boundary check
+    if (newIndex < 0 || newIndex >= times.length) return;
 
-    function closeTimeModal() {
-      localStorage.setItem('titan_times', JSON.stringify(times));
-      document.getElementById('timeModal').style.display = 'none';
-      renderGrid();
-    }
+    // Swap positions
+    const temp = times[index];
+    times[index] = times[newIndex];
+    times[newIndex] = temp;
+
+    // Refresh the UI manager
+    openTimeManager();
+    
+    // Auto-sync to Database so the order is saved immediately
+    await saveTimeSlots();
+}
+
+function addTimeSlot() {
+  const val = document.getElementById('newTimeInput').value.trim();
+  if(val) { 
+    times.push(val); 
+    // Note: We removed the auto-sort so you can order them manually!
+    document.getElementById('newTimeInput').value = ""; 
+    openTimeManager(); 
+  }
+}
+
+async function removeTimeSlot(i) { 
+  if(confirm("Remove this time period? Any sessions in this slot will be hidden.")) {
+    times.splice(i, 1); 
+    openTimeManager();
+    await saveTimeSlots();
+  }
+}
 
     /* --- SESSION EDITING --- */
     function openEditor(id) {
@@ -252,20 +329,36 @@
       document.getElementById('editModal').style.display = 'flex';
     }
 
-    function saveSession() {
+    async function saveSession() {
       const sub = document.getElementById('editSub').value.trim();
       const teacher = document.getElementById('editTeach').value.trim();
-      if(sub) db[activeCellId] = { sub, teacher };
-      else delete db[activeCellId];
-      localStorage.setItem('titan_master_schedules', JSON.stringify(db));
-      closeModal();
-      renderGrid();
+      
+      try {
+        const res = await fetch(API_BASE, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            adminId, 
+            cellId: activeCellId, 
+            session: sub ? { sub, teacher } : null 
+          })
+        });
+
+        if (res.ok) {
+            if(sub) db[activeCellId] = { sub, teacher };
+            else delete db[activeCellId];
+            closeModal();
+            renderGrid();
+        }
+      } catch (err) { alert("Failed to sync session with cloud."); }
     }
 
     function closeModal() { document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); }
-    function logout() { localStorage.clear(); window.location.href="login.html"; }
-
-    window.onload = renderGrid;
+    
+    function logout() { 
+        localStorage.clear(); 
+        window.location.href="login.html"; 
+    }
   </script>
 </body>
 </html>

@@ -21,10 +21,12 @@ const API = "/api/students";
 const studentRoutes = require('./ROUTES/student'); // Removed the 's'
 const teacherRoutes = require('./ROUTES/teachers'); // Check if this is singular too!
 const authRoutes = require('./ROUTES/auth');
+const tableRoutes = require('./ROUTES/tables'); // Add this
 // Use the routes
 app.use('/api/students', studentRoutes); // Keep this plural for the Frontend URL
 app.use('/api/teachers', teacherRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/tables', tableRoutes); // Add this
 
 // --- 5. SYSTEM HEALTH CHECK ---
 app.get('/', (req, res) => {

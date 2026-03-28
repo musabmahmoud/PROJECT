@@ -200,23 +200,45 @@
     </div>
   </main>
 
-  <script>
-    const user = localStorage.getItem("user");
-    let teachers = JSON.parse(localStorage.getItem(`teachers_${user}`)) || [];
+ <script>
+    // 1. CONFIGURATION: Adjust this to your backend URL
+    const API_URL = "http://localhost:5000/api/teachers"; 
+    const adminId = localStorage.getItem("user");
 
+    // Initialize Page
     window.onload = () => {
-      if(!user) { window.location.href="login.html"; return; }
-      renderTeachers();
+      if(!adminId) { window.location.href="login.html"; return; }
+      loadTeachers();
     };
 
-    function renderTeachers() {
+    // 2. FETCH TEACHERS FROM DATABASE
+    async function loadTeachers() {
+      const tbody = document.getElementById("teacherBody");
+      const totalDisplay = document.getElementById("totalPayroll");
+      
+      tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-400 animate-pulse">Syncing with Secure Vault...</td></tr>`;
+
+      try {
+        const res = await fetch(`${API_URL}?adminId=${adminId}`);
+        if (!res.ok) throw new Error("Failed to fetch");
+        
+        const teachers = await res.json();
+        renderTeachers(teachers);
+      } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-red-400 font-bold">Error: Could not connect to database.</td></tr>`;
+      }
+    }
+
+    // 3. RENDER UI
+    function renderTeachers(teachers) {
       const tbody = document.getElementById("teacherBody");
       const totalDisplay = document.getElementById("totalPayroll");
       tbody.innerHTML = "";
       let total = 0;
 
       if(teachers.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-300 font-medium italic text-sm">No faculty records found.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-300 font-medium italic text-sm">No faculty records found in database.</td></tr>`;
           totalDisplay.innerText = "0";
           return;
       }
@@ -232,20 +254,20 @@
                 </div>
                 <div>
                     <p class="text-sm font-bold text-slate-800">${t.name}</p>
-                    <p class="text-[9px] font-medium text-slate-400 uppercase tracking-tighter">Staff ID #STF-0${index + 101}</p>
+                    <p class="text-[9px] font-medium text-slate-400 uppercase tracking-tighter">Staff ID #STF-${t._id.slice(-4).toUpperCase()}</p>
                 </div>
               </div>
             </td>
             <td class="px-8 py-6">
               <span class="px-3 py-1 rounded-lg bg-blue-50 text-blue-600 text-[9px] font-bold uppercase tracking-wider">
-                ${t.subject}
+                ${t.subject || 'General'}
               </span>
             </td>
             <td class="px-8 py-6">
               <p class="text-sm font-bold text-slate-700">£${Number(t.salary).toLocaleString()}</p>
             </td>
             <td class="px-8 py-6 text-right">
-              <button onclick="removeTeacher(${index})" class="text-slate-300 hover:text-red-500 font-bold text-[9px] uppercase tracking-widest transition-colors">Resolve Contract</button>
+              <button onclick="removeTeacher('${t._id}')" class="text-slate-300 hover:text-red-500 font-bold text-[9px] uppercase tracking-widest transition-colors">Resolve Contract</button>
             </td>
           </tr>
         `;
@@ -254,34 +276,62 @@
       totalDisplay.innerText = total.toLocaleString();
     }
 
-    function addTeacher() {
+    // 4. SAVE NEW TEACHER TO DATABASE
+    async function addTeacher() {
       const name = document.getElementById("tName").value;
       const subject = document.getElementById("tSubject").value;
       const salary = document.getElementById("tSalary").value;
 
-      if(!name || !salary) return;
+      if(!name || !salary) {
+        alert("Please provide full name and salary.");
+        return;
+      }
 
-      teachers.push({ name, subject, salary });
-      saveAndRender();
-      
-      document.getElementById("tName").value = "";
-      document.getElementById("tSubject").value = "";
-      document.getElementById("tSalary").value = "";
-    }
+      const btn = document.querySelector("button[onclick='addTeacher()']");
+      btn.innerText = "AUTHORIZING...";
+      btn.disabled = true;
 
-    function removeTeacher(index) {
-      if(confirm("Are you sure you want to resolve this faculty contract?")) {
-        teachers.splice(index, 1);
-        saveAndRender();
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, subject, salary, adminId })
+        });
+
+        if (res.ok) {
+          // Reset inputs and reload
+          document.getElementById("tName").value = "";
+          document.getElementById("tSubject").value = "";
+          document.getElementById("tSalary").value = "";
+          loadTeachers();
+        }
+      } catch (err) {
+        alert("Database connection failed.");
+      } finally {
+        btn.innerText = "Authorize Hire";
+        btn.disabled = false;
       }
     }
 
-    function saveAndRender() {
-      localStorage.setItem(`teachers_${user}`, JSON.stringify(teachers));
-      renderTeachers();
+    // 5. REMOVE TEACHER FROM DATABASE
+    async function removeTeacher(teacherId) {
+      if(!confirm("Are you sure you want to resolve this faculty contract?")) return;
+
+      try {
+        const res = await fetch(`${API_URL}/${teacherId}?adminId=${adminId}`, {
+          method: "DELETE"
+        });
+        if (res.ok) loadTeachers();
+      } catch (err) {
+        alert("Failed to delete record.");
+      }
     }
 
-    function logout() { localStorage.clear(); window.location.href="login.html"; }
+    function logout() { 
+        localStorage.removeItem("titan_token");
+        localStorage.removeItem("user");
+        window.location.href="login.html"; 
+    }
   </script>
 </body>
 </html>
