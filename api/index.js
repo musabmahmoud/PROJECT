@@ -1,52 +1,47 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-
-app.use(cors({
-    origin: "*", // Allows any frontend to connect for now
-    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-}));
 require('dotenv').config();
 
+// 1. INITIALIZE APP FIRST (Crucial Fix)
 const app = express();
 
-// --- 1. MIDDLEWARE ---
-app.use(cors());
+// 2. MIDDLEWARE (Now 'app' exists, so this won't crash)
+app.use(cors({
+    origin: "*", 
+    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
+}));
 app.use(express.json());
 
-// --- 2. DATABASE CONNECTION ---
-// Using your specific connection string provided
+// 3. DATABASE CONNECTION
 const MONGO_URI = 'mongodb+srv://Musab:Musab2008!@cluster0.47y03jt.mongodb.net/TitanSchool?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI)
-    .then(() => console.log("✅ TITAN DATABASE: CONNECTED & ONLINE"))
+    .then(() => console.log("✅ TITAN DATABASE: ONLINE"))
     .catch(err => console.error("❌ DATABASE ERROR:", err));
 
-const API = "/api/students";
-const studentRoutes = require('./ROUTES/student'); // Removed the 's'
-const teacherRoutes = require('./ROUTES/teachers'); // Check if this is singular too!
-const authRoutes = require('./ROUTES/auth');
-const tableRoutes = require('./ROUTES/tables'); // Add this
-// Use the routes
-app.use('/api/students', studentRoutes); // Keep this plural for the Frontend URL
-app.use('/api/teachers', teacherRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/tables', tableRoutes); // Add this
+// 4. ROUTES
+// Make sure these files exist in your ROUTES folder!
+app.use('/api/students', require('./ROUTES/student'));
+app.use('/api/teachers', require('./ROUTES/teachers'));
+app.use('/api/auth', require('./ROUTES/auth'));
+app.use('/api/tables', require('./ROUTES/tables'));
 
-// --- 5. SYSTEM HEALTH CHECK ---
+// 5. HEALTH CHECK
 app.get('/', (req, res) => {
-    res.status(200).send(`
-        <body style="background: #020617; color: #2563eb; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh;">
-            <div style="text-align: center; border: 2px solid #1e2937; padding: 40px; border-radius: 20px;">
+    res.send(`
+        <body style="background: #020617; color: #3b82f6; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh;">
+            <div style="text-align: center; border: 2px solid #1e293b; padding: 40px; border-radius: 20px;">
                 <h1>TITAN ENGINE : ONLINE</h1>
-                <p style="color: #64748b;">API Version 1.0.4 | Database Status: Connected</p>
+                <p style="color: #64748b;">API is listening for Vercel requests</p>
             </div>
         </body>
     `);
 });
 
-// --- 6. START SERVER ---
+// 6. START SERVER
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 TITAN ENGINE DEPLOYED ON PORT ${PORT}`);
