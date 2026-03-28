@@ -352,6 +352,31 @@ async function removeTimeSlot(i) {
   const sub = document.getElementById('editSub').value.trim();
   const teacher = document.getElementById('editTeach').value.trim();
   
+  const payload = { 
+    adminId: adminId, // Make sure this isn't undefined!
+    cellId: activeCellId, 
+    session: sub ? { sub, teacher } : null 
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}`, { // Ensure API_BASE is http://localhost:5000/api/tables
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+        if(sub) db[activeCellId] = { sub, teacher };
+        else delete db[activeCellId];
+        closeModal();
+        renderGrid();
+    }
+  } catch (err) { 
+      console.error("Sync Error:", err);
+      alert("Browser blocked the cloud sync. Check console!"); 
+  }
+}
+  
   // Create the package exactly how the Backend Router wants it
   const payload = { 
     adminId: adminId, 
@@ -381,7 +406,7 @@ async function removeTimeSlot(i) {
       console.error("Network Error:", err);
       alert("Failed to sync session. Check if Backend is running!"); 
   }
-}
+
 
     function closeModal() { document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); }
     
