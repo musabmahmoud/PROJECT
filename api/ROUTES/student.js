@@ -4,24 +4,25 @@ const Student = require("../MODELS/student");
 
 /**
  * TITAN ERP | STUDENT OPERATIONS ROUTE
- * Handles Registry, Daily Logs, Academic Vault, and System Analytics.
+ * Standardized to use 'adminId' for all owner-based queries.
  */
 
 // Utility to get current month (e.g., "2026-03")
 const getMonth = () => new Date().toISOString().slice(0, 7);
 
 // --- 1. GLOBAL LIST & FILTER ---
-// Restored all filters: level, language, and className.
-// This is the main feed for your index.html table.
+// This feeds your index.html table.
 router.get("/", async (req, res) => {
   try {
-    const { admin, level, language, className, month } = req.query;
+    const { adminId, level, language, className, month } = req.query;
     const targetMonth = month || getMonth();
 
-    // SYNC CHECK: Every request must be tied to an Admin ID.
-    if (!admin) return res.status(400).json({ error: "Admin identifier required" });
+    // Block request if no Admin ID is provided
+    if (!adminId) {
+      return res.status(400).json({ error: "Admin identifier required" });
+    }
 
-    let query = { owner: admin };
+    let query = { owner: adminId };
     if (level) query.level = level;
     if (language) query.language = language;
     if (className && className !== "Both") query.className = className;
@@ -29,7 +30,6 @@ router.get("/", async (req, res) => {
     const students = await Student.find(query).sort({ name: 1 });
 
     const formatted = students.map(s => {
-      // Finds the specific record for the current month or provides defaults.
       const rec = s.records?.find(r => r.month === targetMonth) || { 
         payments: 0, attendance: 0, absences: 0, grades: {} 
       };
@@ -40,11 +40,9 @@ router.get("/", async (req, res) => {
         level: s.level,
         className: s.className,
         language: s.language || "English",
-        // Monthly stats for the dashboard cards.
         monthlyPayments: rec.payments,
         monthlyAttendance: rec.attendance,
         monthlyAbsences: rec.absences,
-        // Top-level "Academic Vault" data for long-term tracking.
         totalPayments: s.payments,
         academicVault: s.grades,
         lastSeen: s.lastSeen
@@ -58,18 +56,21 @@ router.get("/", async (req, res) => {
 });
 
 // --- 2. ADD NEW STUDENT ---
-// Triggered by the Enrollment form.
+// Triggered by the Enrollment portal.
 router.post("/", async (req, res) => {
   try {
-    const { name, level, language, className, owner } = req.body;
+    const { name, level, language, className, adminId } = req.body;
+
+    if (!adminId) {
+      return res.status(400).json({ error: "Admin ID required for enrollment" });
+    }
 
     const student = new Student({ 
       name, 
       level,
       language: language || "English",
       className: className || "Group A",
-      owner,
-      // Initialize with zeroed-out trackers for the first month.
+      owner: adminId,
       payments: 0,
       attendance: 0,
       absences: 0,
@@ -86,18 +87,17 @@ router.post("/", async (req, res) => {
   }
 });
 
-// --- 3. THE MASTER DAILY SYNC (Timeline + Vault + Finance) ---
-// This route updates three places at once: Logs, Main Stats, and Monthly Records.
+// --- 3. THE MASTER DAILY SYNC ---
+// Updates Timeline, Vault, and Finance in one go.
 router.post("/daily-log", async (req, res) => {
-  const { studentId, date, subject, status, grade, payment, admin } = req.body;
+  const { studentId, date, subject, status, grade, payment, adminId } = req.body;
   const targetMonth = date.slice(0, 7);
 
   try {
-    const student = await Student.findOne({ _id: studentId, owner: admin });
+    const student = await Student.findOne({ _id: studentId, owner: adminId });
     if (!student) return res.status(404).json({ error: "Student not found" });
 
-    // A. Update the Timeline Logs (Memory Array)
-    // Ensures we don't duplicate a log for the same date/subject.
+    // Update Logs
     const logIndex = student.logs.findIndex(l => l.date === date && l.subject.toLowerCase() === subject.toLowerCase());
     const logEntry = { date, subject, status: status || 'present', grade: Number(grade) || 0, payment: Number(payment) || 0 };
 
@@ -107,18 +107,17 @@ router.post("/daily-log", async (req, res) => {
       student.logs.push(logEntry);
     }
 
-    // B. Update Top-Level Academic Vault & Finance Tracker (Running Totals)
+    // Update Totals
     if (payment) student.payments += Number(payment);
     if (status === 'present') student.attendance += 1;
     if (status === 'absent') student.absences += 1;
     
-    // Map the subject name (e.g. "Math") to the database key.
     const subKey = subject.toLowerCase().trim();
     if (student.grades[subKey] !== undefined) {
       student.grades[subKey] = Number(grade);
     }
 
-    // C. Sync with Monthly Records for Dashboard Statistics
+    // Sync Monthly Record
     let rec = student.records.find(r => r.month === targetMonth);
     if (!rec) {
       rec = { month: targetMonth, payments: 0, attendance: 0, absences: 0, grades: {} };
@@ -139,18 +138,16 @@ router.post("/daily-log", async (req, res) => {
   }
 });
 
-// --- 4. INDIVIDUAL HISTORY (For Side-Panel/Intelligence) ---
-// Fetches the full timeline for a single student.
+// --- 4. INDIVIDUAL HISTORY ---
 router.get("/history", async (req, res) => {
-  const { admin, name } = req.query;
+  const { adminId, name } = req.query;
   try {
     const student = await Student.findOne({ 
-      owner: admin, 
+      owner: adminId, 
       name: { $regex: new RegExp("^" + name + "$", "i") } 
     });
     if (!student) return res.status(404).json({ error: "Student not found" });
     
-    // Returns logs sorted by date (newest first).
     const history = student.logs.sort((a,b) => new Date(b.date) - new Date(a.date));
     res.json({ name: student.name, history, vault: student.grades });
   } catch (err) {
@@ -158,14 +155,13 @@ router.get("/history", async (req, res) => {
   }
 });
 
-// --- 5. STATS ENGINE (System Analytics) ---
-// Calculates Total Revenue, Attendance, and Absences for the entire center.
+// --- 5. SYSTEM ANALYTICS ---
 router.get("/stats/all", async (req, res) => {
   try {
-    const { admin, month } = req.query;
+    const { adminId, month } = req.query;
     const targetMonth = month || getMonth();
     
-    const students = await Student.find({ owner: admin });
+    const students = await Student.find({ owner: adminId });
     
     let stats = {
       totalRevenue: 0,
@@ -190,12 +186,11 @@ router.get("/stats/all", async (req, res) => {
 });
 
 // --- 6. DELETE STUDENT ---
-// Permanently removes a record from the database.
 router.delete("/:id", async (req, res) => {
   try {
-    const { admin } = req.query;
-    const deleted = await Student.findOneAndDelete({ _id: req.params.id, owner: admin });
-    if (!deleted) return res.status(403).json({ error: "Unauthorized" });
+    const { adminId } = req.query;
+    const deleted = await Student.findOneAndDelete({ _id: req.params.id, owner: adminId });
+    if (!deleted) return res.status(403).json({ error: "Unauthorized or not found" });
     res.json({ success: true });
   } catch (err) { 
     res.status(500).json({ error: "Delete failed" }); 
