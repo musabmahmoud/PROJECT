@@ -7,10 +7,29 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+    
+    /* --- THEME DESIGN ---
+       Uses a "Clean Tech" aesthetic with high-contrast typography and soft shadows.
+    */
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
-    .titan-card { background: white; border-radius: 2.5rem; border: 1px solid #edf2f7; box-shadow: 0 15px 30px rgba(0,0,0,0.02); }
+    
+    .titan-card { 
+      background: white; 
+      border-radius: 2.5rem; 
+      border: 1px solid #edf2f7; 
+      box-shadow: 0 15px 30px rgba(0,0,0,0.02); 
+    }
+
+    /* --- TIMELINE DECORATION --- */
     .timeline-dot { position: relative; }
-    .timeline-dot::before { content: ''; position: absolute; left: -20px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #2563eb; }
+    .timeline-dot::before { 
+      content: ''; 
+      position: absolute; 
+      left: -20px; top: 5px; 
+      width: 10px; height: 10px; 
+      border-radius: 50%; 
+      background: #2563eb; 
+    }
   </style>
 </head>
 <body class="min-h-screen">
@@ -28,6 +47,7 @@
     
     <header class="mb-12">
       <h1 class="text-5xl font-black tracking-tighter uppercase italic text-slate-900">Student <span class="text-blue-600">Intelligence</span></h1>
+      
       <div class="mt-8 flex gap-4">
         <input id="searchName" type="text" placeholder="Search Student Name (e.g. Ahmed)..." class="bg-white border border-slate-200 p-5 rounded-2xl w-full font-bold text-sm shadow-sm outline-none focus:border-blue-500">
         <button onclick="fetchStudentHistory()" class="bg-slate-900 text-white px-10 rounded-2xl font-black text-xs uppercase hover:bg-blue-600 transition-all">Analyze</button>
@@ -76,20 +96,25 @@
     const API = "/api/students";
     const admin = localStorage.getItem("user");
 
+    /**
+     * INTELLIGENCE ENGINE: 
+     * Fetches historical logs for a specific student and runs analytics on them.
+     */
     async function fetchStudentHistory() {
         const name = document.getElementById('searchName').value;
         if(!name) return alert("Enter student name");
 
-        // We call the API to get all logs for this specific student
         try {
+            // GET request using both Admin ID and Student Name to fetch the logs array
             const res = await fetch(`${API}/history?admin=${admin}&name=${encodeURIComponent(name)}`);
-            const data = await res.json(); // Data should be the student object with the logs array
+            const data = await res.json(); 
 
             if(!data || !data.logs) return alert("Student not found or no history yet");
 
+            // Reveal the analytics dashboard
             document.getElementById('summarySection').classList.remove('hidden');
             
-            // Calculate Stats
+            // MATH ENGINE: Initialize accumulators
             let totalMoney = 0;
             let totalGrd = 0;
             let absences = 0;
@@ -97,11 +122,13 @@
             const tbody = document.getElementById('historyBody');
             tbody.innerHTML = "";
 
+            // DATA PROCESSING: Sort by date descending and loop through logs
             data.logs.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(log => {
                 totalMoney += (log.payment || 0);
                 totalGrd += (log.grade || 0);
                 if(log.status === 'absent') absences++;
 
+                // Build the table rows with color-coded status
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-all">
                         <td class="py-6 font-bold text-slate-600">${log.date}</td>
@@ -117,11 +144,16 @@
                 `;
             });
 
+            // UPDATE UI: Display the final calculated stats
             document.getElementById('totalPaid').innerText = totalMoney + " EGP";
+            // Calculate average: Total points / number of records
             document.getElementById('avgGrade').innerText = Math.round(totalGrd / data.logs.length) + "%";
             document.getElementById('totalAbsence').innerText = absences + " Days";
 
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e); 
+            alert("Connection Error: Cloud Sync Failed");
+        }
     }
   </script>
 </body>

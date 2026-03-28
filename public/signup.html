@@ -7,18 +7,90 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at bottom left, #f8fafc, #eff6ff); height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
-        .signup-card { background: white; border: 1px solid #f1f5f9; box-shadow: 0 25px 60px rgba(0,0,0,0.04); border-radius: 2.5rem; width: 100%; max-width: 400px; padding: 3.5rem; text-align: center; animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
-        .titan-input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1.25rem; padding: 1.1rem 1.5rem; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all 0.2s ease; margin-bottom: 1rem; }
-        .titan-input:focus { background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05); }
-        .btn-primary { width: 100%; background: #3b82f6; color: white; padding: 1.1rem; border-radius: 1.25rem; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s ease; cursor: pointer; border: none; margin-top: 0.5rem; }
-        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2); }
+        
+        /* --- VISUAL THEME ---
+           Notice the gradient starts from the 'bottom left' to contrast with the Login page.
+        */
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: radial-gradient(circle at bottom left, #f8fafc, #eff6ff); 
+            height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 0; 
+        }
+
+        /* --- UI CARD DESIGN ---
+           Uses a slightly different animation timing (0.7s) than Login to feel more "expansive."
+        */
+        .signup-card { 
+            background: white; 
+            border: 1px solid #f1f5f9; 
+            box-shadow: 0 25px 60px rgba(0,0,0,0.04); 
+            border-radius: 2.5rem; 
+            width: 100%; 
+            max-width: 400px; 
+            padding: 3.5rem; 
+            text-align: center; 
+            animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+
+        /* --- TITAN INPUT SYSTEM --- */
+        .titan-input { 
+            width: 100%; 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 1.25rem; 
+            padding: 1.1rem 1.5rem; 
+            font-size: 14px; 
+            font-weight: 600; 
+            color: #1e293b; 
+            outline: none; 
+            transition: all 0.2s ease; 
+            margin-bottom: 1rem; 
+        }
+        .titan-input:focus { 
+            background: white; 
+            border-color: #3b82f6; 
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05); 
+        }
+
+        /* --- SIGNUP BUTTON --- 
+           Uses Blue-500 (#3b82f6) as the primary brand color for "Creation" actions.
+        */
+        .btn-primary { 
+            width: 100%; 
+            background: #3b82f6; 
+            color: white; 
+            padding: 1.1rem; 
+            border-radius: 1.25rem; 
+            font-weight: 700; 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.1em; 
+            transition: all 0.3s ease; 
+            cursor: pointer; 
+            border: none; 
+            margin-top: 0.5rem; 
+        }
+        .btn-primary:hover { 
+            background: #2563eb; 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2); 
+        }
+
         .logo-mark { font-size: 2.5rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
         .dot { color: #3b82f6; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
     </style>
 </head>
 <body>
+    
     <div class="signup-card">
         <div class="logo-mark">T<span class="dot">.</span></div>
         <h2 class="text-2xl font-extrabold text-slate-900 mb-2">Enrollment</h2>
@@ -27,6 +99,7 @@
         <form onsubmit="handleSignup(event)">
             <input type="text" id="regUser" class="titan-input" placeholder="Create User ID" required>
             <input type="password" id="regPass" class="titan-input" placeholder="Set Password" required>
+            
             <button type="submit" id="signupBtn" class="btn-primary">Create Account</button>
         </form>
 
@@ -36,10 +109,24 @@
     </div>
 
     <script>
+        /**
+         * SIGNUP LOGIC:
+         * In this client-side demo, signing up immediately logs you in.
+         * We save the new User ID to LocalStorage so the system knows 
+         * who is "owning" the data for this session.
+         */
         function handleSignup(event) {
+            // Prevent form from sending a traditional request
             event.preventDefault();
+            
+            // Capture the new ID
             const user = document.getElementById('regUser').value;
+            
+            // INITIALIZE SESSION:
+            // This 'user' string is the master key for filtering MongoDB data.
             localStorage.setItem("user", user);
+            
+            // REDIRECT: Start using the Titan ERP immediately
             window.location.href = "index.html";
         }
     </script>

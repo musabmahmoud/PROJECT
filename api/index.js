@@ -1,32 +1,43 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config();
+require('dotenv').config(); // Allows the use of secret variables from a .env file
 
 const app = express();
 
-// --- 1. MIDDLEWARE ---
+/**
+ * TITAN ERP | MAIN SERVER ENTRY POINT (api/index.js)
+ * This file initializes the connection to MongoDB and sets up Global Middleware.
+ */
+
+// --- 1. GLOBAL MIDDLEWARE ---
+// CORS allows your frontend (like Vercel or Localhost) to talk to this backend.
 app.use(cors());
+// express.json() allows the server to read the data sent in "POST" requests.
 app.use(express.json());
 
 // --- 2. DATABASE CONNECTION ---
-// Using your specific connection string provided
+// Direct connection to your "TitanSchool" cluster in MongoDB Atlas.
 const MONGO_URI = 'mongodb+srv://Musab:Musab2008!@cluster0.47y03jt.mongodb.net/TitanSchool?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log("✅ TITAN DATABASE: CONNECTED & ONLINE"))
     .catch(err => console.error("❌ DATABASE ERROR:", err));
 
-const API = "/api/students";
-const studentRoutes = require('./ROUTES/student'); // Removed the 's'
-const teacherRoutes = require('./ROUTES/teachers'); // Check if this is singular too!
+// --- 3. ROUTE REGISTRATION ---
+// We import the logic from the ROUTES folder.
+const studentRoutes = require('./ROUTES/student'); 
+const teacherRoutes = require('./ROUTES/teachers'); 
 const authRoutes = require('./ROUTES/auth');
-// Use the routes
-app.use('/api/students', studentRoutes); // Keep this plural for the Frontend URL
+
+// We map the logic to specific URLs.
+// Example: Any request to "/api/auth" will be handled by auth.js
+app.use('/api/students', studentRoutes); 
 app.use('/api/teachers', teacherRoutes);
 app.use('/api/auth', authRoutes);
 
-// --- 5. SYSTEM HEALTH CHECK ---
+// --- 4. SYSTEM HEALTH CHECK ---
+// If you visit the root URL of your backend, you see this luxury status page.
 app.get('/', (req, res) => {
     res.status(200).send(`
         <body style="background: #020617; color: #2563eb; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh;">
@@ -38,7 +49,8 @@ app.get('/', (req, res) => {
     `);
 });
 
-// --- 6. START SERVER ---
+// --- 5. SERVER INITIALIZATION ---
+// The app will run on Port 5000 (Local) or the Port assigned by Vercel/Heroku.
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 TITAN ENGINE DEPLOYED ON PORT ${PORT}`);

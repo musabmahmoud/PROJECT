@@ -8,6 +8,7 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     
+    /* --- TITAN DESIGN SYSTEM TOKENS --- */
     :root { 
       --titan-blue: #1e293b; 
       --accent-blue: #3b82f6;
@@ -24,7 +25,9 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* --- SIDEBAR --- */
+    /* --- SIDEBAR NAVIGATION --- 
+       Uses a fixed position to stay on screen while the table scrolls.
+    */
     .sidebar { 
       width: var(--sidebar-width); 
       height: 100vh; 
@@ -48,7 +51,7 @@
 
     .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1700px; }
 
-    /* --- LUXURY CARDS & TABLES --- */
+    /* --- LUXURY UI COMPONENTS --- */
     .titan-card { background: white; border-radius: 2rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 20px rgba(0,0,0,0.01); }
 
     .erp-table th { 
@@ -58,14 +61,14 @@
 
     .erp-table td { padding: 1.5rem 2rem; border-bottom: 1px solid #f8fafc; }
 
-    /* --- INPUTS --- */
+    /* --- TITAN INPUT STYLING --- */
     .titan-input {
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem;
       padding: 0.8rem 1.2rem; font-weight: 600; font-size: 13px; outline: none; transition: all 0.2s ease;
     }
     .titan-input:focus { border-color: var(--accent-blue); background: white; }
 
-    /* --- ATTENDANCE BUTTONS --- */
+    /* --- ATTENDANCE TOGGLE SYSTEM --- */
     .att-btn { 
       width: 44px; height: 44px; border-radius: 12px; font-weight: 800; font-size: 12px; 
       transition: all 0.2s ease; border: 1px solid #f1f5f9; color: #cbd5e1; background: white;
@@ -73,7 +76,9 @@
     .active-p { background: var(--titan-emerald) !important; color: white !important; border-color: transparent; }
     .active-a { background: #ef4444 !important; color: white !important; border-color: transparent; }
 
-    /* --- SIDE PANEL --- */
+    /* --- SLIDE-OUT HISTORY PANEL --- 
+       Uses hardware-accelerated transforms for smooth 60fps movement.
+    */
     #sidePanel { 
       position: fixed; right: 0; top: 0; height: 100vh; width: 450px;
       background: white; z-index: 1000; transform: translateX(100%);
@@ -81,8 +86,11 @@
       box-shadow: -20px 0 60px rgba(0,0,0,0.05); padding: 3rem;
     }
     #sidePanel.open { transform: translateX(0); }
+    
+    /* Background blur when panel is open */
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.1); backdrop-filter: blur(4px); z-index: 900; }
 
+    /* Print utility: Hides nav and sidebars when printing a report */
     @media print { .sidebar, .no-print { display: none !important; } .main-content { margin-left: 0 !important; } }
   </style>
 </head>
@@ -122,7 +130,7 @@
             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Registry Logs</p>
         </div>
-        <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">Daily <span class="text-slate-400 font-light">Timeline</span></h1>
+        <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">Class <span class="text-slate-400 font-light">Online Academy</span></h1>
       </div>
 
       <div class="no-print flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
@@ -188,12 +196,17 @@
     const API = "/api/students";
     const user = localStorage.getItem("user");
 
+    // INITIALIZATION: Check for identity and set today's date
     window.onload = () => {
       document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
       if(!user) { window.location.href="login.html"; return; }
       loadRoster();
     };
 
+    /**
+     * FETCH ROSTER: Pulls students based on selected Level, Group, and Track.
+     * Includes full identity sync (?admin=${user}).
+     */
     async function loadRoster() {
       const level = document.getElementById('selLevel').value;
       const group = document.getElementById('selGroup').value;
@@ -214,6 +227,7 @@
             return;
         }
 
+        // DYNAMIC ROW GENERATION
         data.forEach(s => {
           tbody.innerHTML += `
             <tr class="hover:bg-slate-50/50">
@@ -246,16 +260,20 @@
               </td>
             </tr>`;
         });
-        calcRev();
+        calcRev(); // Recalculate revenue on load
       } catch (e) { console.error("Database Link Failure", e); }
     }
 
+    // Toggle Attendance UI states locally before syncing
     function markAtt(id, type) {
       document.getElementById(`p-${id}`).className = "att-btn";
       document.getElementById(`a-${id}`).className = "att-btn";
       document.getElementById(`${type}-${id}`).classList.add(type === 'p' ? 'active-p' : 'active-a');
     }
 
+    /**
+     * SIDE PANEL HISTORY: Fetches full academic history for a specific student.
+     */
     async function openHistory(id, name) {
       document.getElementById('panelName').innerText = name;
       document.getElementById('overlay').style.display = 'block';
@@ -266,6 +284,7 @@
       try {
         const res = await fetch(`${API}/history?admin=${user}&name=${encodeURIComponent(name)}`);
         const data = await res.json();
+        // Maps through the logs array from the database
         content.innerHTML = data.history.map(l => `
           <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm">
             <div class="flex justify-between items-start mb-4">
@@ -280,6 +299,7 @@
       } catch (e) { content.innerHTML = "Error fetching history."; }
     }
 
+    // Dynamic Revenue Calculator (Local)
     function calcRev() {
         let total = 0;
         document.querySelectorAll('[id^="pay-"]').forEach(input => { total += Number(input.value) || 0; });
@@ -291,11 +311,15 @@
       document.getElementById('overlay').style.display = 'none';
     }
 
+    // Injector: Copies the global subject input to all student rows
     function applySubject() {
       const val = document.getElementById('globalSub').value;
       document.querySelectorAll('.subj-box').forEach(i => i.value = val);
     }
 
+    /**
+     * INDIVIDUAL SYNC: Sends one student's daily data to the Master Log API.
+     */
     async function saveRow(id, btn) {
       const date = document.getElementById('logDate').value;
       const sub = document.getElementById(`sub-${id}`).value;
@@ -306,8 +330,18 @@
       const res = await fetch(`${API}/daily-log`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId: id, date, subject: sub.toLowerCase(), grade: Number(grd), payment: Number(pay), status: isAbsent ? 'absent' : 'present', admin: user })
+        body: JSON.stringify({ 
+            studentId: id, 
+            date, 
+            subject: sub.toLowerCase(), 
+            grade: Number(grd), 
+            payment: Number(pay), 
+            status: isAbsent ? 'absent' : 'present', 
+            admin: user 
+        })
       });
+
+      // Visual feedback on success
       if(res.ok) { 
           btn.innerText = "DONE";
           btn.classList.add('bg-emerald-500', 'text-white');
@@ -315,9 +349,14 @@
       }
     }
 
+    /**
+     * MASS SYNC: Loops through every visible row and triggers saveRow.
+     */
     async function saveAll() {
       const rows = document.querySelectorAll('[id^="pay-"]');
-      for (let r of rows) { await saveRow(r.id.split('-')[1], r.closest('tr').querySelector('button[onclick^="saveRow"]')); }
+      for (let r of rows) { 
+          await saveRow(r.id.split('-')[1], r.closest('tr').querySelector('button[onclick^="saveRow"]')); 
+      }
       alert("All records synchronized successfully.");
     }
 

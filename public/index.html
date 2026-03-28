@@ -3,21 +3,98 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Titan ERP | Student Registry</title>
+  <title>Titan ERP | Class Online Academy</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-    :root { --titan-blue: #1e293b; --accent-blue: #3b82f6; --titan-slate: #fcfdfe; --sidebar-width: 100px; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--titan-slate); color: #334155; margin: 0; }
-    .sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; left: 0; top: 0; background: white; border-right: 1px solid #f1f5f9; z-index: 100; display: flex; flex-direction: column; align-items: center; padding-top: 2.5rem; }
-    .nav-icon { width: 54px; height: 54px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 16px; cursor: pointer; transition: all 0.3s ease; font-size: 22px; color: #94a3b8; text-decoration: none; }
+    
+    /* --- TITAN BRAND TOKENS --- */
+    :root { 
+      --titan-blue: #1e293b; 
+      --accent-blue: #3b82f6; 
+      --titan-slate: #fcfdfe; 
+      --sidebar-width: 100px; 
+    }
+
+    body { 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      background-color: var(--titan-slate); 
+      color: #334155; 
+      margin: 0; 
+    }
+
+    /* --- NAVIGATION SIDEBAR --- */
+    .sidebar { 
+      width: var(--sidebar-width); 
+      height: 100vh; 
+      position: fixed; 
+      left: 0; top: 0; 
+      background: white; 
+      border-right: 1px solid #f1f5f9; 
+      z-index: 100; 
+      display: flex; flex-direction: column; align-items: center; padding-top: 2.5rem; 
+    }
+
+    .nav-icon { 
+      width: 54px; height: 54px; margin-bottom: 1.5rem; 
+      display: flex; align-items: center; justify-content: center; 
+      border-radius: 16px; cursor: pointer; transition: all 0.3s ease; 
+      font-size: 22px; color: #94a3b8; text-decoration: none; 
+    }
+
+    /* Active state styling for the current page */
     .nav-icon.active { background: #f1f5f9; color: var(--titan-blue); }
+
     .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1500px; }
-    .titan-card { background: white; border-radius: 2rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 20px rgba(0,0,0,0.01); }
-    .titan-input { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1rem 1.2rem; font-weight: 500; font-size: 13px; outline: none; width: 100%; color: #1e293b; transition: all 0.2s; }
+
+    /* --- LUXURY UI CARDS --- */
+    .titan-card { 
+      background: white; 
+      border-radius: 2rem; 
+      border: 1px solid #f1f5f9; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.01); 
+    }
+
+    /* --- TITAN INPUT FIELD SYSTEM --- */
+    .titan-input { 
+      background: #f8fafc; 
+      border: 1px solid #e2e8f0; 
+      border-radius: 1rem; 
+      padding: 1rem 1.2rem; 
+      font-weight: 500; 
+      font-size: 13px; 
+      outline: none; 
+      width: 100%; 
+      color: #1e293b; 
+      transition: all 0.2s; 
+    }
     .titan-input:focus { border-color: var(--accent-blue); background: white; }
-    .btn-primary { background: var(--titan-blue); color: white; padding: 0.8rem 2rem; border-radius: 1rem; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s ease; }
-    .erp-table th { background: #fafbfd; text-transform: uppercase; font-size: 10px; letter-spacing: 0.15em; padding: 1.5rem 2.5rem; color: #94a3b8; font-weight: 700; border-bottom: 1px solid #f1f5f9; }
+
+    /* --- PRIMARY ACTION BUTTON --- */
+    .btn-primary { 
+      background: var(--titan-blue); 
+      color: white; 
+      padding: 0.8rem 2rem; 
+      border-radius: 1rem; 
+      font-weight: 700; 
+      font-size: 11px; 
+      text-transform: uppercase; 
+      letter-spacing: 0.1em; 
+      transition: all 0.3s ease; 
+    }
+    .btn-primary:hover { background: var(--accent-blue); transform: translateY(-2px); }
+
+    /* --- ERP DATA TABLE DESIGN --- */
+    .erp-table th { 
+      background: #fafbfd; 
+      text-transform: uppercase; 
+      font-size: 10px; 
+      letter-spacing: 0.15em; 
+      padding: 1.5rem 2.5rem; 
+      color: #94a3b8; 
+      font-weight: 700; 
+      border-bottom: 1px solid #f1f5f9; 
+    }
     .erp-table td { padding: 1.8rem 2.5rem; border-bottom: 1px solid #f8fafc; }
   </style>
 </head>
@@ -82,24 +159,34 @@
   </main>
 
   <script>
-const API = "/api/students";
-    // This grabs the ID you used during Login/Signup
+    const API = "/api/students";
+    
+    /**
+     * AUTHENTICATION SYNC:
+     * Grabs the 'user' ID from localStorage to ensure we only load data 
+     * belonging to the logged-in administrator.
+     */
     let user = localStorage.getItem("user"); 
 
     window.onload = () => { 
         if (!user) {
+            // If no user identity is found, kick back to login screen.
             window.location.href = "login.html"; 
         } else {
             loadData(); 
         }
     };
 
+    /**
+     * LOAD DATA: Fetches the student registry from Titan Cloud.
+     * Note: ?admin=${user} is critical for data separation.
+     */
     async function loadData() {
         const tbody = document.getElementById("studentBody");
         tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center italic text-slate-300">Syncing Titan Cloud...</td></tr>`;
         
         try {
-            // We MUST send the admin ID to the server to get YOUR specific table
+            // Call the GET route in your student.js API
             const res = await fetch(`${API}?admin=${user}`);
             const data = await res.json();
             
@@ -111,6 +198,7 @@ const API = "/api/students";
                 return;
             }
 
+            // Populate the table with dynamic rows
             data.forEach(s => {
                 tbody.innerHTML += `
                     <tr>
@@ -127,6 +215,10 @@ const API = "/api/students";
         }
     }
 
+    /**
+     * ENROLL STUDENT: Sends a POST request to create a new student entry.
+     * It includes the 'owner' field so the student is linked to YOUR account.
+     */
     async function enrollStudent() {
         const btn = document.getElementById("enrollBtn");
         const name = document.getElementById("sName").value;
@@ -141,13 +233,14 @@ const API = "/api/students";
             const res = await fetch(API, { 
                 method: "POST", 
                 headers: { "Content-Type": "application/json" }, 
-                // We send 'owner' and 'admin' as the current logged-in user
+                // We send 'owner' and 'admin' as the current logged-in user identity.
                 body: JSON.stringify({ name, level, className, language, owner: user, admin: user }) 
             });
 
             if (res.ok) {
                 document.getElementById("sName").value = "";
                 btn.innerText = "SUCCESS ✓";
+                // Delay reload slightly so the user sees the success state.
                 setTimeout(() => { btn.innerText = "Enroll Student"; loadData(); }, 1500);
             } else {
                 alert("Server rejected the entry.");
@@ -156,9 +249,17 @@ const API = "/api/students";
         } catch (e) { btn.innerText = "Enroll Student"; }
     }
 
+    /**
+     * TERMINATE ENTRY: Permanently removes a student record using their unique MongoDB ID.
+     */
     async function deleteStudent(id) { 
-        if(confirm("Delete?")) { await fetch(`${API}/${id}?admin=${user}`, { method: "DELETE" }); loadData(); } 
+        if(confirm("Delete this student permanently?")) { 
+            await fetch(`${API}/${id}?admin=${user}`, { method: "DELETE" }); 
+            loadData(); 
+        } 
     }
+
+    // Logout Function: Clears session and redirects to security gate.
     function logout() { localStorage.clear(); window.location.href="login.html"; }
   </script>
 </body>
