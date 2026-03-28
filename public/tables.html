@@ -340,26 +340,27 @@ async function removeTimeSlot(i) {
 }
 
     /* --- SESSION EDITING --- */
-    function openEditor(id) {
-      activeCellId = id;
-      const data = db[id] || { sub: '', teacher: '' };
-      document.getElementById('editSub').value = data.sub;
-      document.getElementById('editTeach').value = data.teacher;
-      document.getElementById('editModal').style.display = 'flex';
-    }
+/* --- SESSION EDITING --- */
+function openEditor(id) {
+  activeCellId = id;
+  const data = db[id] || { sub: '', teacher: '' };
+  document.getElementById('editSub').value = data.sub;
+  document.getElementById('editTeach').value = data.teacher;
+  document.getElementById('editModal').style.display = 'flex';
+}
 
-   async function saveSession() {
+async function saveSession() {
   const sub = document.getElementById('editSub').value.trim();
   const teacher = document.getElementById('editTeach').value.trim();
   
   const payload = { 
-    adminId: adminId, // Make sure this isn't undefined!
+    adminId: adminId, 
     cellId: activeCellId, 
     session: sub ? { sub, teacher } : null 
   };
 
   try {
-    const res = await fetch(`${API_BASE}`, { // Ensure API_BASE is http://localhost:5000/api/tables
+    const res = await fetch(API_BASE, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -370,12 +371,23 @@ async function removeTimeSlot(i) {
         else delete db[activeCellId];
         closeModal();
         renderGrid();
+    } else {
+        alert("Cloud rejected the save.");
     }
   } catch (err) { 
-      console.error("Sync Error:", err);
-      alert("Browser blocked the cloud sync. Check console!"); 
+      console.error("Network Error:", err);
+      alert("Browser blocked connection. Check Safari settings!"); 
   }
 }
+
+function closeModal() { 
+  document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); 
+}
+
+function closeModal() { 
+  document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); 
+}
+
   
   // Create the package exactly how the Backend Router wants it
   const payload = { 
