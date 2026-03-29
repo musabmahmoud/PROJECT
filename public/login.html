@@ -3,48 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Admin Portal</title>
+  <title>Login - Titan Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 flex items-center justify-center h-screen">
-  <div class="bg-white p-10 rounded-2xl shadow-xl w-96 border border-gray-100">
-    <h1 class="text-3xl font-extrabold mb-2 text-center text-gray-900">Welcome Back</h1>
-    <p class="text-gray-500 text-center mb-8 text-sm">Please enter your details</p>
+<body class="bg-[#0f172a] flex items-center justify-center h-screen">
+  <div class="bg-white p-10 rounded-3xl shadow-2xl w-[400px] border border-gray-200">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl font-black text-gray-900 tracking-tight">TITAN</h1>
+      <p class="text-blue-600 font-bold text-xs uppercase tracking-widest mt-1">Owner Access Only</p>
+    </div>
     
-  <div class="space-y-4">
-  <input id="email" type="text" placeholder="Username" 
-         class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-50 focus:bg-white" />
-  
-  <input id="password" type="password" placeholder="Password" 
-         class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-50 focus:bg-white" />
-  
-  <button id="loginBtn" onclick="login()" 
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition duration-200 transform active:scale-95">
-    Sign In
-  </button>
-</div>
+    <div class="space-y-5">
+      <div>
+        <label class="block text-xs font-bold text-gray-400 mb-2 uppercase ml-1">Username</label>
+        <input id="email" type="text" placeholder="Enter owner username" 
+               class="w-full p-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-50 focus:bg-white text-gray-900" />
+      </div>
+      
+      <div>
+        <label class="block text-xs font-bold text-gray-400 mb-2 uppercase ml-1">Password</label>
+        <input id="password" type="password" placeholder="••••••••••••" 
+               class="w-full p-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-50 focus:bg-white text-gray-900" />
+      </div>
+      
+      <button id="loginBtn" onclick="login()" 
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl shadow-xl shadow-blue-200 transition duration-200 transform active:scale-95 mt-4">
+        SIGN IN
+      </button>
+
+      <p id="errorMsg" class="text-red-500 text-sm text-center font-bold mt-2 opacity-0 transition-opacity duration-300"></p>
+    </div>
   </div>
 
 <script>
-const API = "/api/auth";
+// Shortcut to handle "Enter" key
+document.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') login();
+});
 
 async function login() {
+    const btn = document.getElementById("loginBtn");
+    const errorEl = document.getElementById("errorMsg");
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
 
-    const res = await fetch("http://localhost:5001/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-    });
+    // Reset UI
+    errorEl.style.opacity = "0";
+    btn.innerText = "VERIFYING...";
+    btn.disabled = true;
 
-    if (res.ok) {
+    try {
+        const res = await fetch("http://localhost:5001/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+
         const data = await res.json();
-        // This 'OWNER_01' ID will now be used for all your saves
-        localStorage.setItem("user", data.user.id); 
-        window.location.href = "tables.html"; 
-    } else {
-        alert("Wrong Owner Credentials!");
+
+        if (res.ok) {
+            // Save Owner ID and go to tables
+            localStorage.setItem("user", data.user.id); 
+            window.location.href = "tables.html"; 
+        } else {
+            throw new Error(data.message || "Invalid Credentials");
+        }
+    } catch (err) {
+        errorEl.innerText = err.message;
+        errorEl.style.opacity = "1";
+        btn.innerText = "SIGN IN";
+        btn.disabled = false;
     }
 }
 </script>
