@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -123,6 +123,28 @@
         width: 100% !important;
         font-size: 14px !important;
     }
+}/* RTL Support for Arabic */
+[lang="ar"] {
+    direction: rtl;
+    font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+[lang="ar"] .sidebar {
+    left: auto;
+    right: 0;
+    border-right: none;
+    border-left: 1px solid #f1f5f9;
+}
+
+[lang="ar"] .main-content {
+    margin-left: 0;
+    margin-right: var(--sidebar-width);
+}
+
+@media (max-width: 768px) {
+    [lang="ar"] .main-content {
+        margin-right: 0 !important;
+    }
 }
 </style>
 </head>
@@ -134,10 +156,10 @@
 </div>
     <div class="text-slate-900 font-bold text-3xl mb-16 tracking-tighter">T<span class="text-blue-500">.</span></div>
     <nav>
-      <a href="index.html" class="nav-icon" title="Registry">👥</a>
+      <a href="index.html" class="nav-icon active" title="Registry">👥</a>
       <a href="tables.html" class="nav-icon" title="Schedules">📅</a>
       <a href="classes.html" class="nav-icon" title="Attendance">🏫</a>
-      <a href="teachers.html" class="nav-icon active" title="Faculty">👨‍🏫</a>
+      <a href="teachers.html" class="nav-icon" title="Faculty">👨‍🏫</a>
       <div onclick="toggleMobileView()" class="nav-icon">📱</div>
     </nav>
     <div class="mt-auto mb-10 text-slate-300 hover:text-red-500 cursor-pointer" onclick="logout()">
@@ -145,60 +167,64 @@
     </div>
   </aside>
 
-  <main class="main-content">
- <header class="flex flex-col xl:flex-row justify-between items-end mb-16 gap-8">
-  <div>
-    <div class="flex items-center gap-2 mb-3">
-        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Student Registry</p>
+<main class="main-content">
+  <header class="flex flex-col xl:flex-row justify-between items-end mb-16 gap-8">
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+          <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">سجل بيانات الطلاب</p>
+      </div>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">
+        أكاديمية <span class="text-slate-400 font-light">كلاس أونلاين</span>
+      </h1>
     </div>
-    <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">
-      Class <span class="text-slate-400 font-light">Online Academy</span>
-    </h1>
-  </div>
+<div class="w-full md:w-72">
+        <input type="text" id="searchInput" onkeyup="searchStudents()" placeholder="بحث عن طالب..." class="titan-input text-right">
+    </div>
+  </header>
   </header>
 
-    <section class="titan-card p-8 mb-10 border-l-4 border-l-blue-500">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
-            <input id="newStudentName" type="text" placeholder="Legal Full Name" class="titan-input">
-            <select id="newStudentLevel" class="titan-input">
-                <optgroup label="Primary Stage">
-                    <option>Primary 1</option><option>Primary 2</option><option>Primary 3</option>
-                    <option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
-                </optgroup>
-                <optgroup label="Preparatory Stage">
-                    <option>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
-                </optgroup>
-            </select>
-            <select id="newStudentClass" class="titan-input">
-                <option>Group A</option><option>Group B</option><option>Group C</option>
-            </select>
-            <select id="newStudentLang" class="titan-input">
-                <option>English Track</option><option>Arabic Track</option><option>German Track</option>
-            </select>
-            <button onclick="addNewStudent()" class="btn-primary">Confirm Enrollment</button>
-        </div>
-    </section>
+<section class="titan-card p-8 mb-10 border-r-4 border-r-blue-500"> <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-6">تسجيل طالب جديد</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+        <input id="newStudentName" type="text" placeholder="الاسم الرباعي للطالب" class="titan-input text-right">
+        <select id="newStudentLevel" class="titan-input text-right">
+            <optgroup label="المرحلة الابتدائية">
+                <option>الاول الابتدائي</option><option>الثاني الابتدائي</option><option>الثالث الابتدائي</option>
+                <option>الرابع الابتدائي</option><option>الخامس الابتدائي</option><option>السادس الابتدائي</option>
+            </optgroup>
+            <optgroup label="المرحلة الإعدادية">
+                <option>الأول الإعدادي</option><option>الثاني الإعدادي</option><option>الثالث الإعدادي</option>
+            </optgroup>
+        </select>
+        <select id="newStudentClass" class="titan-input text-right">
+            <option>المجموعة A</option><option>المجموعة B</option><option>المجموعة C</option>
+        </select>
+        <select id="newStudentLang" class="titan-input text-right">
+            <option>مسار اللغات</option><option>المسار العربي</option><option>المسار الألماني</option>
+        </select>
+        <button onclick="addNewStudent()" class="btn-primary">تأكيد القيد</button>
+    </div>
+</section>
 
     <div class="titan-card overflow-hidden">
         <table class="w-full text-left erp-table">
-            <thead>
-                <tr>
-                    <th class="w-1/3">Student Details</th>
-                    <th>Academic Level</th>
-                    <th>Quick Action</th>
-                    <th class="text-right">Management</th>
-                </tr>
-            </thead>
+ <thead>
+    <tr>
+        <th class="w-1/3">بيانات الطالب</th>
+        <th>المستوى الأكاديمي</th>
+        <th>إجراء سريع</th>
+        <th class="text-left">الإدارة</th>
+    </tr>
+</thead>
             <tbody id="studentsTable"></tbody>
         </table>
     </div>
 
     <footer class="mt-10 flex items-center justify-between">
-        <div class="bg-white px-6 py-4 rounded-2xl border border-slate-100">
-            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Total Enrollment</p>
-            <p id="totalCount" class="text-xl font-bold text-slate-900">00</p>
-        </div>
+<div class="bg-white px-6 py-4 rounded-2xl border border-slate-100">
+    <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">إجمالي المقيدين</p>
+    <p id="totalCount" class="text-xl font-bold text-slate-900">00</p>
+</div>
         <p class="text-[10px] text-slate-300 font-medium italic">Titan Cloud Systems v4.2.0</p>
     </footer>
   </main>
@@ -250,28 +276,33 @@ function toggleMobileView() {
             }
 
             data.forEach(s => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-bold text-sm">${s.name.charAt(0)}</div>
-                                <div>
-                                    <p class="text-sm font-bold text-slate-800">${s.name}</p>
-                                    <p class="text-[10px] text-slate-400">ID: ${s._id.slice(-5).toUpperCase()}</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="flex flex-col">
-                                <span class="text-[11px] font-bold text-slate-700">${s.level}</span>
-                                <span class="text-[9px] font-bold text-blue-400 uppercase">${s.language} | ${s.className}</span>
-                            </div>
-                        </td>
-                        <td><button onclick="window.location.href='classes.html'" class="text-[10px] font-bold text-slate-400 hover:text-blue-500">Attendance →</button></td>
-                        <td class="text-right">
-                            <button onclick="deleteStudent('${s._id}')" class="h-9 w-9 bg-red-50 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all">✕</button>
-                        </td>
-                    </tr>`;
+tbody.innerHTML += `
+    <tr class="hover:bg-slate-50/50 transition-all">
+        <td>
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-bold text-sm">
+                    ${s.name.charAt(0)}
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-slate-800">${s.name}</p>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-tighter">كود: ${s._id.slice(-5).toUpperCase()}</p>
+                </div>
+            </div>
+        </td>
+        <td>
+            <div class="flex flex-col md:block">
+                <span class="text-[11px] font-bold text-slate-700">${s.level}</span>
+                <span class="text-[9px] font-bold text-blue-400 uppercase md:mr-2">| ${s.language} | ${s.className}</span>
+            </div>
+        </td>
+        <td>
+            <button onclick="window.location.href='classes.html'" class="text-[10px] font-bold text-slate-400 hover:text-blue-500">
+                 سجل الحضور ←
+            </button>
+        </td>
+        <td class="text-left"> <button onclick="deleteStudent('${s._id}')" class="h-9 w-9 bg-red-50 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all">✕</button>
+        </td>
+    </tr>`;
             });
         } catch (e) { 
             tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-red-400">Database Offline</td></tr>`; 
