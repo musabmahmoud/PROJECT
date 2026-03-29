@@ -146,6 +146,30 @@
 
         <button onclick="saveAll()" class="bg-slate-900 text-white px-8 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all">Mass Sync</button>
       </div>
+      <section class="mb-8 no-print">
+    <div class="flex items-center justify-between bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+        <div class="flex items-center gap-6">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500">Export Engine</h3>
+            <div class="flex gap-4">
+                <label class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase cursor-pointer">
+                    <input type="checkbox" id="pdfName" checked disabled class="accent-blue-500"> Name
+                </label>
+                <label class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase cursor-pointer">
+                    <input type="checkbox" id="pdfMoney" checked class="accent-blue-500"> Money
+                </label>
+                <label class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase cursor-pointer">
+                    <input type="checkbox" id="pdfAcademic" checked class="accent-blue-500"> Grades/Subject
+                </label>
+                <label class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase cursor-pointer">
+                    <input type="checkbox" id="pdfAtt" checked class="accent-blue-500"> Attendance
+                </label>
+            </div>
+        </div>
+        <button onclick="exportTitanPDF()" class="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all">
+            Generate PDF Report
+        </button>
+    </div>
+</section>
     </header>
 
     <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
@@ -296,7 +320,63 @@
     content.innerHTML = `<div class="text-red-500">Failed to load history.</div>`;
   }
 }
+async function exportTitanPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const table = document.querySelector('.erp-table');
+    
+    // 1. Get Settings
+    const showMoney = document.getElementById('pdfMoney').checked;
+    const showAcademic = document.getElementById('pdfAcademic').checked;
+    const showAtt = document.getElementById('pdfAtt').checked;
 
+    // 2. Identify Columns (Based on your table structure)
+    // index 1 = Attendance, 2 = Money, 3 = Grades/Actions
+    const rows = table.querySelectorAll('tr');
+
+    // 3. Temporarily hide columns
+    rows.forEach(row => {
+        if (!showAtt && row.cells[1]) row.cells[1].style.display = 'none';
+        if (!showMoney && row.cells[2]) row.cells[2].style.display = 'none';
+        if (!showAcademic && row.cells[3]) row.cells[3].style.display = 'none';
+        // Always hide the "Sync" action button in PDF
+        if (row.cells[4]) row.cells[4].style.display = 'none';
+    });
+
+    // 4. Capture the visual
+    const canvas = await html2canvas(table, { scale: 3, backgroundColor: "#ffffff" });
+    const imgData = canvas.toDataURL('image/png');
+
+    // 5. Add Branding Header
+    doc.setFillColor(30, 41, 59); // Titan Blue
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.text("TITAN ERP", 15, 20);
+    doc.setFontSize(10);
+    doc.text("OFFICIAL ACADEMIC & FINANCIAL RECORD", 15, 28);
+    
+    doc.setTextColor(150, 150, 150);
+    doc.text(`DATE: ${new Date().toLocaleDateString()}`, 160, 20);
+    doc.text(`LEVEL: ${document.getElementById('selLevel').value.toUpperCase()}`, 160, 28);
+
+    // 6. Add Table Image
+    const imgProps = doc.getImageProperties(imgData);
+    const pdfWidth = doc.internal.pageSize.getWidth() - 30;
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    doc.addImage(imgData, 'PNG', 15, 50, pdfWidth, pdfHeight);
+
+    // 7. Restore View
+    rows.forEach(row => {
+        if (row.cells[1]) row.cells[1].style.display = '';
+        if (row.cells[2]) row.cells[2].style.display = '';
+        if (row.cells[3]) row.cells[3].style.display = '';
+        if (row.cells[4]) row.cells[4].style.display = '';
+    });
+
+    // 8. Save
+    doc.save(`TITAN_REPORT_${Date.now()}.pdf`);
+}
     function calcRev() {
         let total = 0;
         document.querySelectorAll('[id^="pay-"]').forEach(input => { total += Number(input.value) || 0; });
