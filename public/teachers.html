@@ -295,40 +295,45 @@ if (!adminId) {
   const name = document.getElementById("tName").value.trim();
   const subject = document.getElementById("tSubject").value.trim();
   const salary = document.getElementById("tSalary").value.trim();
-  const adminId = localStorage.getItem("user"); // This gets your login ID
+  const adminId = localStorage.getItem("user");
 
-  // 1. Basic validation
+  // 1. Check if the user is actually logged in
+  if (!adminId) {
+    alert("❌ Access Denied: Please login as Admin first.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  // 2. Basic validation
   if (!name || !salary) {
-    alert("Please enter both Name and Salary");
+    alert("⚠️ Please enter both Name and Salary");
     return;
   }
 
   try {
+    // Note: No "http://localhost:5001" here. Vercel handles the path.
     const res = await fetch("/api/teachers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        name, 
-        subject, 
-        salary, 
-        adminId 
-      })
+      body: JSON.stringify({ name, subject, salary, adminId })
     });
 
     if (res.ok) {
-      // 3. SUCCESS: Clear the inputs and reload the list from the DB
+      // 3. SUCCESS: Clear the inputs
       document.getElementById("tName").value = "";
       document.getElementById("tSubject").value = "";
       document.getElementById("tSalary").value = "";
       
       alert("Teacher saved to Titan Database! ✅");
-      loadTeachers(); // This function will pull the new list from MongoDB
+      loadTeachers(); 
     } else {
-      alert("Server error: Could not save teacher.");
+      const errorData = await res.json();
+      alert("Server Error: " + (errorData.message || "Could not save."));
     }
   } catch (err) {
-    console.error("Connection Error:", err);
-    alert("Database Offline! Make sure your VS Code Terminal is running.");
+    // 4. CLEAN ERROR: No more "VS Code" warnings
+    console.error("Titan System Error:", err);
+    alert("⚠️ Connection Failed: Check your internet or Vercel logs.");
   }
 }
       
