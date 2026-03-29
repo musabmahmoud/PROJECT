@@ -6,170 +6,66 @@
   <title>Titan ERP | Faculty Management</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @media (max-width: 600px) {
-    .erp-table thead { display: none; } /* Hide headers */
-    .erp-table tr { display: block; margin-bottom: 1rem; border: 1px solid #eee; border-radius: 1rem; padding: 10px; }
-    .erp-table td { display: flex; justify-content: space-between; border: none; padding: 5px 0; }
-    .erp-table td::before { content: attr(data-label); font-weight: bold; color: #94a3b8; }
-}
-    /* Mobile Bottom Bar (Hidden on PC) */
-.mobile-nav {
-    display: none;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 70px;
-    background: white;
-    border-top: 1px solid #f1f5f9;
-    z-index: 1000;
-    justify-content: space-around;
-    align-items: center;
-}
-
-/* Hide Desktop Sidebar on Mobile */
-@media (max-width: 768px) {
-    .sidebar { display: none !important; }
-    .mobile-nav { display: flex; }
-    .main-content { margin-left: 0 !important; padding: 1.5rem !important; margin-bottom: 80px; }
-    .titan-card { border-radius: 1.2rem; padding: 1rem !important; }
-    .erp-table { font-size: 12px; }
-}
-    /* Importing Plus Jakarta Sans - a modern typeface used in high-end SaaS applications */
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     
-    :root { 
-      --titan-blue: #1e293b; 
-      --accent-blue: #3b82f6;
-      --titan-slate: #fcfdfe; 
-      --sidebar-width: 100px;
-    }
+    :root { --titan-blue: #1e293b; --accent-blue: #3b82f6; --titan-slate: #fcfdfe; --sidebar-width: 100px; }
+    
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--titan-slate); color: #334155; margin: 0; -webkit-font-smoothing: antialiased; }
 
-    body { 
-      font-family: 'Plus Jakarta Sans', sans-serif; 
-      background-color: var(--titan-slate); 
-      color: #334155; 
-      margin: 0;
-      /* Smoothing fonts for a "premium" feel on high-resolution screens */
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* --- SIDEBAR NAVIGATION --- 
-       Fixed to the left to provide consistent navigation regardless of scroll position
-    */
-    .sidebar { 
-      width: var(--sidebar-width); 
-      height: 100vh; 
-      position: fixed; 
-      left: 0; 
-      top: 0; 
-      background: white; 
-      border-right: 1px solid #f1f5f9; 
-      z-index: 100; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      padding-top: 2.5rem;
-    }
-
-    .nav-icon { 
-      width: 54px; 
-      height: 54px; 
-      margin-bottom: 1.5rem; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      border-radius: 16px; 
-      cursor: pointer; 
-      transition: all 0.3s ease; 
-      font-size: 22px; 
-      text-decoration: none;
-      color: #94a3b8;
-    }
-
-    /* Hover and Active states to help the user know exactly which module they are in */
-    .nav-icon:hover { background: #f8fafc; color: var(--accent-blue); }
+    /* --- SIDEBAR (PC ONLY) --- */
+    .sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; left: 0; top: 0; background: white; border-right: 1px solid #f1f5f9; z-index: 100; display: flex; flex-direction: column; align-items: center; padding-top: 2.5rem; }
+    .nav-icon { width: 54px; height: 54px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 16px; cursor: pointer; transition: all 0.3s ease; font-size: 22px; text-decoration: none; color: #94a3b8; }
     .nav-icon.active { background: #f1f5f9; color: var(--titan-blue); }
 
-    .main-content { 
-      margin-left: var(--sidebar-width); 
-      padding: 4rem 6rem; 
-      max-width: 1500px;
-    }
+    /* --- LAYOUT --- */
+    .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1500px; transition: all 0.3s ease; }
+    .titan-card { background: white; border-radius: 2rem; border: 1px solid #f1f5f9; }
+    .payroll-card { background: #1e293b; border-radius: 2rem; position: relative; overflow: hidden; color: white; }
+    .input-luxury { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1rem 1.2rem; font-weight: 500; font-size: 13px; outline: none; width: 100%; }
+    .btn-dark { background: #1e293b; color: white; padding: 1rem 2rem; border-radius: 1rem; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; width: 100%; }
 
-    /* --- COMPONENT STYLING --- */
-    .titan-card { 
-      background: white; 
-      border-radius: 2rem; 
-      border: 1px solid #f1f5f9; 
-      box-shadow: 0 4px 20px rgba(0,0,0,0.01);
-    }
+    /* --- MOBILE RESPONSIVE ENGINE --- */
+    .mobile-nav { display: none; }
 
-    /* PAYROLL CARD: Designed to stand out as a financial summary widget */
-    .payroll-card {
-      background: #1e293b; /* Dark theme for "Finance" importance */
-      border-radius: 2rem;
-      position: relative;
-      overflow: hidden;
-    }
+    @media (max-width: 768px) {
+        .sidebar { display: none !important; }
+        .main-content { margin-left: 0 !important; padding: 2rem 1rem 100px 1rem !important; }
+        
+        /* Floating Bottom Nav */
+        .mobile-nav { 
+            display: flex; position: fixed; bottom: 20px; left: 15px; right: 15px; 
+            height: 70px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px);
+            border-radius: 25px; border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 15px 35px rgba(30, 41, 59, 0.15); z-index: 1000;
+            justify-content: space-around; align-items: center;
+        }
 
-    /* Decorative pseudo-element for subtle abstract design in the card corner */
-    .payroll-card::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 300px;
-        height: 300px;
-        background: rgba(59, 130, 246, 0.05);
-        border-radius: 50%;
-    }
+        /* Adjust Header for Mobile */
+        header.grid { grid-template-columns: 1fr !important; gap: 2rem !important; margin-bottom: 2rem !important; }
+        h1 { font-size: 2.8rem !important; }
+        .payroll-card { padding: 1.5rem !important; }
 
-    /* --- INPUT FIELDS --- 
-       "Luxury" style focus: adds a glow (box-shadow) when the admin is typing
-    */
-    .input-luxury {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 1rem;
-      padding: 1rem 1.2rem;
-      font-weight: 500;
-      font-size: 13px;
-      outline: none;
-      transition: all 0.2s ease;
+        /* Authorize Hire Form Stacking */
+        section.titan-card .flex { flex-direction: column !important; }
+        
+        /* Table to Card Conversion */
+        .teacher-table thead { display: none; }
+        .teacher-table tr { 
+            display: block; background: white; margin-bottom: 1rem; 
+            border: 1px solid #f1f5f9; border-radius: 1.5rem; padding: 1.2rem; 
+            position: relative;
+        }
+        .teacher-table td { display: block; width: 100% !important; border: none !important; padding: 0.4rem 0 !important; }
+        
+        /* Position the "Resolve Contract" button as a small 'X' or link at bottom */
+        .teacher-table td:last-child { 
+            border-top: 1px solid #f8fafc !important; 
+            margin-top: 10px; 
+            padding-top: 10px !important;
+            text-align: center !important; 
+        }
     }
-
-    .input-luxury:focus {
-      border-color: var(--accent-blue);
-      background: white;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05);
-    }
-
-    /* Action Buttons with subtle lift effect (translateY) on hover */
-    .btn-dark {
-      background: #1e293b;
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 1rem;
-      font-weight: 700;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      transition: all 0.3s ease;
-    }
-
-    .btn-dark:hover { background: #000; transform: translateY(-1px); }
-
-    /* Custom Table Headers: Small, bold, uppercase for that "Admin Dashboard" aesthetic */
-    .teacher-table th { 
-      background: #fafbfd; 
-      text-transform: uppercase; 
-      font-size: 10px; 
-      letter-spacing: 0.15em; 
-      padding: 1.5rem 2rem; 
-      color: #94a3b8; 
-      font-weight: 700; 
-      border-bottom: 1px solid #f1f5f9;
-    }
-  </style>
+</style>
 </head>
 <body class="min-h-screen">
 
@@ -253,56 +149,74 @@ const adminId = localStorage.getItem("user");
   // Load teachers immediately when the page opens
   window.onload = loadTeachers;
 
-  async function loadTeachers() {
+async function loadTeachers() {
     const tbody = document.getElementById("teacherBody");
     const totalDisplay = document.getElementById("totalPayroll");
     
     try {
-      // Fetch from your Vercel API
-      const res = await fetch(`/api/teachers?adminId=${adminId}`);
-      if (!res.ok) throw new Error("Failed to fetch");
-      
-      const teachers = await res.json();
-      tbody.innerHTML = "";
-      let total = 0;
+        const res = await fetch(`/api/teachers?adminId=${adminId}`);
+        if (!res.ok) throw new Error("Connection Lost");
+        
+        const teachers = await res.json();
+        tbody.innerHTML = "";
+        let total = 0;
 
-      if (teachers.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-300 italic text-sm">No faculty records found in Cloud.</td></tr>`;
-        totalDisplay.innerText = "0";
-        return;
-      }
+        if (teachers.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-300 italic text-sm tracking-widest uppercase">No Active Faculty Records</td></tr>`;
+            totalDisplay.innerText = "0";
+            return;
+        }
 
-      teachers.forEach((t) => {
-        total += Number(t.salary || 0);
-        const initials = t.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        teachers.forEach((t) => {
+            total += Number(t.salary || 0);
+            
+            // Generate clean initials for the profile circle
+            const initials = t.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-50/50 transition-colors">
-            <td class="px-8 py-6">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 text-xs">${initials}</div>
-                <div>
-                    <p class="text-sm font-bold text-slate-800">${t.name}</p>
-                    <p class="text-[9px] font-medium text-slate-400 uppercase tracking-tighter">ID: ${t._id.slice(-5)}</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-8 py-6">
-              <span class="px-3 py-1 rounded-lg bg-blue-50 text-blue-600 text-[9px] font-bold uppercase tracking-wider">${t.subject}</span>
-            </td>
-            <td class="px-8 py-6">
-              <p class="text-sm font-bold text-slate-700">£${Number(t.salary).toLocaleString()}</p>
-            </td>
-            <td class="px-8 py-6 text-right">
-              <button onclick="removeTeacher('${t._id}')" class="text-slate-300 hover:text-red-500 font-bold text-[9px] uppercase tracking-widest transition-colors">Resolve Contract</button>
-            </td>
-          </tr>`;
-      });
-      totalDisplay.innerText = total.toLocaleString();
+            tbody.innerHTML += `
+                <tr class="hover:bg-slate-50/50 transition-all border-b border-slate-50">
+                    <td class="px-4 md:px-8 py-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center font-bold text-xs shadow-sm">
+                                ${initials}
+                            </div>
+                            <div>
+                                <p class="text-sm font-extrabold text-slate-800 leading-tight">${t.name}</p>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Ref: ${t._id.slice(-6).toUpperCase()}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 md:px-8 py-6">
+                        <div class="flex flex-col md:block">
+                            <span class="md:hidden text-[8px] font-black text-slate-300 uppercase mb-1">Department</span>
+                            <span class="w-fit px-3 py-1 rounded-lg bg-slate-100 text-slate-600 text-[9px] font-bold uppercase tracking-wider">
+                                ${t.subject || 'General'}
+                            </span>
+                        </div>
+                    </td>
+                    <td class="px-4 md:px-8 py-6">
+                        <div class="flex justify-between items-center md:block">
+                            <span class="md:hidden text-[8px] font-black text-slate-300 uppercase">Wage</span>
+                            <p class="text-sm font-black text-emerald-600">£${Number(t.salary).toLocaleString()}</p>
+                        </div>
+                    </td>
+                    <td class="px-4 md:px-8 py-6 text-right">
+                        <button onclick="removeTeacher('${t._id}')" 
+                                class="w-full md:w-auto px-4 py-2 border border-transparent md:border-slate-100 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 font-bold text-[9px] uppercase tracking-widest transition-all">
+                            Terminate Contract
+                        </button>
+                    </td>
+                </tr>`;
+        });
+
+        // Update the big Expenditure Card at the top
+        totalDisplay.innerText = total.toLocaleString();
+
     } catch (err) {
-      console.error("Load Error:", err);
+        console.error("System Sync Error:", err);
+        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-red-400 font-bold">CRITICAL: Database Uplink Failed</td></tr>`;
     }
-  }
+}
 
   async function addTeacher() {
     const name = document.getElementById("tName").value.trim();
@@ -364,5 +278,11 @@ function toggleMobileView() {
 
   function logout() { localStorage.clear(); window.location.href = "login.html"; }
   </script>
+  <nav class="mobile-nav no-print">
+    <a href="index.html" class="nav-icon">👥</a>
+    <a href="tables.html" class="nav-icon">📅</a>
+    <a href="classes.html" class="nav-icon">🏫</a>
+    <a href="teachers.html" class="nav-icon active">👨‍🏫</a>
+</nav>
 </body>
 </html>

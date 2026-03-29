@@ -84,7 +84,65 @@
         background: white; border-right: 1px solid #f8fafc; border-bottom: 1px solid #f8fafc; 
         display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; 
     }
+/* --- TABLES MOBILE NAVIGATION --- */
+.mobile-day-bar { display: none; }
 
+@media (max-width: 768px) {
+    .sidebar { display: none !important; }
+    .main-content { margin-left: 0 !important; padding: 2rem 1rem 120px 1rem !important; }
+
+    /* Show the Day Picker */
+    .mobile-day-bar {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+        scrollbar-width: none; /* Hide scrollbar Firefox */
+    }
+    .mobile-day-bar::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
+
+    .day-pill {
+        flex: 0 0 auto;
+        padding: 10px 20px;
+        background: white;
+        border: 1px solid #f1f5f9;
+        border-radius: 15px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #94a3b8;
+    }
+    .day-pill.active {
+        background: var(--titan-blue);
+        color: white;
+        border-color: var(--titan-blue);
+    }
+
+    /* Stack the Grid Vertically */
+    #gridContainer { 
+        display: flex !important; 
+        flex-direction: column !important; 
+        min-width: 100% !important; 
+        gap: 15px;
+    }
+    
+    .grid-header { display: none !important; } /* Hide the old table headers */
+
+    /* Make Time Cells look like Header Dividers */
+    .time-cell {
+        padding: 1rem !important;
+        background: #f8fafc !important;
+        border-radius: 15px !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+    }
+
+    .session-item {
+        min-height: 80px !important;
+        width: 100% !important;
+    }
+}
     /* COLOR ENGINE: Specific CSS classes assigned based on the subject name */
     .sub-math { background: #fefce8; color: #854d0e; border: 1px solid #fef08a; }
     .sub-science { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
@@ -181,7 +239,13 @@
         <button onclick="window.print()" class="px-5 py-2 hover:bg-slate-50 text-slate-400 rounded-xl text-[10px] font-bold uppercase">Export PDF</button>
       </div>
     </header>
-
+<div class="mobile-day-bar no-print" id="mobileDayPicker">
+    <div class="day-pill active" onclick="setMobileDay(1, this)">Sun</div>
+    <div class="day-pill" onclick="setMobileDay(2, this)">Mon</div>
+    <div class="day-pill" onclick="setMobileDay(3, this)">Tue</div>
+    <div class="day-pill" onclick="setMobileDay(4, this)">Wed</div>
+    <div class="day-pill" onclick="setMobileDay(5, this)">Thu</div>
+</div>
     <div class="titan-card overflow-hidden">
         <div class="overflow-x-auto">
             <div id="gridContainer" class="grid grid-cols-6 min-w-[1100px]"></div>
@@ -250,6 +314,7 @@ if (!adminId) {
      * GRID RENDERER:
      * Builds the visual timetable based on the selected Level, Group, and Language.
      */
+    
     function renderGrid() {
       const container = document.getElementById('gridContainer');
       const level = document.getElementById('selLevel').value;
@@ -299,7 +364,60 @@ if (!adminId) {
         if(sub.includes('break')) return "sub-break";
         return "bg-slate-900 text-white"; // Default dark style
     }
+let activeMobileDayIndex = 1; // Default to Sunday
 
+function setMobileDay(index, el) {
+    activeMobileDayIndex = index;
+    document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    renderGrid();
+}
+
+// UPDATE your existing renderGrid() function's loop:
+function renderGrid() {
+    const container = document.getElementById('gridContainer');
+    const level = document.getElementById('selLevel').value;
+    const group = document.getElementById('selGroup').value;
+    const lang = document.getElementById('selLang').value;
+    const configKey = `${level}-${group}-${lang}`;
+    const isMobile = window.innerWidth <= 768;
+
+    container.innerHTML = "";
+
+    // Render Headers (Only for PC)
+    if (!isMobile) {
+        days.forEach(day => { container.innerHTML += `<div class="grid-header">${day}</div>`; });
+    }
+
+    times.forEach(time => {
+        // Render Time Cell
+        container.innerHTML += `<div class="time-cell">
+            <span class="text-sm font-bold text-slate-900">${time}</span>
+            <span class="text-[9px] text-slate-300 font-bold uppercase mt-1">Session Start</span>
+        </div>`;
+        
+        // Loop Days
+        for(let i=1; i<=5; i++) {
+            // MOBILE FILTER: Skip days that aren't selected
+            if (isMobile && i !== activeMobileDayIndex) continue;
+
+            const cellId = `${configKey}-${time}-${days[i]}`;
+            const data = db[cellId] || null;
+            let colorClass = data ? getColor(data.sub) : "cell-empty";
+            
+            container.innerHTML += `
+              <div class="p-1 md:p-3 border-r border-bottom border-slate-50 bg-white">
+                <div onclick="openEditor('${cellId}')" class="session-item p-4 min-h-[100px] flex flex-col items-center justify-center text-center ${colorClass}">
+                  <span class="text-[10px] font-extrabold uppercase tracking-tight">${data ? data.sub : '+'}</span>
+                  ${data ? `<span class="text-[8px] font-bold opacity-60 mt-2 uppercase tracking-widest">${data.teacher}</span>` : ''}
+                </div>
+              </div>`;
+        }
+    });
+}
+
+// Add a listener to re-render when rotating phone
+window.addEventListener('resize', renderGrid);
     /* --- TIMELINE MANAGEMENT --- */
     function openTimeManager() {
       const list = document.getElementById('timeList');
@@ -406,5 +524,11 @@ window.onload = async () => {
     renderGrid(); 
 };
   </script>
+  <nav class="mobile-nav no-print">
+    <a href="index.html" class="nav-icon">👥</a>
+    <a href="tables.html" class="nav-icon">📅</a>
+    <a href="classes.html" class="nav-icon">🏫</a>
+    <a href="teachers.html" class="nav-icon active">👨‍🏫</a>
+</nav>
 </body>
 </html>
