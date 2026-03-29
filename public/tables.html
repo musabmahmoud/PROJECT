@@ -172,7 +172,7 @@
     }
 
     try {
-        const res = await fetch(`http://localhost:5001/api/tables?adminId=${adminId}`);
+        const res = await fetch(`/api/tables?adminId=${adminId}`);
         const data = await res.json();
         db = data; // Syncs MongoDB data to your screen
         renderGrid();
@@ -300,7 +300,7 @@ if (!adminId) {
     };
 
     try {
-        const res = await fetch("http://localhost:5001/api/tables", {
+        const res = await fetch("/api/tables", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -341,8 +341,7 @@ window.onload = async () => {
     }
 
     try {
-        // 2. Fetch data from your Port 5001 Engine
-        const res = await fetch(`http://localhost:5001/api/tables?adminId=${adminId}`);
+        const res = await fetch(`/api/tables?adminId=${adminId}`);
         const data = await res.json();
         
         // 3. Put the database data into your local memory

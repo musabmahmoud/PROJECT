@@ -304,8 +304,7 @@ if (!adminId) {
   }
 
   try {
-    // 2. SEND TO DATABASE (Port 5001)
-    const res = await fetch("http://localhost:5001/api/teachers", {
+    const res = await fetch("/api/teachers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
