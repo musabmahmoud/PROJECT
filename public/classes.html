@@ -261,35 +261,41 @@
       else aBtn.classList.add('active-a');
     }
 
-    async function openHistory(id, name) {
-      document.getElementById('panelName').innerText = name;
-      document.getElementById('overlay').style.display = 'block';
-      document.getElementById('sidePanel').classList.add('open');
-      const content = document.getElementById('panelContent');
-      content.innerHTML = `<p class="p-10 text-center text-slate-300 font-bold text-[10px] uppercase animate-pulse">Scanning Cloud Memory...</p>`;
-      
-      try {
-        const res = await fetch(`${API}/history?admin=${user}&name=${encodeURIComponent(name)}`);
-        const data = await res.json();
-        
-        if (!data.history || data.history.length === 0) {
-            content.innerHTML = `<p class="text-center text-slate-400 py-10">No previous logs for this student.</p>`;
-            return;
-        }
+  async function openHistory(id, name) {
+  document.getElementById('panelName').innerText = name;
+  document.getElementById('overlay').style.display = 'block';
+  document.getElementById('sidePanel').classList.add('open');
+  
+  const content = document.getElementById('panelContent');
+  content.innerHTML = `<div class="p-10 text-center text-slate-400">Loading History...</div>`;
 
-        content.innerHTML = data.history.map(l => `
-          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-            <div class="flex justify-between items-start mb-4">
-                <p class="font-bold text-slate-900 text-sm">${l.date}</p>
-                <span class="text-[9px] font-bold px-3 py-1 rounded-lg ${l.status === 'present' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'} uppercase">${l.status}</span>
-            </div>
-            <div class="flex justify-between items-end border-t border-slate-200 pt-4">
-              <p class="text-sm font-bold text-emerald-500">£${l.payment || 0}</p>
-              <p class="text-[10px] font-bold text-slate-400 uppercase">${l.subject || 'N/A'} | ${l.grade || 0}%</p>
-            </div>
-          </div>`).join('');
-      } catch (e) { content.innerHTML = "Error fetching history."; }
-    }
+  try {
+    const res = await fetch(`${API}/history?admin=${user}&name=${encodeURIComponent(name)}`);
+    const data = await res.json();
+
+    // Sort by date so newest is on top
+    const sortedLogs = data.history.reverse();
+
+    content.innerHTML = sortedLogs.map(log => `
+      <div class="p-5 mb-4 rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-[10px] font-bold text-slate-400">${log.date}</span>
+          <span class="px-2 py-1 rounded text-[9px] font-black uppercase ${log.status === 'present' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">
+            ${log.status}
+          </span>
+        </div>
+        <h4 class="text-sm font-bold text-slate-800 mb-1">${log.subject}</h4>
+        <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
+          <p class="text-xs font-bold text-blue-500">Score: ${log.grade}%</p>
+          <p class="text-xs font-bold text-emerald-500">+ £${log.payment}</p>
+        </div>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    content.innerHTML = `<div class="text-red-500">Failed to load history.</div>`;
+  }
+}
 
     function calcRev() {
         let total = 0;
