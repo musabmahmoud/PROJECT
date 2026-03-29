@@ -164,6 +164,23 @@
   </main>
 
   <script>
+    window.onload = async () => {
+    const adminId = localStorage.getItem("user");
+    if (!adminId) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    try {
+        const res = await fetch(`http://localhost:5001/api/tables?adminId=${adminId}`);
+        const data = await res.json();
+        db = data; // Syncs MongoDB data to your screen
+        renderGrid();
+    } catch (err) {
+        console.error("Load failed:", err);
+        renderGrid(); // Show empty grid if server is down
+    }
+};
 // Make sure this matches exactly what you set in login.html
 const adminId = localStorage.getItem("user"); 
 
@@ -270,36 +287,38 @@ if (!adminId) {
     }
 
     async function saveSession() {
-  const sub = document.getElementById('editSub').value.trim();
-  const teacher = document.getElementById('editTeach').value.trim();
-  const adminId = localStorage.getItem("user"); // Make sure this matches your login key
+    const sub = document.getElementById('editSub').value.trim();
+    const teacher = document.getElementById('editTeach').value.trim();
+    
+    // This grabs "OWNER_01" from your login
+    const adminId = localStorage.getItem("user") || "OWNER_01"; 
 
-  const payload = { 
-    adminId: adminId, 
-    cellId: activeCellId, 
-    session: sub ? { sub, teacher } : null 
-  };
+    const payload = { 
+        adminId: adminId, 
+        cellId: activeCellId, // Ensure this variable exists in your grid logic
+        session: sub ? { sub, teacher } : null 
+    };
 
-  try {
-    // THIS IS THE BRIDGE TO YOUR DATABASE
-    const res = await fetch("http://localhost:5001/api/tables", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    try {
+        const res = await fetch("http://localhost:5001/api/tables", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
 
-    if (res.ok) {
-        // Only update the screen if the database confirms the save
-        if(sub) db[activeCellId] = { sub, teacher };
-        else delete db[activeCellId];
-        closeModal();
-        renderGrid();
-        console.log("✅ Saved to MongoDB");
+        if (res.ok) {
+            // Update the local UI
+            if(sub) db[activeCellId] = { sub, teacher };
+            else delete db[activeCellId];
+            
+            closeModal();
+            renderGrid();
+            console.log("✅ Session saved to MongoDB for Owner");
+        }
+    } catch (err) {
+        console.error("❌ Save Failed:", err);
+        alert("Database connection lost! Check VS Code Terminal.");
     }
-  } catch (err) {
-    console.error("❌ Database Connection Failed:", err);
-    alert("Check your VS Code Terminal! Is the Engine running on Port 5001?");
-  }
 }
 
 function closeModal() { 

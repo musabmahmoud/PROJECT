@@ -11,79 +11,42 @@
     <h1 class="text-3xl font-extrabold mb-2 text-center text-gray-900">Welcome Back</h1>
     <p class="text-gray-500 text-center mb-8 text-sm">Please enter your details</p>
     
-    <div class="space-y-4">
-      <input id="username" type="text" placeholder="Username" 
-             class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-50 focus:bg-white" />
-      
-      <input id="password" type="password" placeholder="Password" 
-             class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-50 focus:bg-white" />
-      
-      <button id="loginBtn" onclick="login()" 
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition duration-200 transform active:scale-95">
-        Sign In
-      </button>
-    </div>
-
-    <p id="msg" class="text-red-500 mt-4 text-center text-sm font-semibold min-h-[20px]"></p>
-
-    <div class="mt-8 pt-6 border-t border-gray-100 text-center">
-      <p class="text-gray-600 text-sm">
-        New admin? 
-        <a href="signup.html" class="text-blue-600 hover:text-blue-800 font-bold ml-1 transition">Create an account</a>
-      </p>
-    </div>
+  <div class="space-y-4">
+  <input id="email" type="text" placeholder="Username" 
+         class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-50 focus:bg-white" />
+  
+  <input id="password" type="password" placeholder="Password" 
+         class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-gray-50 focus:bg-white" />
+  
+  <button id="loginBtn" onclick="login()" 
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition duration-200 transform active:scale-95">
+    Sign In
+  </button>
+</div>
   </div>
 
 <script>
 const API = "/api/auth";
 
 async function login() {
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-  const msgElement = document.getElementById("msg");
-  const btn = document.getElementById("loginBtn");
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-  if (!username || !password) {
-    msgElement.innerText = "Please fill in all fields.";
-    return;
-  }
-
-  // 🔄 Set Loading State
-  btn.innerText = "Signing in...";
-  btn.disabled = true;
-  btn.classList.add("opacity-70", "cursor-not-allowed");
-  msgElement.innerText = "";
-
-  try {
-    const res = await fetch(`${API}/login`, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ username, password })
+    const res = await fetch("http://localhost:5001/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
     });
-    
-    const data = await res.json();
-    
-    if(res.ok) {
-      localStorage.setItem("user", data.username);
-      // Redirecting to index (Dashboard)
-      window.location.href = "index.html";
-    } else {
-      msgElement.innerText = data.error || "Login failed";
-    }
-  } catch (err) {
-    console.error("Login error:", err);
-    msgElement.innerText = "Server is currently unavailable.";
-  } finally {
-    // 🔙 Reset Loading State
-    btn.innerText = "Sign In";
-    btn.disabled = false;
-    btn.classList.remove("opacity-70", "cursor-not-allowed");
-  }
-}
 
-document.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') login();
-});
+    if (res.ok) {
+        const data = await res.json();
+        // This 'OWNER_01' ID will now be used for all your saves
+        localStorage.setItem("user", data.user.id); 
+        window.location.href = "tables.html"; 
+    } else {
+        alert("Wrong Owner Credentials!");
+    }
+}
 </script>
 </body>
 </html>

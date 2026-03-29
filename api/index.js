@@ -35,7 +35,7 @@ const tablesRoutes = require('./ROUTES/tables');
 // Example: Any request to "/api/auth" will be handled by auth.js
 app.use('/api/students', studentRoutes); 
 app.use('/api/teachers', teacherRoutes);
-app.use('/api/auth', authRoutes);
+// app.use('/api/auth', authRoutes);//
 app.use('/api/tables', tablesRoutes);
 
 // --- 4. SYSTEM HEALTH CHECK ---
@@ -50,8 +50,27 @@ app.get('/', (req, res) => {
         </body>
     `);
 });
+// 5 LOGIN //
+// --- 5 LOGIN ---
+app.post('/api/auth/login', (req, res) => {
+    const { email, password } = req.body;
+    console.log("Login attempt for:", email); // This will show in your terminal
 
-// --- 5. SERVER INITIALIZATION ---
+    const OWNER_EMAIL = "ayat"; 
+    const OWNER_PASS = "01124756018"; 
+
+    if (email === OWNER_EMAIL && password === OWNER_PASS) {
+        console.log("✅ Owner Login Success!");
+        res.status(200).json({ 
+            message: "Welcome Owner", 
+            user: { id: "OWNER_01" } 
+        });
+    } else {
+        console.log("❌ Login Denied");
+        res.status(401).json({ message: "Access Denied: Owner Only" });
+    }
+});
+// --- 6. SERVER INITIALIZATION ---
 // The app will run on Port 5000 (Local) or the Port assigned by Vercel/Heroku.
 const PORT = process.env.PORT || 5001; 
 app.listen(PORT, () => {
