@@ -213,184 +213,107 @@
 
   <script>
 // Make sure this matches exactly what you set in login.html
-const adminId = localStorage.getItem("user"); 
+const adminId = localStorage.getItem("user");
 
-if (!adminId) {
-    console.error("No Admin ID found! Redirecting to login...");
+  if (!adminId) {
     window.location.href = "login.html";
-}
-    /* Initialize user session and retrieve teacher data from LocalStorage */
-    const user = localStorage.getItem("user");
-    // Keys are scoped to the user (e.g., teachers_admin) to prevent data mixing
-    let teachers = JSON.parse(localStorage.getItem(`teachers_${user}`)) || [];
+  }
 
-    /* On page load, check for valid session and draw the roster */
-    window.onload = () => {
-      if(!user) { window.location.href="login.html"; return; }
-      renderTeachers();
-    };
+  // Load teachers immediately when the page opens
+  window.onload = loadTeachers;
 
-    /**
-     * RENDER ENGINE:
-     * Clears the current table and re-builds it based on the 'teachers' array.
-     * Also calculates the total payroll sum.
-     */
-    function renderTeachers() {
-      const tbody = document.getElementById("teacherBody");
-      const totalDisplay = document.getElementById("totalPayroll");
+  async function loadTeachers() {
+    const tbody = document.getElementById("teacherBody");
+    const totalDisplay = document.getElementById("totalPayroll");
+    
+    try {
+      // Fetch from your Vercel API
+      const res = await fetch(`/api/teachers?adminId=${adminId}`);
+      if (!res.ok) throw new Error("Failed to fetch");
+      
+      const teachers = await res.json();
       tbody.innerHTML = "";
       let total = 0;
 
-      // Handle empty state gracefully
-      if(teachers.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-300 font-medium italic text-sm">No faculty records found.</td></tr>`;
-          totalDisplay.innerText = "0";
-          return;
+      if (teachers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-300 italic text-sm">No faculty records found in Cloud.</td></tr>`;
+        totalDisplay.innerText = "0";
+        return;
       }
 
-      teachers.forEach((t, index) => {
-        // Sum up the salaries (ensuring it's treated as a Number)
-        total += Number(t.salary);
-
-        // UI Logic: Generate user initials for the avatar (e.g., "Ahmed Ali" -> "AA")
-        const initials = t.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+      teachers.forEach((t) => {
+        total += Number(t.salary || 0);
+        const initials = t.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
         tbody.innerHTML += `
           <tr class="hover:bg-slate-50/50 transition-colors">
             <td class="px-8 py-6">
               <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 text-xs">
-                    ${initials}
-                </div>
+                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 text-xs">${initials}</div>
                 <div>
                     <p class="text-sm font-bold text-slate-800">${t.name}</p>
-                    <p class="text-[9px] font-medium text-slate-400 uppercase tracking-tighter">Staff ID #STF-0${index + 101}</p>
+                    <p class="text-[9px] font-medium text-slate-400 uppercase tracking-tighter">ID: ${t._id.slice(-5)}</p>
                 </div>
               </div>
             </td>
             <td class="px-8 py-6">
-              <span class="px-3 py-1 rounded-lg bg-blue-50 text-blue-600 text-[9px] font-bold uppercase tracking-wider">
-                ${t.subject}
-              </span>
+              <span class="px-3 py-1 rounded-lg bg-blue-50 text-blue-600 text-[9px] font-bold uppercase tracking-wider">${t.subject}</span>
             </td>
             <td class="px-8 py-6">
               <p class="text-sm font-bold text-slate-700">£${Number(t.salary).toLocaleString()}</p>
             </td>
             <td class="px-8 py-6 text-right">
-              <button onclick="removeTeacher(${index})" class="text-slate-300 hover:text-red-500 font-bold text-[9px] uppercase tracking-widest transition-colors">Resolve Contract</button>
+              <button onclick="removeTeacher('${t._id}')" class="text-slate-300 hover:text-red-500 font-bold text-[9px] uppercase tracking-widest transition-colors">Resolve Contract</button>
             </td>
-          </tr>
-        `;
+          </tr>`;
+      });
+      totalDisplay.innerText = total.toLocaleString();
+    } catch (err) {
+      console.error("Load Error:", err);
+    }
+  }
+
+  async function addTeacher() {
+    const name = document.getElementById("tName").value.trim();
+    const subject = document.getElementById("tSubject").value.trim();
+    const salary = document.getElementById("tSalary").value.trim();
+
+    if (!name || !salary) {
+      alert("⚠️ Name and Salary are required.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/teachers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, subject, salary, adminId })
       });
 
-      // Update the main header widget with the total sum
-      totalDisplay.innerText = total.toLocaleString();
-    }
-
-    /**
-     * ADD TEACHER:
-     * Validates inputs, pushes to array, and triggers storage save.
-     */
- async function addTeacher() {
-  const name = document.getElementById("tName").value.trim();
-  const subject = document.getElementById("tSubject").value.trim();
-  const salary = document.getElementById("tSalary").value.trim();
-  const adminId = localStorage.getItem("user");
-
-  // 1. Check if the user is actually logged in
-  if (!adminId) {
-    alert("❌ Access Denied: Please login as Admin first.");
-    window.location.href = "login.html";
-    return;
-  }
-
-  // 2. Basic validation
-  if (!name || !salary) {
-    alert("⚠️ Please enter both Name and Salary");
-    return;
-  }
-
-  try {
-    // Note: No "http://localhost:5001" here. Vercel handles the path.
-    const res = await fetch("/api/teachers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, subject, salary, adminId })
-    });
-
-    if (res.ok) {
-      // 3. SUCCESS: Clear the inputs
-async function addTeacher() {
-  const name = document.getElementById("tName").value.trim();
-  const subject = document.getElementById("tSubject").value.trim();
-  const salary = document.getElementById("tSalary").value.trim();
-  const adminId = localStorage.getItem("user");
-
-  if (!adminId) {
-    alert("❌ Access Denied: Please login first.");
-    return;
-  }
-
-  if (!name || !salary) {
-    alert("⚠️ Please enter both Name and Salary");
-    return;
-  }
-
-  try {
-    const res = await fetch("/api/teachers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, subject, salary, adminId })
-    });
-
-    if (res.ok) {
-      // 1. Success Message
-      alert("Teacher saved to Titan Database! ✅");
-
-      // 2. Clear inputs ONLY once
-      document.getElementById("tName").value = "";
-      document.getElementById("tSubject").value = "";
-      document.getElementById("tSalary").value = "";
-      
-      // 3. Refresh the list (Make sure this function is also updated!)
-      if (typeof loadTeachers === "function") {
-        loadTeachers(); 
+      if (res.ok) {
+        document.getElementById("tName").value = "";
+        document.getElementById("tSubject").value = "";
+        document.getElementById("tSalary").value = "";
+        loadTeachers(); // Refresh list from DB
+      } else {
+        alert("Server Error while saving.");
       }
-    } else {
-      const errorData = await res.json();
-      alert("Server Error: " + (errorData.message || "Could not save."));
+    } catch (err) {
+      alert("Connection failed. Check Vercel logs.");
     }
-  } catch (err) {
-    console.error("Titan System Error:", err);
-    // This alert ONLY shows if the internet dies or the server is down
-    alert("⚠️ Connection Failed: Check your internet or Vercel logs.");
   }
-}
-    /**
-     * REMOVE TEACHER:
-     * Uses confirm() dialog to prevent accidental deletion.
-     */
-    function removeTeacher(index) {
-      if(confirm("Are you sure you want to resolve this faculty contract?")) {
-        teachers.splice(index, 1);
-        saveAndRender();
-      }
-    }
 
-    /**
-     * PERSISTENCE LAYER:
-     * Saves the current teacher array to the browser and refreshes the UI.
-     */
-    function saveAndRender() {
-      localStorage.setItem(`teachers_${user}`, JSON.stringify(teachers));
-      renderTeachers();
+  async function removeTeacher(id) {
+    if (!confirm("Are you sure?")) return;
+    try {
+      const res = await fetch(`/api/teachers/${id}?adminId=${adminId}`, { method: "DELETE" });
+      if (res.ok) loadTeachers();
+    } catch (err) {
+      alert("Delete failed.");
     }
+  }
 
-    /**
-     * LOGOUT:
-     * Clears all session data and redirects to the login screen.
-     */
-    function logout() { localStorage.clear(); window.location.href="login.html"; }
+  function logout() { localStorage.clear(); window.location.href = "login.html"; }
   </script>
 </body>
 </html>
