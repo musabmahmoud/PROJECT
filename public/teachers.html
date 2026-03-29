@@ -113,15 +113,28 @@
       </div>
     </header>
 
-    <section class="titan-card p-8 mb-12 bg-white">
-      <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-6">Faculty Appointment</h3>
-      <div class="flex flex-col xl:flex-row gap-4">
-        <input id="tName" type="text" placeholder="Full Legal Name" class="input-luxury flex-1">
-        <input id="tSubject" type="text" placeholder="Department (e.g. Physics)" class="input-luxury xl:w-64">
-        <input id="tSalary" type="number" placeholder="Contract Salary" class="input-luxury xl:w-48">
-        <button onclick="addTeacher()" class="btn-dark">Authorize Hire</button>
-      </div>
-    </section>
+<section class="titan-card p-8 mb-12 bg-white">
+  <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-6">Faculty Appointment</h3>
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+    <div class="md:col-span-1">
+        <input id="tName" type="text" placeholder="Full Legal Name" class="input-luxury w-full">
+    </div>
+    
+    <div class="md:col-span-1">
+        <input id="tSubject" type="text" placeholder="Department" class="input-luxury w-full">
+    </div>
+    
+    <div class="md:col-span-1">
+        <input id="tSalary" type="number" placeholder="Salary (EGP)" class="input-luxury w-full">
+    </div>
+
+    <div class="md:col-span-1">
+        <button onclick="addTeacher()" class="btn-dark-small w-full">
+            Authorize Hire
+        </button>
+    </div>
+  </div>
+</section>
 
     <div class="titan-card overflow-hidden">
         <table class="w-full text-left teacher-table">
