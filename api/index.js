@@ -48,9 +48,4 @@ app.get('/', (req, res) => {
     res.send('<h1 style="font-family:sans-serif; color:#2563eb; text-align:center; margin-top:20%;">TITAN ENGINE V1.1 : STABLE</h1>');
 });
 
-// --- 6. START ---
-const PORT = process.env.PORT || 5001; 
-app.listen(PORT, () => {
-    console.log(`🚀 Engine firing on Port ${PORT}`);
-});
 module.exports = app;
