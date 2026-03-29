@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Titan ERP | Intelligence Center</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    :root { --titan-blue: #1e293b; --accent-blue: #3b82f6; --titan-slate: #fcfdfe; --sidebar-width: 100px; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--titan-slate); color: #334155; margin: 0; }
+    .sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; left: 0; top: 0; background: white; border-right: 1px solid #f1f5f9; z-index: 100; display: flex; flex-direction: column; align-items: center; padding-top: 2.5rem; }
+    .nav-icon { width: 54px; height: 54px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 16px; cursor: pointer; transition: all 0.3s ease; font-size: 22px; text-decoration: none; color: #94a3b8; }
+    .nav-icon.active { background: #f1f5f9; color: var(--titan-blue); }
+    .main-content { margin-left: var(--sidebar-width); padding: 4rem 6rem; max-width: 1200px; }
+    .report-card { background: white; border-radius: 2rem; border: 1px solid #f1f5f9; padding: 3rem; transition: all 0.3s ease; }
+    .selector-btn { border: 2px solid #f1f5f9; padding: 1.5rem; border-radius: 1.5rem; cursor: pointer; transition: all 0.2s; text-align: center; }
+    .selector-btn.active { border-color: var(--accent-blue); background: #eff6ff; }
+    .titan-input { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 0.8rem 1.2rem; font-weight: 600; font-size: 13px; outline: none; width: 100%; }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="text-slate-900 font-bold text-3xl mb-16 tracking-tighter">T<span class="text-blue-500">.</span></div>
+    <nav>
+      <a href="index.html" class="nav-icon">👥</a>
+      <a href="classes.html" class="nav-icon">🏫</a>
+      <a href="reports.html" class="nav-icon active">📊</a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="mb-12">
+        <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">Intelligence <span class="text-slate-400 font-light">Center</span></h1>
+        <p class="text-slate-400 mt-2 font-medium">Generate custom encrypted PDF reports for Students or Faculty.</p>
+    </header>
+
+    <div class="report-card shadow-2xl shadow-blue-900/5">
+        <div class="grid grid-cols-2 gap-4 mb-10">
+            <div id="typeStudent" onclick="setType('student')" class="selector-btn active">
+                <span class="text-3xl block mb-2">🎓</span>
+                <span class="font-bold uppercase text-[10px] tracking-widest text-slate-500">Student Reports</span>
+            </div>
+            <div id="typeTeacher" onclick="setType('teacher')" class="selector-btn">
+                <span class="text-3xl block mb-2">👨‍🏫</span>
+                <span class="font-bold uppercase text-[10px] tracking-widest text-slate-500">Teacher Payroll</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 border-t border-slate-50 pt-10">
+            <div>
+                <label class="text-[9px] font-black uppercase text-slate-400 mb-2 block tracking-[0.2em]">Target Level</label>
+                <select id="repLevel" class="titan-input">
+                    <option>All Levels</option>
+                    <option>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
+                    <option>Sec 1</option><option>Sec 2</option><option>Sec 3</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-[9px] font-black uppercase text-slate-400 mb-2 block tracking-[0.2em]">Report Month</label>
+                <input type="month" id="repMonth" class="titan-input">
+            </div>
+            <div>
+                <label class="text-[9px] font-black uppercase text-slate-400 mb-2 block tracking-[0.2em]">Target Group</label>
+                <select id="repGroup" class="titan-input">
+                    <option>Both Groups</option>
+                    <option>Group A</option>
+                    <option>Group B</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="bg-slate-50 p-6 rounded-2xl mb-10">
+            <p class="text-[9px] font-black uppercase text-slate-400 mb-4 tracking-[0.2em]">Data Visibility Settings</p>
+            <div class="flex flex-wrap gap-8">
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-600"><input type="checkbox" id="showMoney" checked> Show Financials</label>
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-600"><input type="checkbox" id="showAcademic" checked> Show Academics</label>
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-600"><input type="checkbox" id="showAtt" checked> Show Attendance</label>
+            </div>
+        </div>
+
+        <button onclick="fetchAndGenerate()" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold uppercase tracking-[0.3em] hover:bg-blue-600 transition-all shadow-xl shadow-blue-500/20">
+            Generate Titan PDF
+        </button>
+    </div>
+
+    <div id="renderZone" style="position: absolute; left: -9999px; top: 0; background: white; padding: 40px; width: 800px;">
+        <table id="targetTable" class="w-full text-left">
+            </table>
+    </div>
+  </main>
+
+  <script>
+    let currentType = 'student';
+    const user = localStorage.getItem("user");
+
+    function setType(type) {
+        currentType = type;
+        document.getElementById('typeStudent').classList.toggle('active', type === 'student');
+        document.getElementById('typeTeacher').classList.toggle('active', type === 'teacher');
+    }
+
+    async function fetchAndGenerate() {
+        const level = document.getElementById('repLevel').value;
+        const month = document.getElementById('repMonth').value;
+        const group = document.getElementById('repGroup').value;
+        
+        // 1. Fetch Data
+        const url = currentType === 'student' ? `/api/students?admin=${user}` : `/api/teachers?admin=${user}`;
+        const res = await fetch(url);
+        let data = await res.json();
+
+        // 2. Build the Hidden Table for PDF capture
+        const table = document.getElementById('targetTable');
+        table.innerHTML = `
+            <thead>
+                <tr style="border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                    <th style="padding: 10px;">Name</th>
+                    ${document.getElementById('showAtt').checked ? '<th style="padding: 10px;">Attendance</th>' : ''}
+                    ${document.getElementById('showMoney').checked ? '<th style="padding: 10px;">Payment</th>' : ''}
+                    ${document.getElementById('showAcademic').checked ? '<th style="padding: 10px;">Results</th>' : ''}
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(item => `
+                    <tr style="border-bottom: 1px solid #f9f9f9;">
+                        <td style="padding: 15px; font-weight: bold;">${item.name}</td>
+                        ${document.getElementById('showAtt').checked ? `<td style="padding: 15px;">${item.attendance || 0} Sessions</td>` : ''}
+                        ${document.getElementById('showMoney').checked ? `<td style="padding: 15px;">${item.payments || item.salary || 0} EGP</td>` : ''}
+                        ${document.getElementById('showAcademic').checked ? `<td style="padding: 15px;">${item.level || item.subject || 'N/A'}</td>` : ''}
+                    </tr>
+                `).join('')}
+            </tbody>
+        `;
+
+        // 3. Render to PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const canvas = await html2canvas(table, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+
+        doc.setFontSize(20); doc.text(`TITAN ERP ${currentType.toUpperCase()} REPORT`, 15, 20);
+        doc.setFontSize(10); doc.text(`Generated on: ${new Date().toLocaleDateString()} | Month: ${month}`, 15, 28);
+        
+        const imgWidth = 180;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        doc.addImage(imgData, 'PNG', 15, 40, imgWidth, imgHeight);
+        
+        doc.save(`Titan_${currentType}_Report.pdf`);
+    }
+  </script>
+</body>
+</html>
