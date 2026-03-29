@@ -320,29 +320,52 @@ if (!adminId) {
 
     if (res.ok) {
       // 3. SUCCESS: Clear the inputs
+async function addTeacher() {
+  const name = document.getElementById("tName").value.trim();
+  const subject = document.getElementById("tSubject").value.trim();
+  const salary = document.getElementById("tSalary").value.trim();
+  const adminId = localStorage.getItem("user");
+
+  if (!adminId) {
+    alert("❌ Access Denied: Please login first.");
+    return;
+  }
+
+  if (!name || !salary) {
+    alert("⚠️ Please enter both Name and Salary");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/teachers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, subject, salary, adminId })
+    });
+
+    if (res.ok) {
+      // 1. Success Message
+      alert("Teacher saved to Titan Database! ✅");
+
+      // 2. Clear inputs ONLY once
       document.getElementById("tName").value = "";
       document.getElementById("tSubject").value = "";
       document.getElementById("tSalary").value = "";
       
-      alert("Teacher saved to Titan Database! ✅");
-      loadTeachers(); 
+      // 3. Refresh the list (Make sure this function is also updated!)
+      if (typeof loadTeachers === "function") {
+        loadTeachers(); 
+      }
     } else {
       const errorData = await res.json();
       alert("Server Error: " + (errorData.message || "Could not save."));
     }
   } catch (err) {
-    // 4. CLEAN ERROR: No more "VS Code" warnings
     console.error("Titan System Error:", err);
+    // This alert ONLY shows if the internet dies or the server is down
     alert("⚠️ Connection Failed: Check your internet or Vercel logs.");
   }
 }
-      
-      // Clear inputs for the next entry
-      document.getElementById("tName").value = "";
-      document.getElementById("tSubject").value = "";
-      document.getElementById("tSalary").value = "";
-    
-
     /**
      * REMOVE TEACHER:
      * Uses confirm() dialog to prevent accidental deletion.
