@@ -36,7 +36,7 @@ const tablesRoutes = require('./ROUTES/tables');
 app.use('/api/students', studentRoutes); 
 app.use('/api/teachers', teacherRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/auth', tablesRoutes);
+app.use('/api/tables', tablesRoutes);
 
 // --- 4. SYSTEM HEALTH CHECK ---
 // If you visit the root URL of your backend, you see this luxury status page.
@@ -53,7 +53,7 @@ app.get('/', (req, res) => {
 
 // --- 5. SERVER INITIALIZATION ---
 // The app will run on Port 5000 (Local) or the Port assigned by Vercel/Heroku.
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001; 
 app.listen(PORT, () => {
     console.log(`🚀 TITAN ENGINE DEPLOYED ON PORT ${PORT}`);
 });

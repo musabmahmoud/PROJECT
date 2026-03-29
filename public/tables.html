@@ -164,6 +164,13 @@
   </main>
 
   <script>
+// Make sure this matches exactly what you set in login.html
+const adminId = localStorage.getItem("user"); 
+
+if (!adminId) {
+    console.error("No Admin ID found! Redirecting to login...");
+    window.location.href = "login.html";
+}
     // Configuration Data
     const days = ["Period", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
     
@@ -262,29 +269,74 @@
       document.getElementById('editModal').style.display = 'flex';
     }
 
-    function saveSession() {
-      const sub = document.getElementById('editSub').value.trim();
-      const teacher = document.getElementById('editTeach').value.trim();
-      
-      if(sub) {
-        db[activeCellId] = { sub, teacher };
-      } else {
-        delete db[activeCellId]; // Removes the session if the name is cleared
-      }
-      
-      localStorage.setItem('titan_master_schedules', JSON.stringify(db));
-      closeModal();
-      renderGrid();
-    }
+    async function saveSession() {
+  const sub = document.getElementById('editSub').value.trim();
+  const teacher = document.getElementById('editTeach').value.trim();
+  const adminId = localStorage.getItem("user"); // Make sure this matches your login key
 
-    function closeModal() { document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); }
+  const payload = { 
+    adminId: adminId, 
+    cellId: activeCellId, 
+    session: sub ? { sub, teacher } : null 
+  };
+
+  try {
+    // THIS IS THE BRIDGE TO YOUR DATABASE
+    const res = await fetch("http://localhost:5001/api/tables", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+        // Only update the screen if the database confirms the save
+        if(sub) db[activeCellId] = { sub, teacher };
+        else delete db[activeCellId];
+        closeModal();
+        renderGrid();
+        console.log("✅ Saved to MongoDB");
+    }
+  } catch (err) {
+    console.error("❌ Database Connection Failed:", err);
+    alert("Check your VS Code Terminal! Is the Engine running on Port 5001?");
+  }
+}
+
+function closeModal() { 
+    document.querySelectorAll('.modal-backdrop').forEach(m => m.style.display = 'none'); 
+}
+
+function logout() { 
+    localStorage.removeItem("user"); 
+    window.location.href = "login.html"; 
+}
+
+// COMBINED LOAD FUNCTION
+window.onload = async () => {
+    const adminId = localStorage.getItem("user");
     
-    function logout() { 
-        localStorage.removeItem("user"); 
-        window.location.href="login.html"; 
+    // 1. Safety check: if no adminId, go back to login
+    if (!adminId) {
+        window.location.href = "login.html";
+        return;
     }
 
-    window.onload = renderGrid;
+    try {
+        // 2. Fetch data from your Port 5001 Engine
+        const res = await fetch(`http://localhost:5001/api/tables?adminId=${adminId}`);
+        const data = await res.json();
+        
+        // 3. Put the database data into your local memory
+        db = data; 
+        
+        console.log("✅ Data synced from Titan Database");
+    } catch (err) {
+        console.error("❌ Failed to fetch from database:", err);
+    }
+
+    // 4. Finally, draw the grid (whether data was found or not)
+    renderGrid(); 
+};
   </script>
 </body>
 </html>

@@ -212,6 +212,13 @@
   </main>
 
   <script>
+// Make sure this matches exactly what you set in login.html
+const adminId = localStorage.getItem("user"); 
+
+if (!adminId) {
+    console.error("No Admin ID found! Redirecting to login...");
+    window.location.href = "login.html";
+}
     /* Initialize user session and retrieve teacher data from LocalStorage */
     const user = localStorage.getItem("user");
     // Keys are scoped to the user (e.g., teachers_admin) to prevent data mixing
@@ -284,16 +291,47 @@
      * ADD TEACHER:
      * Validates inputs, pushes to array, and triggers storage save.
      */
-    function addTeacher() {
-      const name = document.getElementById("tName").value;
-      const subject = document.getElementById("tSubject").value;
-      const salary = document.getElementById("tSalary").value;
+ async function addTeacher() {
+  const name = document.getElementById("tName").value.trim();
+  const subject = document.getElementById("tSubject").value.trim();
+  const salary = document.getElementById("tSalary").value.trim();
+  const adminId = localStorage.getItem("user"); // This gets your login ID
 
-      // Basic validation: Name and Salary are required
-      if(!name || !salary) return;
+  // 1. Basic validation
+  if (!name || !salary) {
+    alert("Please enter both Name and Salary");
+    return;
+  }
 
-      teachers.push({ name, subject, salary });
-      saveAndRender();
+  try {
+    // 2. SEND TO DATABASE (Port 5001)
+    const res = await fetch("http://localhost:5001/api/teachers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        name, 
+        subject, 
+        salary, 
+        adminId 
+      })
+    });
+
+    if (res.ok) {
+      // 3. SUCCESS: Clear the inputs and reload the list from the DB
+      document.getElementById("tName").value = "";
+      document.getElementById("tSubject").value = "";
+      document.getElementById("tSalary").value = "";
+      
+      alert("Teacher saved to Titan Database! ✅");
+      loadTeachers(); // This function will pull the new list from MongoDB
+    } else {
+      alert("Server error: Could not save teacher.");
+    }
+  } catch (err) {
+    console.error("Connection Error:", err);
+    alert("Database Offline! Make sure your VS Code Terminal is running.");
+  }
+}
       
       // Clear inputs for the next entry
       document.getElementById("tName").value = "";

@@ -30,16 +30,25 @@ router.post('/', async (req, res) => {
     try {
         const { name, subject, salary, adminId } = req.body;
 
-        const teacher = new Teacher({
-            name,
-            subject,
-            salary: Number(salary), // Ensure it's a number for calculations
-            owner: adminId // This maps the teacher to the logged-in user
-        });
+        if (!adminId || !name) {
+            return res.status(400).json({ error: "Missing Admin ID or Name" });
+        }
 
-        const newTeacher = await teacher.save();
-        res.status(201).json(newTeacher);
+        // Use findOneAndUpdate with upsert so you don't get duplicate teachers
+        const updatedTeacher = await Teacher.findOneAndUpdate(
+            { name, owner: adminId }, // Find existing teacher by name for this admin
+            { 
+                name, 
+                subject, 
+                salary: Number(salary), 
+                owner: adminId 
+            },
+            { upsert: true, new: true } // Create if doesn't exist, return the new one
+        );
+
+        res.status(201).json(updatedTeacher);
     } catch (err) {
+        console.error("Teacher Save Error:", err);
         res.status(400).json({ message: err.message });
     }
 });
