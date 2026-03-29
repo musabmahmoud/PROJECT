@@ -6,6 +6,33 @@
   <title>Titan ERP | Student Registry</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    @media (max-width: 600px) {
+    .erp-table thead { display: none; } /* Hide headers */
+    .erp-table tr { display: block; margin-bottom: 1rem; border: 1px solid #eee; border-radius: 1rem; padding: 10px; }
+    .erp-table td { display: flex; justify-content: space-between; border: none; padding: 5px 0; }
+    .erp-table td::before { content: attr(data-label); font-weight: bold; color: #94a3b8; }
+}
+/* Mobile Bottom Bar (Hidden on PC) */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 70px;
+    background: white;
+    border-top: 1px solid #f1f5f9;
+    z-index: 1000;
+    justify-content: space-around;
+    align-items: center;
+}
+
+/* Hide Desktop Sidebar on Mobile */
+@media (max-width: 768px) {
+    .sidebar { display: none !important; }
+    .mobile-nav { display: flex; }
+    .main-content { margin-left: 0 !important; padding: 1.5rem !important; margin-bottom: 80px; }
+    .titan-card { border-radius: 1.2rem; padding: 1rem !important; }
+    .erp-table { font-size: 12px; }
+}
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     :root { --titan-blue: #1e293b; --accent-blue: #3b82f6; --titan-slate: #fcfdfe; --sidebar-width: 100px; }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--titan-slate); color: #334155; margin: 0; -webkit-font-smoothing: antialiased; }
@@ -24,13 +51,17 @@
 </head>
 <body>
 
-  <aside class="sidebar">
+  <aside class="sidebar no-print">
+    <div class="mt-auto mb-4 text-slate-400 hover:text-blue-500 cursor-pointer" onclick="toggleMobileView()" title="Simulate Mobile">
+    📱
+</div>
     <div class="text-slate-900 font-bold text-3xl mb-16 tracking-tighter">T<span class="text-blue-500">.</span></div>
     <nav>
-      <a href="index.html" class="nav-icon active">👥</a>
-      <a href="tables.html" class="nav-icon">📅</a>
-      <a href="classes.html" class="nav-icon">🏫</a>
-      <a href="teachers.html" class="nav-icon">👨‍🏫</a>
+      <a href="index.html" class="nav-icon" title="Registry">👥</a>
+      <a href="tables.html" class="nav-icon" title="Schedules">📅</a>
+      <a href="classes.html" class="nav-icon" title="Attendance">🏫</a>
+      <a href="teachers.html" class="nav-icon active" title="Faculty">👨‍🏫</a>
+      <div onclick="toggleMobileView()" class="nav-icon">📱</div>
     </nav>
     <div class="mt-auto mb-10 text-slate-300 hover:text-red-500 cursor-pointer" onclick="logout()">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
@@ -103,7 +134,25 @@
             loadData(); 
         }
     };
-
+function toggleMobileView() {
+    const main = document.querySelector('.main-content');
+    const isMobile = main.style.maxWidth === '430px';
+    
+    if (!isMobile) {
+        main.style.maxWidth = '430px';
+        main.style.margin = '0 auto';
+        main.style.border = '10px solid #1e293b';
+        main.style.borderRadius = '40px';
+        main.style.height = '90vh';
+        main.style.overflowY = 'auto';
+        alert("Mobile View Simulated (iPhone Size)");
+    } else {
+        main.style.maxWidth = '1700px';
+        main.style.margin = '0 0 0 100px';
+        main.style.border = 'none';
+        main.style.height = 'auto';
+    }
+}
     async function loadData() {
         const tbody = document.getElementById("studentsTable");
         const countEl = document.getElementById('totalCount');
