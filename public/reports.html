@@ -54,9 +54,13 @@
             <div>
                 <label class="text-[9px] font-black uppercase text-slate-400 mb-2 block tracking-[0.2em]">Target Level</label>
                 <select id="repLevel" class="titan-input">
-                    <option>All Levels</option>
+                   <optgroup label="Primary Stage">
+                    <option>Primary 1</option><option>Primary 2</option><option>Primary 3</option>
+                    <option>Primary 4</option><option>Primary 5</option><option>Primary 6</option>
+                </optgroup>
+                <optgroup label="Preparatory Stage">
                     <option>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
-                    <option>Sec 1</option><option>Sec 2</option><option>Sec 3</option>
+                </optgroup>
                 </select>
             </div>
             <div>
@@ -94,63 +98,80 @@
   </main>
 
   <script>
-    let currentType = 'student';
-    const user = localStorage.getItem("user");
+// 1. THE ADAPTIVE UI SWITCHER
+let currentType = 'student';
+const user = localStorage.getItem("user");
 
-    function setType(type) {
-        currentType = type;
-        document.getElementById('typeStudent').classList.toggle('active', type === 'student');
-        document.getElementById('typeTeacher').classList.toggle('active', type === 'teacher');
-    }
+function setType(type) {
+    currentType = type;
+    
+    // UI Elements to change
+    const levelLabel = document.querySelector('label[for="repLevel"]');
+    const groupLabel = document.querySelector('label[for="repGroup"]');
+    const academicToggle = document.querySelector('label[for="showAcademic"]');
+    const title = document.querySelector('h1');
 
-    async function fetchAndGenerate() {
-        const level = document.getElementById('repLevel').value;
-        const month = document.getElementById('repMonth').value;
-        const group = document.getElementById('repGroup').value;
+    // Visual Feedback on Buttons
+    document.getElementById('typeStudent').classList.toggle('active', type === 'student');
+    document.getElementById('typeTeacher').classList.toggle('active', type === 'teacher');
+
+    if (type === 'teacher') {
+        // Change to Teacher Vocabulary
+        title.innerHTML = `Faculty <span class="text-slate-400 font-light">Intelligence</span>`;
+        levelLabel.innerText = "Department / Subject";
+        groupLabel.innerText = "Contract Type";
+        academicToggle.innerHTML = `<input type="checkbox" id="showAcademic" checked> Show Specialty`;
         
-        // 1. Fetch Data
-        const url = currentType === 'student' ? `/api/students?admin=${user}` : `/api/teachers?admin=${user}`;
-        const res = await fetch(url);
-        let data = await res.json();
-
-        // 2. Build the Hidden Table for PDF capture
-        const table = document.getElementById('targetTable');
-        table.innerHTML = `
-            <thead>
-                <tr style="border-bottom: 2px solid #eee; padding-bottom: 10px;">
-                    <th style="padding: 10px;">Name</th>
-                    ${document.getElementById('showAtt').checked ? '<th style="padding: 10px;">Attendance</th>' : ''}
-                    ${document.getElementById('showMoney').checked ? '<th style="padding: 10px;">Payment</th>' : ''}
-                    ${document.getElementById('showAcademic').checked ? '<th style="padding: 10px;">Results</th>' : ''}
-                </tr>
-            </thead>
-            <tbody>
-                ${data.map(item => `
-                    <tr style="border-bottom: 1px solid #f9f9f9;">
-                        <td style="padding: 15px; font-weight: bold;">${item.name}</td>
-                        ${document.getElementById('showAtt').checked ? `<td style="padding: 15px;">${item.attendance || 0} Sessions</td>` : ''}
-                        ${document.getElementById('showMoney').checked ? `<td style="padding: 15px;">${item.payments || item.salary || 0} EGP</td>` : ''}
-                        ${document.getElementById('showAcademic').checked ? `<td style="padding: 15px;">${item.level || item.subject || 'N/A'}</td>` : ''}
-                    </tr>
-                `).join('')}
-            </tbody>
+        // Update the Dropdowns for Teachers
+        document.getElementById('repLevel').innerHTML = `
+            <option>All Subjects</option>
+            <option>Physics</option><option>Chemistry</option>
+            <option>Math</option><option>English</option>
         `;
-
-        // 3. Render to PDF
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'mm', 'a4');
-        const canvas = await html2canvas(table, { scale: 2 });
-        const imgData = canvas.toDataURL('image/png');
-
-        doc.setFontSize(20); doc.text(`TITAN ERP ${currentType.toUpperCase()} REPORT`, 15, 20);
-        doc.setFontSize(10); doc.text(`Generated on: ${new Date().toLocaleDateString()} | Month: ${month}`, 15, 28);
+        document.getElementById('repGroup').innerHTML = `
+            <option>All Staff</option>
+            <option>Full-Time</option><option>Part-Time</option>
+        `;
+    } else {
+        // Change back to Student Vocabulary
+        title.innerHTML = `Student <span class="text-slate-400 font-light">Intelligence</span>`;
+        levelLabel.innerText = "Target Level";
+        groupLabel.innerText = "Target Group";
+        academicToggle.innerHTML = `<input type="checkbox" id="showAcademic" checked> Show Academics`;
         
-        const imgWidth = 180;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        doc.addImage(imgData, 'PNG', 15, 40, imgWidth, imgHeight);
-        
-        doc.save(`Titan_${currentType}_Report.pdf`);
+        document.getElementById('repLevel').innerHTML = `
+            <option>All Levels</option>
+            <option>Prep 1</option><option>Prep 2</option><option>Prep 3</option>
+            <option>Sec 1</option><option>Sec 2</option><option>Sec 3</option>
+        `;
+        document.getElementById('repGroup').innerHTML = `
+            <option>Both Groups</option>
+            <option>Group A</option><option>Group B</option>
+        `;
     }
+}
+
+// 2. THE DYNAMIC DATA FETCH
+async function fetchAndGenerate() {
+    const btn = document.querySelector('button[onclick="fetchAndGenerate()"]');
+    btn.innerText = "⚡ ANALYZING DATA...";
+    
+    try {
+        // Check which API to hit
+        const endpoint = currentType === 'student' ? '/api/students' : '/api/teachers';
+        const res = await fetch(`${endpoint}?admin=${user}`);
+        const data = await res.json();
+
+        if (!data || data.length === 0) return alert("No records found for this criteria.");
+
+        // Build the Table based on active toggles
+        generateTitanPDF(data);
+    } catch (err) {
+        alert("Connection to Titan Cloud failed.");
+    } finally {
+        btn.innerText = "Generate Titan PDF";
+    }
+}
   </script>
 </body>
 </html>
