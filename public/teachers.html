@@ -6,6 +6,7 @@
   <title>Titan ERP | Faculty Management</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Importing Plus Jakarta Sans - a modern typeface used in high-end SaaS applications */
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     
     :root { 
@@ -20,10 +21,13 @@
       background-color: var(--titan-slate); 
       color: #334155; 
       margin: 0;
+      /* Smoothing fonts for a "premium" feel on high-resolution screens */
       -webkit-font-smoothing: antialiased;
     }
 
-    /* --- REFINED SIDEBAR --- */
+    /* --- SIDEBAR NAVIGATION --- 
+       Fixed to the left to provide consistent navigation regardless of scroll position
+    */
     .sidebar { 
       width: var(--sidebar-width); 
       height: 100vh; 
@@ -54,6 +58,7 @@
       color: #94a3b8;
     }
 
+    /* Hover and Active states to help the user know exactly which module they are in */
     .nav-icon:hover { background: #f8fafc; color: var(--accent-blue); }
     .nav-icon.active { background: #f1f5f9; color: var(--titan-blue); }
 
@@ -63,7 +68,7 @@
       max-width: 1500px;
     }
 
-    /* --- LUXURY CARDS --- */
+    /* --- COMPONENT STYLING --- */
     .titan-card { 
       background: white; 
       border-radius: 2rem; 
@@ -71,13 +76,15 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.01);
     }
 
+    /* PAYROLL CARD: Designed to stand out as a financial summary widget */
     .payroll-card {
-      background: #1e293b;
+      background: #1e293b; /* Dark theme for "Finance" importance */
       border-radius: 2rem;
       position: relative;
       overflow: hidden;
     }
 
+    /* Decorative pseudo-element for subtle abstract design in the card corner */
     .payroll-card::after {
         content: '';
         position: absolute;
@@ -89,7 +96,9 @@
         border-radius: 50%;
     }
 
-    /* --- INPUTS --- */
+    /* --- INPUT FIELDS --- 
+       "Luxury" style focus: adds a glow (box-shadow) when the admin is typing
+    */
     .input-luxury {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
@@ -107,6 +116,7 @@
       box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05);
     }
 
+    /* Action Buttons with subtle lift effect (translateY) on hover */
     .btn-dark {
       background: #1e293b;
       color: white;
@@ -121,6 +131,7 @@
 
     .btn-dark:hover { background: #000; transform: translateY(-1px); }
 
+    /* Custom Table Headers: Small, bold, uppercase for that "Admin Dashboard" aesthetic */
     .teacher-table th { 
       background: #fafbfd; 
       text-transform: uppercase; 
@@ -157,7 +168,7 @@
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Staffing & Operations</p>
         </div>
         <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">
-          Faculty <span class="text-slate-400 font-light">Resources</span>
+          Class <span class="text-slate-400 font-light">Online Academy</span>
         </h1>
       </div>
 
@@ -195,143 +206,126 @@
             </tr>
           </thead>
           <tbody id="teacherBody">
-            </tbody>
+              </tbody>
         </table>
     </div>
   </main>
 
- <script>
-    // 1. CONFIGURATION: Adjust this to your backend URL
-    const API_URL = "http://localhost:5000/api/teachers"; 
-    const adminId = localStorage.getItem("user");
+  <script>
+    /* Initialize user session and retrieve teacher data from LocalStorage */
+    const user = localStorage.getItem("user");
+    // Keys are scoped to the user (e.g., teachers_admin) to prevent data mixing
+    let teachers = JSON.parse(localStorage.getItem(`teachers_${user}`)) || [];
 
-    // Initialize Page
+    /* On page load, check for valid session and draw the roster */
     window.onload = () => {
-      if(!adminId) { window.location.href="login.html"; return; }
-      loadTeachers();
+      if(!user) { window.location.href="login.html"; return; }
+      renderTeachers();
     };
 
-    // 2. FETCH TEACHERS FROM DATABASE
-    async function loadTeachers() {
-      const tbody = document.getElementById("teacherBody");
-      const totalDisplay = document.getElementById("totalPayroll");
-      
-      tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-400 animate-pulse">Syncing with Secure Vault...</td></tr>`;
-
-      try {
-        const res = await fetch(`${API_URL}?adminId=${adminId}`);
-        if (!res.ok) throw new Error("Failed to fetch");
-        
-        const teachers = await res.json();
-        renderTeachers(teachers);
-      } catch (err) {
-        console.error(err);
-        tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-red-400 font-bold">Error: Could not connect to database.</td></tr>`;
-      }
-    }
-
-    // 3. RENDER UI
-    function renderTeachers(teachers) {
+    /**
+     * RENDER ENGINE:
+     * Clears the current table and re-builds it based on the 'teachers' array.
+     * Also calculates the total payroll sum.
+     */
+    function renderTeachers() {
       const tbody = document.getElementById("teacherBody");
       const totalDisplay = document.getElementById("totalPayroll");
       tbody.innerHTML = "";
       let total = 0;
 
+      // Handle empty state gracefully
       if(teachers.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-300 font-medium italic text-sm">No faculty records found in database.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-300 font-medium italic text-sm">No faculty records found.</td></tr>`;
           totalDisplay.innerText = "0";
           return;
       }
 
       teachers.forEach((t, index) => {
+        // Sum up the salaries (ensuring it's treated as a Number)
         total += Number(t.salary);
+
+        // UI Logic: Generate user initials for the avatar (e.g., "Ahmed Ali" -> "AA")
+        const initials = t.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+
         tbody.innerHTML += `
           <tr class="hover:bg-slate-50/50 transition-colors">
             <td class="px-8 py-6">
               <div class="flex items-center gap-4">
                 <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 text-xs">
-                    ${t.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}
+                    ${initials}
                 </div>
                 <div>
                     <p class="text-sm font-bold text-slate-800">${t.name}</p>
-                    <p class="text-[9px] font-medium text-slate-400 uppercase tracking-tighter">Staff ID #STF-${t._id.slice(-4).toUpperCase()}</p>
+                    <p class="text-[9px] font-medium text-slate-400 uppercase tracking-tighter">Staff ID #STF-0${index + 101}</p>
                 </div>
               </div>
             </td>
             <td class="px-8 py-6">
               <span class="px-3 py-1 rounded-lg bg-blue-50 text-blue-600 text-[9px] font-bold uppercase tracking-wider">
-                ${t.subject || 'General'}
+                ${t.subject}
               </span>
             </td>
             <td class="px-8 py-6">
               <p class="text-sm font-bold text-slate-700">£${Number(t.salary).toLocaleString()}</p>
             </td>
             <td class="px-8 py-6 text-right">
-              <button onclick="removeTeacher('${t._id}')" class="text-slate-300 hover:text-red-500 font-bold text-[9px] uppercase tracking-widest transition-colors">Resolve Contract</button>
+              <button onclick="removeTeacher(${index})" class="text-slate-300 hover:text-red-500 font-bold text-[9px] uppercase tracking-widest transition-colors">Resolve Contract</button>
             </td>
           </tr>
         `;
       });
 
+      // Update the main header widget with the total sum
       totalDisplay.innerText = total.toLocaleString();
     }
 
-    // 4. SAVE NEW TEACHER TO DATABASE
-    async function addTeacher() {
+    /**
+     * ADD TEACHER:
+     * Validates inputs, pushes to array, and triggers storage save.
+     */
+    function addTeacher() {
       const name = document.getElementById("tName").value;
       const subject = document.getElementById("tSubject").value;
       const salary = document.getElementById("tSalary").value;
 
-      if(!name || !salary) {
-        alert("Please provide full name and salary.");
-        return;
-      }
+      // Basic validation: Name and Salary are required
+      if(!name || !salary) return;
 
-      const btn = document.querySelector("button[onclick='addTeacher()']");
-      btn.innerText = "AUTHORIZING...";
-      btn.disabled = true;
+      teachers.push({ name, subject, salary });
+      saveAndRender();
+      
+      // Clear inputs for the next entry
+      document.getElementById("tName").value = "";
+      document.getElementById("tSubject").value = "";
+      document.getElementById("tSalary").value = "";
+    }
 
-      try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, subject, salary, adminId })
-        });
-
-        if (res.ok) {
-          // Reset inputs and reload
-          document.getElementById("tName").value = "";
-          document.getElementById("tSubject").value = "";
-          document.getElementById("tSalary").value = "";
-          loadTeachers();
-        }
-      } catch (err) {
-        alert("Database connection failed.");
-      } finally {
-        btn.innerText = "Authorize Hire";
-        btn.disabled = false;
+    /**
+     * REMOVE TEACHER:
+     * Uses confirm() dialog to prevent accidental deletion.
+     */
+    function removeTeacher(index) {
+      if(confirm("Are you sure you want to resolve this faculty contract?")) {
+        teachers.splice(index, 1);
+        saveAndRender();
       }
     }
 
-    // 5. REMOVE TEACHER FROM DATABASE
-    async function removeTeacher(teacherId) {
-      if(!confirm("Are you sure you want to resolve this faculty contract?")) return;
-
-      try {
-        const res = await fetch(`${API_URL}/${teacherId}?adminId=${adminId}`, {
-          method: "DELETE"
-        });
-        if (res.ok) loadTeachers();
-      } catch (err) {
-        alert("Failed to delete record.");
-      }
+    /**
+     * PERSISTENCE LAYER:
+     * Saves the current teacher array to the browser and refreshes the UI.
+     */
+    function saveAndRender() {
+      localStorage.setItem(`teachers_${user}`, JSON.stringify(teachers));
+      renderTeachers();
     }
 
-    function logout() { 
-        localStorage.removeItem("titan_token");
-        localStorage.removeItem("user");
-        window.location.href="login.html"; 
-    }
+    /**
+     * LOGOUT:
+     * Clears all session data and redirects to the login screen.
+     */
+    function logout() { localStorage.clear(); window.location.href="login.html"; }
   </script>
 </body>
 </html>
