@@ -196,21 +196,22 @@
 
     async function loadRoster() {
       const level = document.getElementById('selLevel').value;
-      const group = document.getElementById('selGroup').value;
-      const track = document.getElementById('selTrack').value;
+      const className = document.getElementById('selGroup').value;
+      const language = document.getElementById('selTrack').value;
       const tbody = document.getElementById("rosterBody");
       
       tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 animate-pulse font-bold text-sm uppercase tracking-widest">Establishing Secure Uplink...</td></tr>`;
 
       try {
-        // Updated API call to include group and track for proper filtering
-        const res = await fetch(`${API}?admin=${user}&level=${encodeURIComponent(level)}&group=${encodeURIComponent(group)}&track=${encodeURIComponent(track)}`);
+        // Updated API call to match the Backend filters
+        const res = await fetch(`${API}?admin=${user}&level=${encodeURIComponent(level)}&className=${encodeURIComponent(className)}&language=${encodeURIComponent(language)}`);
         const data = await res.json();
+        
         tbody.innerHTML = "";
         document.getElementById('nodeCount').innerText = data.length.toString().padStart(2, '0');
 
         if(data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 font-medium italic">No students found for this selection.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-400 font-medium italic">No students found in this group.</td></tr>`;
             return;
         }
 
@@ -222,7 +223,7 @@
                     <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 text-xs">${s.name.charAt(0)}</div>
                     <div>
                         <button onclick="openHistory('${s._id}', '${s.name}')" class="text-sm font-extrabold text-slate-800 hover:text-blue-500 transition-all">${s.name}</button>
-                        <p class="text-[9px] font-bold text-slate-300 uppercase tracking-tighter">ID: ${s._id.slice(-6).toUpperCase()}</p>
+                        <p class="text-[9px] font-bold text-slate-300 uppercase tracking-tighter">ID: ${s._id.slice(-5).toUpperCase()}</p>
                     </div>
                 </div>
               </td>
@@ -251,9 +252,13 @@
     }
 
     function markAtt(id, type) {
-      document.getElementById(`p-${id}`).className = "att-btn";
-      document.getElementById(`a-${id}`).className = "att-btn";
-      document.getElementById(`${type}-${id}`).classList.add(type === 'p' ? 'active-p' : 'active-a');
+      const pBtn = document.getElementById(`p-${id}`);
+      const aBtn = document.getElementById(`a-${id}`);
+      pBtn.classList.remove('active-p');
+      aBtn.classList.remove('active-a');
+      
+      if (type === 'p') pBtn.classList.add('active-p');
+      else aBtn.classList.add('active-a');
     }
 
     async function openHistory(id, name) {
@@ -261,20 +266,26 @@
       document.getElementById('overlay').style.display = 'block';
       document.getElementById('sidePanel').classList.add('open');
       const content = document.getElementById('panelContent');
-      content.innerHTML = `<p class="p-10 text-center text-slate-300 font-bold text-[10px] uppercase animate-pulse">Fetching records...</p>`;
+      content.innerHTML = `<p class="p-10 text-center text-slate-300 font-bold text-[10px] uppercase animate-pulse">Scanning Cloud Memory...</p>`;
       
       try {
         const res = await fetch(`${API}/history?admin=${user}&name=${encodeURIComponent(name)}`);
         const data = await res.json();
+        
+        if (!data.history || data.history.length === 0) {
+            content.innerHTML = `<p class="text-center text-slate-400 py-10">No previous logs for this student.</p>`;
+            return;
+        }
+
         content.innerHTML = data.history.map(l => `
-          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
             <div class="flex justify-between items-start mb-4">
                 <p class="font-bold text-slate-900 text-sm">${l.date}</p>
                 <span class="text-[9px] font-bold px-3 py-1 rounded-lg ${l.status === 'present' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'} uppercase">${l.status}</span>
             </div>
             <div class="flex justify-between items-end border-t border-slate-200 pt-4">
-              <p class="text-sm font-bold text-emerald-500">£${l.payment}</p>
-              <p class="text-[10px] font-bold text-slate-400 uppercase">${l.subject} / ${l.grade}%</p>
+              <p class="text-sm font-bold text-emerald-500">£${l.payment || 0}</p>
+              <p class="text-[10px] font-bold text-slate-400 uppercase">${l.subject || 'N/A'} | ${l.grade || 0}%</p>
             </div>
           </div>`).join('');
       } catch (e) { content.innerHTML = "Error fetching history."; }
@@ -298,27 +309,48 @@
 
     async function saveRow(id, btn) {
       const date = document.getElementById('logDate').value;
-      const sub = document.getElementById(`sub-${id}`).value;
-      const grd = document.getElementById(`grd-${id}`).value;
-      const pay = document.getElementById(`pay-${id}`).value;
+      const subject = document.getElementById(`sub-${id}`).value;
+      const grade = document.getElementById(`grd-${id}`).value;
+      const payment = document.getElementById(`pay-${id}`).value;
       const isAbsent = document.getElementById(`a-${id}`).classList.contains('active-a');
       
-      const res = await fetch(`${API}/daily-log`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId: id, date, subject: sub.toLowerCase(), grade: Number(grd), payment: Number(pay), status: isAbsent ? 'absent' : 'present', admin: user })
-      });
-      if(res.ok) { 
-          btn.innerText = "DONE";
-          btn.classList.add('bg-emerald-500', 'text-white');
-          setTimeout(() => { btn.innerText = "Sync"; btn.classList.remove('bg-emerald-500', 'text-white'); }, 2000);
+      btn.innerText = "⏳";
+      
+      try {
+          const res = await fetch(`${API}/daily-log`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                studentId: id, 
+                date, 
+                subject: subject || "General", 
+                grade: Number(grade) || 0, 
+                payment: Number(payment) || 0, 
+                status: isAbsent ? 'absent' : 'present', 
+                admin: user 
+            })
+          });
+
+          if(res.ok) { 
+              btn.innerText = "DONE";
+              btn.classList.replace('bg-slate-100', 'bg-emerald-500');
+              btn.classList.replace('text-slate-500', 'text-white');
+              setTimeout(() => { 
+                  btn.innerText = "Sync"; 
+                  btn.classList.replace('bg-emerald-500', 'bg-slate-100');
+                  btn.classList.replace('text-white', 'text-slate-500');
+              }, 2000);
+          }
+      } catch (err) {
+          alert("Sync Failed. Connection Lost.");
+          btn.innerText = "Sync";
       }
     }
 
     async function saveAll() {
-      const rows = document.querySelectorAll('[id^="pay-"]');
-      for (let r of rows) { await saveRow(r.id.split('-')[1], r.closest('tr').querySelector('button[onclick^="saveRow"]')); }
-      alert("All records synchronized successfully.");
+      const btns = document.querySelectorAll('button[onclick^="saveRow"]');
+      for (let b of btns) { await b.click(); }
+      alert("Mass Synchronization Complete ✅");
     }
 
     function logout() { localStorage.clear(); window.location.href="login.html"; }
