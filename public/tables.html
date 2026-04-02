@@ -13,17 +13,30 @@
     .erp-table td::before { content: attr(data-label); font-weight: bold; color: #94a3b8; }
 }
     /* Mobile Bottom Bar (Hidden on PC) */
-.mobile-nav {
-    display: none;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 70px;
-    background: white;
-    border-top: 1px solid #f1f5f9;
-    z-index: 1000;
-    justify-content: space-around;
-    align-items: center;
-}
+.mobile-nav { 
+        display: flex !important; 
+        position: fixed; 
+        bottom: 25px; 
+        left: 15px; /* Reduced from 20px to give more room */
+        right: 15px; 
+        height: 75px; 
+        background: rgba(255, 255, 255, 0.8); 
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 30px; 
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1); 
+        z-index: 9999;
+        justify-content: space-evenly; /* Changed from space-around for better 5-item spacing */
+        align-items: center;
+        padding: 0 10px;
+    }
+
+    .mobile-nav .nav-icon {
+        width: 45px; /* Slightly smaller to fit 5 icons comfortably */
+        height: 45px;
+        font-size: 20px;
+    }
 
 /* Hide Desktop Sidebar on Mobile */
 @media (max-width: 768px) {
@@ -190,6 +203,17 @@
       .sidebar, .no-print { display: none !important; }
       .main-content { margin-left: 0 !important; padding: 0 !important; }
     }
+    .mobile-nav button.nav-icon {
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mobile-nav button.nav-icon:active {
+    transform: scale(0.9);
+    color: #ef4444; /* Bright red flash on click */
+}
   </style>
 </head>
 <body class="min-h-screen">
@@ -561,6 +585,9 @@ window.onload = async () => {
     <a href="tables.html" class="nav-icon active">📅</a>
     <a href="classes.html" class="nav-icon">🏫</a>
     <a href="teachers.html" class="nav-icon">👨‍🏫</a>
+    <button onclick="logout()" class="nav-icon text-red-400 hover:text-red-600">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </button>
 </nav>
 </body>
 </html>

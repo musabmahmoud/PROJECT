@@ -56,6 +56,18 @@
         /* Push the Delete button to the top-right corner of the card */
         .erp-table td:last-child { position: absolute; top: 1rem; right: 1rem; width: auto !important; }
     }
+
+    .mobile-nav button.nav-icon {
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mobile-nav button.nav-icon:active {
+    transform: scale(0.9);
+    color: #ef4444; /* Bright red flash on click */
+}
 /* --- TITAN MOBILE CORE --- */
 @media (max-width: 768px) {
     /* 1. Kill the Sidebar Gap */
@@ -70,32 +82,31 @@
     }
 
     /* 2. Floating Bottom Navigation Styling */
-    .mobile-nav { 
+.mobile-nav { 
         display: flex !important; 
         position: fixed; 
         bottom: 25px; 
-        left: 20px; 
-        right: 20px; 
+        left: 15px; /* Reduced from 20px to give more room */
+        right: 15px; 
         height: 75px; 
         background: rgba(255, 255, 255, 0.8); 
-        backdrop-filter: blur(20px); /* iPhone style blur */
+        backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.3);
         border-radius: 30px; 
         box-shadow: 0 20px 40px rgba(0,0,0,0.1); 
         z-index: 9999;
-        justify-content: space-around; 
+        justify-content: space-evenly; /* Changed from space-around for better 5-item spacing */
         align-items: center;
+        padding: 0 10px;
     }
 
-    /* 3. Make Nav Icons Pop */
     .mobile-nav .nav-icon {
-        margin-bottom: 0 !important;
-        width: 50px;
-        height: 50px;
-        font-size: 24px;
-        background: transparent;
+        width: 45px; /* Slightly smaller to fit 5 icons comfortably */
+        height: 45px;
+        font-size: 20px;
     }
+}
     
     .mobile-nav .nav-icon.active {
         background: #eff6ff;
@@ -123,7 +134,7 @@
         width: 100% !important;
         font-size: 14px !important;
     }
-}/* RTL Support for Arabic */
+/* RTL Support for Arabic */
 [lang="ar"] {
     direction: rtl;
     font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -363,6 +374,9 @@ tbody.innerHTML += `
     <a href="tables.html" class="nav-icon">📅</a>
     <a href="classes.html" class="nav-icon">🏫</a>
     <a href="teachers.html" class="nav-icon">👨‍🏫</a>
+    <button onclick="logout()" class="nav-icon text-red-400 hover:text-red-600">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </button>
 </nav>
 </body>
 </html>

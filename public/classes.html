@@ -84,19 +84,27 @@
         display: flex !important; 
         position: fixed; 
         bottom: 25px; 
-        left: 20px; 
-        right: 20px; 
+        left: 15px; /* Reduced from 20px to give more room */
+        right: 15px; 
         height: 75px; 
         background: rgba(255, 255, 255, 0.8); 
-        backdrop-filter: blur(20px); /* iPhone style blur */
+        backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.3);
         border-radius: 30px; 
         box-shadow: 0 20px 40px rgba(0,0,0,0.1); 
         z-index: 9999;
-        justify-content: space-around; 
+        justify-content: space-evenly; /* Changed from space-around for better 5-item spacing */
         align-items: center;
+        padding: 0 10px;
     }
+
+    .mobile-nav .nav-icon {
+        width: 45px; /* Slightly smaller to fit 5 icons comfortably */
+        height: 45px;
+        font-size: 20px;
+    }
+
 /* RTL Support for Arabic */
 [lang="ar"] {
     direction: rtl;
@@ -155,6 +163,17 @@
         width: 100% !important;
         font-size: 14px !important;
     }
+}
+.mobile-nav button.nav-icon {
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mobile-nav button.nav-icon:active {
+    transform: scale(0.9);
+    color: #ef4444; /* Bright red flash on click */
 }
 </style>
 </head>
@@ -268,132 +287,134 @@
     const user = localStorage.getItem("user");
 
     window.onload = () => {
-      document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
-      if(!user) { window.location.href="login.html"; return; }
-      loadRoster();
+        document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
+        if (!user) { window.location.href = "login.html"; return; }
+        loadRoster();
     };
-function toggleMobileView() {
-    const main = document.querySelector('.main-content');
-    const isMobile = main.style.maxWidth === '430px';
-    
-    if (!isMobile) {
-        main.style.maxWidth = '430px';
-        main.style.margin = '0 auto';
-        main.style.border = '10px solid #1e293b';
-        main.style.borderRadius = '40px';
-        main.style.height = '90vh';
-        main.style.overflowY = 'auto';
-        alert("Mobile View Simulated (iPhone Size)");
-    } else {
-        main.style.maxWidth = '1700px';
-        main.style.margin = '0 0 0 100px';
-        main.style.border = 'none';
-        main.style.height = 'auto';
-    }
-}
-    async function loadRoster() {
-      const level = document.getElementById('selLevel').value;
-      const className = document.getElementById('selGroup').value;
-      const language = document.getElementById('selTrack').value;
-      const tbody = document.getElementById("rosterBody");
-      
-      tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 animate-pulse font-bold text-sm uppercase tracking-widest">Establishing Secure Uplink...</td></tr>`;
 
-      try {
-        // Updated API call to match the Backend filters
-        const res = await fetch(`${API}?admin=${user}&level=${encodeURIComponent(level)}&className=${encodeURIComponent(className)}&language=${encodeURIComponent(language)}`);
-        const data = await res.json();
-        
-        tbody.innerHTML = "";
-        document.getElementById('nodeCount').innerText = data.length.toString().padStart(2, '0');
+    function toggleMobileView() {
+        const main = document.querySelector('.main-content');
+        const isMobile = main.style.maxWidth === '430px';
 
-        if(data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-400 font-medium italic">No students found in this group.</td></tr>`;
-            return;
+        if (!isMobile) {
+            main.style.maxWidth = '430px';
+            main.style.margin = '0 auto';
+            main.style.border = '10px solid #1e293b';
+            main.style.borderRadius = '40px';
+            main.style.height = '90vh';
+            main.style.overflowY = 'auto';
+            alert("Mobile View Simulated (iPhone Size)");
+        } else {
+            main.style.maxWidth = '1700px';
+            main.style.margin = '0 0 0 100px';
+            main.style.border = 'none';
+            main.style.height = 'auto';
         }
+    }
 
-data.forEach(s => {
-  tbody.innerHTML += `
-    <tr class="hover:bg-slate-50/50">
-      <td>
-        <div class="flex items-center gap-4">
-            <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 text-xs">${s.name.charAt(0)}</div>
-            <div>
-                <button onclick="openHistory('${s._id}', '${s.name}')" class="text-sm font-extrabold text-slate-800 hover:text-blue-500 transition-all text-right block">${s.name}</button>
-                <p class="text-[9px] font-bold text-slate-300 uppercase tracking-tighter">ID: ${s._id.slice(-5).toUpperCase()}</p>
-            </div>
-        </div>
-      </td>
-      <td class="text-center">
-        <div class="flex justify-center gap-2" dir="ltr"> <button id="p-${s._id}" onclick="markAtt('${s._id}', 'p')" class="att-btn">P</button>
-          <button id="a-${s._id}" onclick="markAtt('${s._id}', 'a')" class="att-btn">A</button>
-        </div>
-      </td>
-      <td>
-        <div class="mobile-input-row">
-            <input type="number" id="pay-${s._id}" oninput="calcRev()" placeholder="المبلغ" class="titan-input !bg-emerald-50/30 text-emerald-600 font-bold text-center">
-        </div>
-      </td>
-      <td>
-        <div class="flex gap-2">
-            <input type="text" id="sub-${s._id}" placeholder="المادة" class="titan-input subj-box text-[10px] text-right">
-            <input type="number" id="grd-${s._id}" placeholder="%" class="titan-input text-center text-blue-500 w-20">
-        </div>
-      </td>
-      <td class="text-left">
-        <button onclick="saveRow('${s._id}', this)" class="sync-btn-mobile px-5 py-2 bg-slate-100 text-slate-500 rounded-xl font-bold text-[9px] uppercase hover:bg-slate-900 hover:text-white transition-all">مزامنة</button>
-      </td>
-    </tr>`;
-});
-        });
-        
-        calcRev();
-      } catch (e) { console.error("Database Link Failure", e); }
+    async function loadRoster() {
+        const level = document.getElementById('selLevel').value;
+        const className = document.getElementById('selGroup').value;
+        const language = document.getElementById('selTrack').value;
+        const tbody = document.getElementById("rosterBody");
+
+        tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 animate-pulse font-bold text-sm uppercase tracking-widest">جارِ الاتصال بالقاعدة...</td></tr>`;
+
+        try {
+            const res = await fetch(`${API}?admin=${user}&level=${encodeURIComponent(level)}&className=${encodeURIComponent(className)}&language=${encodeURIComponent(language)}`);
+            const data = await res.json();
+
+            tbody.innerHTML = "";
+            document.getElementById('nodeCount').innerText = data.length.toString().padStart(2, '0');
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-400 font-medium italic">لا يوجد طلاب في هذه المجموعة.</td></tr>`;
+                return;
+            }
+
+            data.forEach(s => {
+                tbody.innerHTML += `
+                <tr class="hover:bg-slate-50/50">
+                  <td>
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 text-xs">${s.name.charAt(0)}</div>
+                        <div>
+                            <button onclick="openHistory('${s._id}', '${s.name}')" class="text-sm font-extrabold text-slate-800 hover:text-blue-500 transition-all text-right block">${s.name}</button>
+                            <p class="text-[9px] font-bold text-slate-300 uppercase tracking-tighter">ID: ${s._id.slice(-5).toUpperCase()}</p>
+                        </div>
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <div class="flex justify-center gap-2" dir="ltr"> 
+                      <button id="p-${s._id}" onclick="markAtt('${s._id}', 'p')" class="att-btn">P</button>
+                      <button id="a-${s._id}" onclick="markAtt('${s._id}', 'a')" class="att-btn">A</button>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="mobile-input-row">
+                        <input type="number" id="pay-${s._id}" oninput="calcRev()" placeholder="المبلغ" class="titan-input !bg-emerald-50/30 text-emerald-600 font-bold text-center">
+                    </div>
+                  </td>
+                  <td>
+                    <div class="flex gap-2">
+                        <input type="text" id="sub-${s._id}" placeholder="المادة" class="titan-input subj-box text-[10px] text-right">
+                        <input type="number" id="grd-${s._id}" placeholder="%" class="titan-input text-center text-blue-500 w-20">
+                    </div>
+                  </td>
+                  <td class="text-left">
+                    <button onclick="saveRow('${s._id}', this)" class="sync-btn-mobile px-5 py-2 bg-slate-100 text-slate-500 rounded-xl font-bold text-[9px] uppercase hover:bg-slate-900 hover:text-white transition-all">مزامنة</button>
+                  </td>
+                </tr>`;
+            });
+            calcRev();
+        } catch (e) {
+            console.error("Database Link Failure", e);
+            tbody.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-red-400">فشل الاتصال بالخادم</td></tr>`;
+        }
     }
 
     function markAtt(id, type) {
-      const pBtn = document.getElementById(`p-${id}`);
-      const aBtn = document.getElementById(`a-${id}`);
-      pBtn.classList.remove('active-p');
-      aBtn.classList.remove('active-a');
-      
-      if (type === 'p') pBtn.classList.add('active-p');
-      else aBtn.classList.add('active-a');
+        const pBtn = document.getElementById(`p-${id}`);
+        const aBtn = document.getElementById(`a-${id}`);
+        pBtn.classList.remove('active-p');
+        aBtn.classList.remove('active-a');
+
+        if (type === 'p') pBtn.classList.add('active-p');
+        else aBtn.classList.add('active-a');
     }
 
-  async function openHistory(id, name) {
-  document.getElementById('panelName').innerText = name;
-  document.getElementById('overlay').style.display = 'block';
-  document.getElementById('sidePanel').classList.add('open');
-  
-  const content = document.getElementById('panelContent');
-  content.innerHTML = `<div class="p-10 text-center text-slate-400">Loading History...</div>`;
+    async function openHistory(id, name) {
+        document.getElementById('panelName').innerText = name;
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('sidePanel').classList.add('open');
 
-  try {
-    const res = await fetch(`${API}/history?admin=${user}&name=${encodeURIComponent(name)}`);
-    const data = await res.json();
+        const content = document.getElementById('panelContent');
+        content.innerHTML = `<div class="p-10 text-center text-slate-400">جارِ تحميل السجل...</div>`;
 
-    // Sort by date so newest is on top
-    const sortedLogs = data.history.reverse();
+        try {
+            const res = await fetch(`${API}/history?admin=${user}&name=${encodeURIComponent(name)}`);
+            const data = await res.json();
+            const sortedLogs = data.history.reverse();
 
-    content.innerHTML = sortedLogs.map(log => `
-      <div class="p-5 mb-4 rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow">
-        <div class="flex justify-between items-center mb-3">
-          <span class="text-[10px] font-bold text-slate-400">${log.date}</span>
-<span class="px-2 py-1 rounded text-[9px] font-black uppercase ${log.status === 'present' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">
-  ${log.status === 'present' ? 'حاضر' : 'غائب'}
-</span>
-<h4 class="text-sm font-bold text-slate-800 mb-1">${log.subject}</h4>
-<p class="text-xs font-bold text-blue-500">الدرجة: ${log.grade}%</p>
-<p class="text-xs font-bold text-emerald-500">+ ${log.payment} ج.م</p>
-        </div>
-      </div>
-    `).join('');
-
-  } catch (err) {
-    content.innerHTML = `<div class="text-red-500">Failed to load history.</div>`;
-  }
-}
+            content.innerHTML = sortedLogs.map(log => `
+              <div class="p-5 mb-4 rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="px-2 py-1 rounded text-[9px] font-black uppercase ${(log.status || '').toLowerCase() === 'present' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">
+                    ${(log.status || '').toLowerCase() === 'present' ? 'حاضر' : 'غائب'}
+                  </span>
+                  <span class="text-[10px] font-bold text-slate-400">${log.date}</span>
+                </div>
+                <h4 class="text-sm font-bold text-slate-800 mb-1">${log.subject}</h4>
+                <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
+                    <p class="text-xs font-bold text-blue-500">الدرجة: ${log.grade}%</p>
+                    <p class="text-xs font-bold text-emerald-500">+ ${log.payment} ج.م</p>
+                </div>
+              </div>
+            `).join('');
+        } catch (err) {
+            content.innerHTML = `<div class="text-red-500">فشل تحميل السجل.</div>`;
+        }
+    }
 
     function calcRev() {
         let total = 0;
@@ -402,68 +423,71 @@ data.forEach(s => {
     }
 
     function closePanel() {
-      document.getElementById('sidePanel').classList.remove('open');
-      document.getElementById('overlay').style.display = 'none';
+        document.getElementById('sidePanel').classList.remove('open');
+        document.getElementById('overlay').style.display = 'none';
     }
 
     function applySubject() {
-      const val = document.getElementById('globalSub').value;
-      document.querySelectorAll('.subj-box').forEach(i => i.value = val);
+        const val = document.getElementById('globalSub').value;
+        document.querySelectorAll('.subj-box').forEach(i => i.value = val);
     }
 
     async function saveRow(id, btn) {
-      const date = document.getElementById('logDate').value;
-      const subject = document.getElementById(`sub-${id}`).value;
-      const grade = document.getElementById(`grd-${id}`).value;
-      const payment = document.getElementById(`pay-${id}`).value;
-      const isAbsent = document.getElementById(`a-${id}`).classList.contains('active-a');
-      
-      btn.innerText = "⏳";
-      
-      try {
-          const res = await fetch(`${API}/daily-log`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                studentId: id, 
-                date, 
-                subject: subject || "General", 
-                grade: Number(grade) || 0, 
-                payment: Number(payment) || 0, 
-                status: isAbsent ? 'absent' : 'present', 
-                admin: user 
-            })
-          });
+        const date = document.getElementById('logDate').value;
+        const subject = document.getElementById(`sub-${id}`).value;
+        const grade = document.getElementById(`grd-${id}`).value;
+        const payment = document.getElementById(`pay-${id}`).value;
+        const isAbsent = document.getElementById(`a-${id}`).classList.contains('active-a');
 
-          if(res.ok) { 
-              btn.innerText = "DONE";
-              btn.classList.replace('bg-slate-100', 'bg-emerald-500');
-              btn.classList.replace('text-slate-500', 'text-white');
-              setTimeout(() => { 
-                  btn.innerText = "Sync"; 
-                  btn.classList.replace('bg-emerald-500', 'bg-slate-100');
-                  btn.classList.replace('text-white', 'text-slate-500');
-              }, 2000);
-          }
-      } catch (err) {
-          alert("Sync Failed. Connection Lost.");
-          btn.innerText = "Sync";
-      }
+        btn.innerText = "⏳";
+
+        try {
+            const res = await fetch(`${API}/daily-log`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    studentId: id,
+                    date,
+                    subject: subject || "General",
+                    grade: Number(grade) || 0,
+                    payment: Number(payment) || 0,
+                    status: isAbsent ? 'absent' : 'present',
+                    admin: user
+                })
+            });
+
+            if (res.ok) {
+                btn.innerText = "DONE";
+                btn.classList.replace('bg-slate-100', 'bg-emerald-500');
+                btn.classList.replace('text-slate-500', 'text-white');
+                setTimeout(() => {
+                    btn.innerText = "مزامنة";
+                    btn.classList.replace('bg-emerald-500', 'bg-slate-100');
+                    btn.classList.replace('text-white', 'text-slate-500');
+                }, 2000);
+            }
+        } catch (err) {
+            alert("فشلت المزامنة.");
+            btn.innerText = "مزامنة";
+        }
     }
 
     async function saveAll() {
-      const btns = document.querySelectorAll('button[onclick^="saveRow"]');
-      for (let b of btns) { await b.click(); }
-      alert("Mass Synchronization Complete ✅");
+        const btns = document.querySelectorAll('button[onclick^="saveRow"]');
+        for (let b of btns) { await b.click(); }
+        alert("اكتملت المزامنة الجماعية ✅");
     }
 
-    function logout() { localStorage.clear(); window.location.href="login.html"; }
-  </script>
+    function logout() { localStorage.clear(); window.location.href = "login.html"; }
+</script>
   <nav class="mobile-nav no-print">
     <a href="index.html" class="nav-icon">👥</a>
     <a href="tables.html" class="nav-icon">📅</a>
     <a href="classes.html" class="nav-icon active">🏫</a>
     <a href="teachers.html" class="nav-icon">👨‍🏫</a>
+    <button onclick="logout()" class="nav-icon text-red-400 hover:text-red-600">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </button>
 </nav>
 </body>
 </html>
